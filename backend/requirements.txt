@@ -7,3 +7,4 @@ pypdf
 pytest
 numpy
 sentence-transformers
+rank-bm25
