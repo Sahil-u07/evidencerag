@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 
 import requests
 
@@ -16,7 +17,10 @@ class OllamaGenerator:
     """
     Local LLM generator using Ollama.
 
-    The model receives only the evidence retrieved by EvidenceRAG.
+    The model receives only the evidence retrieved by EvidenceRAG
+    and returns a structured JSON response containing:
+        - answer
+        - citations
     """
 
     def __init__(
@@ -27,13 +31,17 @@ class OllamaGenerator:
         self.model = model
         self.url = url
 
-    def _build_context(self, evidence: list) -> str:
+    def _build_context(
+        self,
+        evidence: list,
+    ) -> str:
         sections = []
 
-        for index, reranked_result in enumerate(evidence, start=1):
+        for index, reranked_result in enumerate(
+            evidence,
+            start=1,
+        ):
             chunk = reranked_result.result.chunk
-
-            source = chunk.source
 
             page = (
                 f", page {chunk.page}"
@@ -43,7 +51,7 @@ class OllamaGenerator:
 
             sections.append(
                 f"[Evidence {index}]\n"
-                f"Source: {source}{page}\n"
+                f"Source: {chunk.source}{page}\n"
                 f"Chunk ID: {chunk.chunk_id}\n"
                 f"Content:\n{chunk.text}"
             )
@@ -71,18 +79,28 @@ class OllamaGenerator:
         prompt = f"""
 You are the answer-generation component of EvidenceRAG.
 
-Answer the user's question using ONLY the evidence provided below.
+Answer the user's question using ONLY the supplied evidence.
 
 STRICT RULES:
 - Do not use outside knowledge.
 - Do not invent facts.
 - Do not invent sources.
-- Do not explain your reasoning.
-- Give only the final answer.
-- Keep the answer concise and clear.
-- Cite factual claims using [Evidence 1], [Evidence 2], etc.
-- If the evidence does not contain enough information, say exactly:
-  "I don't have enough evidence in the indexed documents to answer this question."
+- Every factual claim must be supported by the supplied evidence.
+- Put an evidence citation immediately after every factual claim.
+- Use citations exactly like [Evidence 1], [Evidence 2], etc.
+- Only cite evidence that supports the claim.
+- If the evidence is insufficient, return the exact abstention message.
+- Return ONLY valid JSON.
+- Do not use markdown code fences.
+
+JSON FORMAT:
+{{
+  "answer": "Your answer with [Evidence N] citations.",
+  "citations": [1]
+}}
+
+The citations array must contain every evidence ID used in
+the answer.
 
 USER QUESTION:
 {query}
@@ -90,7 +108,7 @@ USER QUESTION:
 RETRIEVED EVIDENCE:
 {context}
 
-FINAL ANSWER:
+RETURN JSON:
 """.strip()
 
         response = requests.post(
@@ -99,8 +117,9 @@ FINAL ANSWER:
                 "model": self.model,
                 "prompt": prompt,
                 "stream": False,
+                "format": "json",
                 "options": {
-                    "temperature": 0.2,
+                    "temperature": 0.1,
                     "num_predict": 300,
                 },
             },
@@ -111,11 +130,72 @@ FINAL ANSWER:
 
         data = response.json()
 
-        answer = data.get("response", "").strip()
+        raw_response = data.get(
+            "response",
+            "",
+        ).strip()
 
-        if not answer:
+        if not raw_response:
             raise RuntimeError(
                 "Ollama returned an empty response."
             )
 
-        return GeneratedAnswer(answer=answer)
+        try:
+            result = json.loads(raw_response)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "Ollama returned invalid JSON."
+            ) from exc
+
+        answer = result.get("answer")
+        citations = result.get("citations")
+
+        if not isinstance(answer, str):
+            raise RuntimeError(
+                "Ollama returned an invalid answer field."
+            )
+
+        if not isinstance(citations, list):
+            raise RuntimeError(
+                "Ollama returned an invalid citations field."
+            )
+
+        if not answer.strip():
+            raise RuntimeError(
+                "Ollama returned an empty answer."
+            )
+
+        normalized_citations = []
+
+        for citation in citations:
+            if not isinstance(citation, int):
+                raise RuntimeError(
+                    "Ollama returned a non-integer evidence citation."
+                )
+
+            if citation < 1 or citation > len(evidence):
+                raise RuntimeError(
+                    f"Ollama returned invalid evidence citation: "
+                    f"{citation}"
+                )
+
+            normalized_citations.append(citation)
+
+        normalized_citations = sorted(
+            set(normalized_citations)
+        )
+
+        # Ensure the structured citations are also visible
+        # to EvidenceRAG's grounding verifier.
+        for evidence_id in normalized_citations:
+            marker = f"[Evidence {evidence_id}]"
+
+            if marker not in answer:
+                answer = (
+                    answer.rstrip()
+                    + f" {marker}"
+                )
+
+        return GeneratedAnswer(
+            answer=answer.strip()
+        )
