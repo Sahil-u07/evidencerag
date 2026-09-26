@@ -8,3 +8,4 @@ pytest
 numpy
 sentence-transformers
 rank-bm25
+openai==3.19.2
