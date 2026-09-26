@@ -1,5 +1,12 @@
 from dataclasses import dataclass, field
 import re
+from typing import Any
+
+import numpy as np
+from sentence_transformers import CrossEncoder
+
+
+NLI_MODEL = "cross-encoder/nli-MiniLM2-L6-H768"
 
 
 @dataclass
@@ -12,16 +19,24 @@ class VerificationResult:
 
 class EvidenceVerifier:
     """
-    Lightweight deterministic grounding verifier.
+    Local evidence-grounding verifier using a Natural Language
+    Inference (NLI) cross-encoder.
 
-    Responsibilities:
-    1. Validate evidence citations.
-    2. Associate citations with the claims they support.
-    3. Check whether cited claims have meaningful textual
-       support in the cited evidence.
+    Verification flow:
 
-    This is a deterministic lexical grounding check.
-    It is NOT a semantic entailment model.
+        Generated claim
+              ↓
+        Cited evidence
+              ↓
+        NLI classifier
+              ↓
+        Entailment / Neutral / Contradiction
+
+    A claim is considered grounded only when the cited evidence
+    is classified as entailment with sufficient confidence.
+
+    This is a model-based verification signal, not an absolute
+    guarantee of factual correctness.
     """
 
     CITATION_PATTERN = re.compile(
@@ -29,67 +44,40 @@ class EvidenceVerifier:
         re.IGNORECASE,
     )
 
-    STOPWORDS = {
-        "a",
-        "an",
-        "and",
-        "are",
-        "as",
-        "at",
-        "be",
-        "been",
-        "being",
-        "by",
-        "can",
-        "could",
-        "did",
-        "do",
-        "does",
-        "for",
-        "from",
-        "had",
-        "has",
-        "have",
-        "how",
-        "if",
-        "in",
-        "into",
-        "is",
-        "it",
-        "its",
-        "may",
-        "might",
-        "more",
-        "of",
-        "on",
-        "or",
-        "should",
-        "that",
-        "the",
-        "their",
-        "there",
-        "these",
-        "they",
-        "this",
-        "those",
-        "to",
-        "used",
-        "using",
-        "was",
-        "were",
-        "what",
-        "which",
-        "why",
-        "will",
-        "with",
-        "would",
-    }
+    def __init__(
+        self,
+        model_name: str = NLI_MODEL,
+        entailment_threshold: float = 0.70,
+    ) -> None:
+        self.model_name = model_name
+        self.entailment_threshold = entailment_threshold
+        self._nli_model: CrossEncoder | None = None
+
+    @property
+    def nli_model(self) -> CrossEncoder:
+        """
+        Lazily load the local NLI model.
+
+        This avoids loading model weights when only citation
+        validation is being used.
+        """
+
+        if self._nli_model is None:
+            self._nli_model = CrossEncoder(
+                self.model_name
+            )
+
+        return self._nli_model
 
     def verify_citations(
         self,
         answer: str,
         evidence_count: int,
     ) -> VerificationResult:
+        """
+        Validate citation syntax and evidence references.
+        """
+
         if not answer.strip():
             return VerificationResult(
                 supported=False,
@@ -102,7 +90,9 @@ class EvidenceVerifier:
                 reason="No evidence was retrieved.",
             )
 
-        citations = self.CITATION_PATTERN.findall(answer)
+        citations = self.CITATION_PATTERN.findall(
+            answer
+        )
 
         if not citations:
             return VerificationResult(
@@ -111,13 +101,17 @@ class EvidenceVerifier:
             )
 
         cited_evidence = sorted(
-            {int(citation) for citation in citations}
+            {
+                int(citation)
+                for citation in citations
+            }
         )
 
         invalid = [
             evidence_id
             for evidence_id in cited_evidence
-            if evidence_id < 1 or evidence_id > evidence_count
+            if evidence_id < 1
+            or evidence_id > evidence_count
         ]
 
         if invalid:
@@ -126,7 +120,9 @@ class EvidenceVerifier:
                 cited_evidence=cited_evidence,
                 reason=(
                     "Answer contains invalid evidence references: "
-                    + ", ".join(map(str, invalid))
+                    + ", ".join(
+                        map(str, invalid)
+                    )
                 ),
             )
 
@@ -139,17 +135,18 @@ class EvidenceVerifier:
     def verify_grounding(
         self,
         answer: str,
-        evidence: list,
-        min_overlap: int = 2,
-        min_coverage: float = 0.5,
+        evidence: list[Any],
     ) -> VerificationResult:
         """
-        Verify that every cited claim has sufficient textual
-        support in its cited evidence.
+        Verify every cited claim using NLI.
 
-        A claim must satisfy BOTH:
-        - minimum meaningful-token overlap
-        - minimum claim-token coverage
+        For each claim:
+
+            premise   = retrieved evidence
+            hypothesis = generated claim
+
+        The claim passes only when entailment is the strongest
+        NLI class and exceeds the configured confidence threshold.
         """
 
         citation_result = self.verify_citations(
@@ -172,38 +169,32 @@ class EvidenceVerifier:
         unsupported_claims = []
 
         for claim, citation_ids in claims:
-            claim_tokens = self._keywords(claim)
-
-            if not claim_tokens:
-                unsupported_claims.append(claim)
-                continue
-
             claim_supported = False
 
             for evidence_id in citation_ids:
-                chunk = evidence[evidence_id - 1].result.chunk
+                chunk = evidence[
+                    evidence_id - 1
+                ].result.chunk
 
-                evidence_tokens = self._keywords(
-                    chunk.text
-                )
+                evidence_text = chunk.text
 
-                overlap = claim_tokens & evidence_tokens
-
-                coverage = (
-                    len(overlap) / len(claim_tokens)
-                    if claim_tokens
-                    else 0.0
+                label, confidence = self._predict_nli(
+                    premise=evidence_text,
+                    hypothesis=claim,
                 )
 
                 if (
-                    len(overlap) >= min_overlap
-                    and coverage >= min_coverage
+                    label == "entailment"
+                    and confidence
+                    >= self.entailment_threshold
                 ):
                     claim_supported = True
                     break
 
             if not claim_supported:
-                unsupported_claims.append(claim)
+                unsupported_claims.append(
+                    claim
+                )
 
         if unsupported_claims:
             return VerificationResult(
@@ -211,8 +202,8 @@ class EvidenceVerifier:
                 cited_evidence=citation_result.cited_evidence,
                 unsupported_claims=unsupported_claims,
                 reason=(
-                    "One or more cited claims lack sufficient "
-                    "textual support in their cited evidence."
+                    "One or more cited claims were not "
+                    "entailed by their cited evidence."
                 ),
             )
 
@@ -220,9 +211,155 @@ class EvidenceVerifier:
             supported=True,
             cited_evidence=citation_result.cited_evidence,
             reason=(
-                "All cited claims have sufficient textual support "
-                "in their cited evidence."
+                "All cited claims were supported by "
+                "NLI entailment."
             ),
+        )
+
+    def _predict_nli(
+        self,
+        premise: str,
+        hypothesis: str,
+    ) -> tuple[str, float]:
+        """
+        Run NLI classification and return:
+
+            (label, confidence)
+
+        Label is normalized to one of:
+
+            contradiction
+            entailment
+            neutral
+        """
+
+        scores = self.nli_model.predict(
+            [
+                (
+                    premise,
+                    hypothesis,
+                )
+            ],
+            apply_softmax=True,
+        )
+
+        probabilities = np.asarray(
+            scores[0],
+            dtype=float,
+        )
+
+        labels = self._get_model_labels(
+            len(probabilities)
+        )
+
+        best_index = int(
+            np.argmax(probabilities)
+        )
+
+        label = labels[best_index]
+
+        confidence = float(
+            probabilities[best_index]
+        )
+
+        return label, confidence
+
+    def _get_model_labels(
+        self,
+        number_of_labels: int,
+    ) -> list[str]:
+        """
+        Resolve the model's label ordering from its configuration.
+
+        This avoids hard-coding the numeric order of the NLI classes.
+        """
+
+        try:
+            config = (
+                self.nli_model.model.config
+            )
+
+            id2label = getattr(
+                config,
+                "id2label",
+                None,
+            )
+
+            if id2label:
+                labels = []
+
+                for index in range(
+                    number_of_labels
+                ):
+                    raw_label = id2label.get(
+                        index,
+                        id2label.get(
+                            str(index),
+                            "",
+                        ),
+                    )
+
+                    labels.append(
+                        self._normalize_label(
+                            str(raw_label)
+                        )
+                    )
+
+                if all(labels):
+                    return labels
+
+        except Exception:
+            pass
+
+        # Fallback for the expected 3-class NLI model.
+        if number_of_labels == 3:
+            return [
+                "contradiction",
+                "entailment",
+                "neutral",
+            ]
+
+        return [
+            f"label_{index}"
+            for index in range(
+                number_of_labels
+            )
+        ]
+
+    def _normalize_label(
+        self,
+        label: str,
+    ) -> str:
+        """
+        Normalize common NLI label formats.
+        """
+
+        normalized = (
+            label
+            .strip()
+            .lower()
+            .replace("_", " ")
+            .replace("-", " ")
+        )
+
+        if (
+            "entail" in normalized
+            or normalized in {
+                "label 1",
+                "label_1",
+            }
+        ):
+            return "entailment"
+
+        if "contrad" in normalized:
+            return "contradiction"
+
+        if "neutral" in normalized:
+            return "neutral"
+
+        return normalized.replace(
+            " ",
+            "_",
         )
 
     def _extract_claims(
@@ -230,10 +367,9 @@ class EvidenceVerifier:
         answer: str,
     ) -> list[tuple[str, list[int]]]:
         """
-        Extract claims and attach citations to the sentence
-        immediately preceding them.
+        Extract claims and attach citations to them.
 
-        Supported formats:
+        Handles:
 
             Claim [Evidence 1]
 
@@ -245,16 +381,17 @@ class EvidenceVerifier:
             Second claim. [Evidence 2]
         """
 
-        # Critical normalization:
+        # Keep a citation attached to the preceding claim.
         #
-        # "Claim. [Evidence 1]"
+        # Example:
+        #
+        #   Claim. [Evidence 1]
         #
         # becomes:
         #
-        # "Claim.[Evidence 1]"
+        #   Claim.[Evidence 1]
         #
-        # This keeps the citation attached to the claim when
-        # sentence boundaries are detected.
+        # before sentence splitting.
         normalized = re.sub(
             r"\s+(\[Evidence\s+\d+\])",
             r"\1",
@@ -290,7 +427,10 @@ class EvidenceVerifier:
                 continue
 
             citation_ids = sorted(
-                {int(citation) for citation in citations}
+                {
+                    int(citation)
+                    for citation in citations
+                }
             )
 
             claims.append(
@@ -301,16 +441,3 @@ class EvidenceVerifier:
             )
 
         return claims
-
-    def _keywords(self, text: str) -> set[str]:
-        tokens = re.findall(
-            r"\b[a-zA-Z0-9]+\b",
-            text.lower(),
-        )
-
-        return {
-            token
-            for token in tokens
-            if len(token) >= 3
-            and token not in self.STOPWORDS
-        }

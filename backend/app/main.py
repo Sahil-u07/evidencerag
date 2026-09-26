@@ -1,301 +1,402 @@
-from dataclasses import dataclass, field
-import re
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Any
+from uuid import uuid4
 
-import numpy as np
-from sentence_transformers import CrossEncoder
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from pydantic import BaseModel, Field
+
+from app.generation.ollama_generator import OllamaGenerator
+from app.generation.pipeline import RAGPipeline
+from app.ingestion.chunker import chunk_documents
+from app.ingestion.loader import load_document
+from app.retrieval.bm25 import BM25Retriever
+from app.retrieval.dense import DenseRetriever
+from app.retrieval.embedder import TextEmbedder
+from app.retrieval.hybrid import HybridRetriever
+from app.reranking.cross_encoder import CrossEncoderReranker
+from app.reranking.reranked_hybrid import RerankedHybridRetriever
 
 
-NLI_MODEL = "cross-encoder/nli-MiniLM2-L6-H768"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+EVALUATION_CORPUS = (
+    PROJECT_ROOT
+    / "data"
+    / "evaluation"
+    / "corpus"
+)
+
+UPLOAD_DIR = (
+    PROJECT_ROOT
+    / "data"
+    / "uploads"
+)
+
+SUPPORTED_EXTENSIONS = {
+    ".pdf",
+    ".txt",
+    ".md",
+}
 
 
-@dataclass
-class VerificationResult:
+class SearchRequest(BaseModel):
+    query: str = Field(min_length=1)
+    top_k: int = Field(default=5, ge=1, le=20)
+
+
+class AskRequest(BaseModel):
+    query: str = Field(min_length=1)
+    top_k: int = Field(default=5, ge=1, le=20)
+
+
+class EvidenceItem(BaseModel):
+    evidence_id: int
+    source: str
+    chunk_id: str
+    page: int | None
+    score: float
+    text: str
+
+
+class SearchResponse(BaseModel):
+    query: str
+    results: list[EvidenceItem]
+
+
+class VerificationResponse(BaseModel):
     supported: bool
-    cited_evidence: list[int] = field(default_factory=list)
-    unsupported_claims: list[str] = field(default_factory=list)
-    reason: str = ""
+    cited_evidence: list[int]
+    unsupported_claims: list[str]
+    reason: str
 
 
-class EvidenceVerifier:
+class AskResponse(BaseModel):
+    query: str
+    answer: str
+    evidence: list[EvidenceItem]
+    verification: VerificationResponse
+
+
+class ApplicationState:
+    def __init__(self) -> None:
+        self.pipeline: RAGPipeline | None = None
+        self.retriever: RerankedHybridRetriever | None = None
+
+
+state = ApplicationState()
+
+
+def build_retriever() -> RerankedHybridRetriever:
     """
-    Local evidence-grounding verifier.
+    Build the complete retrieval and reranking stack.
 
-    Verification pipeline:
+    Pipeline:
 
-        Generated claim
-              ↓
-        Cited evidence
-              ↓
-        Natural Language Inference
-              ↓
-        Entailment / Neutral / Contradiction
-
-    The verifier uses a local NLI cross-encoder to determine
-    whether the cited evidence entails the generated claim.
-
-    This is still a model-based verification signal and should
-    not be treated as an absolute guarantee of factual truth.
+        Documents
+            ↓
+        Chunking
+            ↓
+        Embeddings
+            ↓
+        Dense Retrieval
+            +
+        BM25 Retrieval
+            ↓
+        Reciprocal Rank Fusion
+            ↓
+        Cross-Encoder Reranking
     """
 
-    CITATION_PATTERN = re.compile(
-        r"\[Evidence\s+(\d+)\]",
-        re.IGNORECASE,
+    UPLOAD_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
     )
 
-    def __init__(
-        self,
-        model_name: str = NLI_MODEL,
-        entailment_threshold: float = 0.70,
-    ) -> None:
-        self.model_name = model_name
-        self.entailment_threshold = entailment_threshold
-        self._nli_model: CrossEncoder | None = None
+    embedder = TextEmbedder()
 
-    @property
-    def nli_model(self) -> CrossEncoder:
-        """
-        Lazy-load the NLI model.
+    documents = []
 
-        The model is loaded only when grounding verification
-        is actually requested.
-        """
+    source_directories = [
+        EVALUATION_CORPUS,
+        UPLOAD_DIR,
+    ]
 
-        if self._nli_model is None:
-            self._nli_model = CrossEncoder(
-                self.model_name
+    for directory in source_directories:
+        if not directory.exists():
+            continue
+
+        for path in sorted(directory.iterdir()):
+            if not path.is_file():
+                continue
+
+            if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+                continue
+
+            documents.extend(
+                load_document(path)
             )
 
-        return self._nli_model
-
-    def verify_citations(
-        self,
-        answer: str,
-        evidence_count: int,
-    ) -> VerificationResult:
-        if not answer.strip():
-            return VerificationResult(
-                supported=False,
-                reason="Generated answer is empty.",
-            )
-
-        if evidence_count <= 0:
-            return VerificationResult(
-                supported=False,
-                reason="No evidence was retrieved.",
-            )
-
-        citations = self.CITATION_PATTERN.findall(answer)
-
-        if not citations:
-            return VerificationResult(
-                supported=False,
-                reason="Answer does not contain an evidence citation.",
-            )
-
-        cited_evidence = sorted(
-            {int(citation) for citation in citations}
+    if not documents:
+        raise RuntimeError(
+            "No supported documents found in the configured "
+            "document directories."
         )
 
-        invalid = [
-            evidence_id
-            for evidence_id in cited_evidence
-            if evidence_id < 1 or evidence_id > evidence_count
-        ]
+    chunks = chunk_documents(
+        documents,
+        chunk_size=50,
+        overlap=10,
+    )
 
-        if invalid:
-            return VerificationResult(
-                supported=False,
-                cited_evidence=cited_evidence,
-                reason=(
-                    "Answer contains invalid evidence references: "
-                    + ", ".join(map(str, invalid))
-                ),
+    embeddings = embedder.encode(
+        [chunk.text for chunk in chunks]
+    )
+
+    dense_retriever = DenseRetriever()
+    bm25_retriever = BM25Retriever()
+
+    hybrid_retriever = HybridRetriever(
+        embedder=embedder,
+        dense_retriever=dense_retriever,
+        bm25_retriever=bm25_retriever,
+    )
+
+    hybrid_retriever.add(
+        chunks,
+        embeddings,
+    )
+
+    reranker = CrossEncoderReranker()
+
+    return RerankedHybridRetriever(
+        hybrid_retriever=hybrid_retriever,
+        reranker=reranker,
+    )
+
+
+def serialize_evidence(
+    evidence: list[Any],
+) -> list[EvidenceItem]:
+    items = []
+
+    for index, reranked_result in enumerate(
+        evidence,
+        start=1,
+    ):
+        chunk = reranked_result.result.chunk
+
+        items.append(
+            EvidenceItem(
+                evidence_id=index,
+                source=chunk.source,
+                chunk_id=chunk.chunk_id,
+                page=chunk.page,
+                score=float(reranked_result.score),
+                text=chunk.text,
             )
-
-        return VerificationResult(
-            supported=True,
-            cited_evidence=cited_evidence,
-            reason="Answer contains valid evidence references.",
         )
 
-    def verify_grounding(
-        self,
-        answer: str,
-        evidence: list,
-    ) -> VerificationResult:
-        """
-        Verify cited claims using local NLI inference.
+    return items
 
-        Evidence is treated as the premise and the generated
-        claim is treated as the hypothesis.
 
-        A claim is considered grounded only when at least one
-        cited evidence block has an entailment score above the
-        configured threshold and entailment is the strongest
-        NLI class.
-        """
+@asynccontextmanager
+async def lifespan(
+    application: FastAPI,
+):
+    """
+    Build the retrieval and generation pipeline when
+    the API starts.
+    """
 
-        citation_result = self.verify_citations(
-            answer=answer,
-            evidence_count=len(evidence),
+    state.retriever = build_retriever()
+
+    state.pipeline = RAGPipeline(
+        retriever=state.retriever,
+        generator=OllamaGenerator(),
+    )
+
+    yield
+
+    state.pipeline = None
+    state.retriever = None
+
+
+app = FastAPI(
+    title="EvidenceRAG API",
+    description=(
+        "Production-oriented document intelligence API "
+        "with hybrid retrieval, reranking, grounded generation, "
+        "and evidence verification."
+    ),
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "name": "EvidenceRAG",
+        "status": "running",
+        "docs": "/docs",
+    }
+
+
+@app.get("/health")
+def health() -> dict[str, str | bool]:
+    return {
+        "status": "ok",
+        "ready": (
+            state.pipeline is not None
+            and state.retriever is not None
+        ),
+        "generator": "ollama",
+        "model": "llama3.2:3b",
+    }
+
+
+@app.post(
+    "/search",
+    response_model=SearchResponse,
+)
+def search_documents(
+    request: SearchRequest,
+) -> SearchResponse:
+    if state.retriever is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Retrieval system is not ready.",
         )
 
-        if not citation_result.supported:
-            return citation_result
+    results = state.retriever.search(
+        request.query,
+        top_k=request.top_k,
+    )
 
-        claims = self._extract_claims(answer)
+    return SearchResponse(
+        query=request.query,
+        results=serialize_evidence(results),
+    )
 
-        if not claims:
-            return VerificationResult(
-                supported=False,
-                cited_evidence=citation_result.cited_evidence,
-                reason="No cited claims could be extracted.",
-            )
 
-        unsupported_claims = []
+@app.post(
+    "/ask",
+    response_model=AskResponse,
+)
+def ask_question(
+    request: AskRequest,
+) -> AskResponse:
+    if state.pipeline is None:
+        raise HTTPException(
+            status_code=503,
+            detail="RAG pipeline is not ready.",
+        )
 
-        for claim, citation_ids in claims:
-            claim_supported = False
+    try:
+        result = state.pipeline.ask(
+            request.query,
+            top_k=request.top_k,
+        )
 
-            for evidence_id in citation_ids:
-                chunk = evidence[evidence_id - 1].result.chunk
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "RAG generation failed. "
+                "Make sure Ollama is running and "
+                "llama3.2:3b is available."
+            ),
+        ) from exc
 
-                evidence_text = chunk.text
+    evidence = serialize_evidence(
+        result.evidence
+    )
 
-                scores = self.nli_model.predict(
-                    [
-                        (
-                            evidence_text,
-                            claim,
-                        )
-                    ],
-                    apply_softmax=True,
-                )
+    verification = VerificationResponse(
+        supported=result.verification.supported,
+        cited_evidence=result.verification.cited_evidence,
+        unsupported_claims=(
+            result.verification.unsupported_claims
+        ),
+        reason=result.verification.reason,
+    )
 
-                probabilities = np.asarray(
-                    scores[0],
-                    dtype=float,
-                )
+    return AskResponse(
+        query=result.query,
+        answer=result.answer.answer,
+        evidence=evidence,
+        verification=verification,
+    )
 
-                # Model label ordering:
-                #
-                # 0 = contradiction
-                # 1 = entailment
-                # 2 = neutral
-                contradiction_score = float(
-                    probabilities[0]
-                )
 
-                entailment_score = float(
-                    probabilities[1]
-                )
+@app.post(
+    "/documents/upload",
+)
+async def upload_document(
+    file: UploadFile = File(...),
+) -> dict[str, Any]:
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Filename is required.",
+        )
 
-                neutral_score = float(
-                    probabilities[2]
-                )
+    original_name = Path(file.filename).name
+    extension = Path(original_name).suffix.lower()
 
-                strongest_label = int(
-                    np.argmax(probabilities)
-                )
-
-                if (
-                    strongest_label == 1
-                    and entailment_score
-                    >= self.entailment_threshold
-                ):
-                    claim_supported = True
-                    break
-
-            if not claim_supported:
-                unsupported_claims.append(
-                    claim
-                )
-
-        if unsupported_claims:
-            return VerificationResult(
-                supported=False,
-                cited_evidence=citation_result.cited_evidence,
-                unsupported_claims=unsupported_claims,
-                reason=(
-                    "One or more cited claims were not entailed "
-                    "by their cited evidence."
-                ),
-            )
-
-        return VerificationResult(
-            supported=True,
-            cited_evidence=citation_result.cited_evidence,
-            reason=(
-                "All cited claims were supported by "
-                "NLI entailment."
+    if extension not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Unsupported file type. "
+                "Supported types: PDF, TXT, MD."
             ),
         )
 
-    def _extract_claims(
-        self,
-        answer: str,
-    ) -> list[tuple[str, list[int]]]:
-        """
-        Extract claims and associate citations with them.
+    UPLOAD_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-        Handles:
+    unique_name = (
+        f"{uuid4().hex}_{original_name}"
+    )
 
-            Claim [Evidence 1]
+    destination = UPLOAD_DIR / unique_name
 
-            Claim. [Evidence 1]
+    try:
+        with destination.open("wb") as output:
+            while chunk := await file.read(1024 * 1024):
+                output.write(chunk)
 
-            Claim [Evidence 1] [Evidence 2]
+        new_retriever = build_retriever()
 
-            First claim. [Evidence 1]
-            Second claim. [Evidence 2]
-        """
-
-        normalized = re.sub(
-            r"\s+(\[Evidence\s+\d+\])",
-            r"\1",
-            answer.strip(),
-            flags=re.IGNORECASE,
+        new_pipeline = RAGPipeline(
+            retriever=new_retriever,
+            generator=OllamaGenerator(),
         )
 
-        fragments = re.split(
-            r"(?<=[.!?])\s+",
-            normalized,
-        )
+        state.retriever = new_retriever
+        state.pipeline = new_pipeline
 
-        claims = []
+    except Exception as exc:
+        if destination.exists():
+            destination.unlink()
 
-        for fragment in fragments:
-            citations = self.CITATION_PATTERN.findall(
-                fragment
-            )
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Document upload succeeded, but rebuilding "
+                "the retrieval index failed."
+            ),
+        ) from exc
 
-            if not citations:
-                continue
+    finally:
+        await file.close()
 
-            claim = self.CITATION_PATTERN.sub(
-                "",
-                fragment,
-            ).strip()
-
-            claim = claim.strip(
-                " .,:;"
-            )
-
-            if not claim:
-                continue
-
-            citation_ids = sorted(
-                {
-                    int(citation)
-                    for citation in citations
-                }
-            )
-
-            claims.append(
-                (
-                    claim,
-                    citation_ids,
-                )
-            )
-
-        return claims
+    return {
+        "message": "Document uploaded and indexed successfully.",
+        "filename": original_name,
+        "stored_as": unique_name,
+    }
