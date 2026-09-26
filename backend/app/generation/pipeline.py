@@ -4,6 +4,12 @@ from app.generation.generator import GeneratedAnswer, OpenAIGenerator
 from app.generation.verifier import EvidenceVerifier, VerificationResult
 
 
+ABSTENTION_MESSAGE = (
+    "I don't have enough verified evidence in the indexed "
+    "documents to answer this question."
+)
+
+
 @dataclass
 class RAGResponse:
     query: str
@@ -25,7 +31,9 @@ class RAGPipeline:
           ↓
         Grounded generation
           ↓
-        Semantic grounding verification
+        Grounding verification
+          ↓
+        Verified answer or abstention
     """
 
     def __init__(
@@ -60,6 +68,11 @@ class RAGPipeline:
             answer=answer.answer,
             evidence=evidence,
         )
+
+        if not verification.supported:
+            answer = GeneratedAnswer(
+                answer=ABSTENTION_MESSAGE
+            )
 
         return RAGResponse(
             query=query,

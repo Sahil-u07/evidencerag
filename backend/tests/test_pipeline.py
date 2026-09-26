@@ -1,6 +1,9 @@
 from types import SimpleNamespace
 
-from app.generation.pipeline import RAGPipeline
+from app.generation.pipeline import (
+    ABSTENTION_MESSAGE,
+    RAGPipeline,
+)
 
 
 class FakeRetriever:
@@ -26,7 +29,8 @@ class FakeRetriever:
 
 
 class FakeGenerator:
-    def __init__(self):
+    def __init__(self, answer):
+        self.answer = answer
         self.received_query = None
         self.received_evidence = None
 
@@ -35,13 +39,16 @@ class FakeGenerator:
         self.received_evidence = evidence
 
         return SimpleNamespace(
-            answer="RRF combines ranked retrieval results. [Evidence 1]"
+            answer=self.answer
         )
 
 
-def test_pipeline_connects_retrieval_and_generation():
+def test_pipeline_returns_verified_answer():
     retriever = FakeRetriever()
-    generator = FakeGenerator()
+
+    generator = FakeGenerator(
+        "RRF combines ranked retrieval results. [Evidence 1]"
+    )
 
     pipeline = RAGPipeline(
         retriever=retriever,
@@ -59,12 +66,36 @@ def test_pipeline_connects_retrieval_and_generation():
 
     assert result.verification.supported is True
     assert result.verification.cited_evidence == [1]
+    assert result.answer.answer != ABSTENTION_MESSAGE
+
+
+def test_pipeline_abstains_when_answer_is_not_grounded():
+    retriever = FakeRetriever()
+
+    generator = FakeGenerator(
+        "Quantum computers use superconducting qubits. "
+        "[Evidence 1]"
+    )
+
+    pipeline = RAGPipeline(
+        retriever=retriever,
+        generator=generator,
+    )
+
+    result = pipeline.ask("What is RRF?")
+
+    assert result.verification.supported is False
+    assert result.verification.cited_evidence == [1]
+    assert len(result.verification.unsupported_claims) == 1
+    assert result.answer.answer == ABSTENTION_MESSAGE
 
 
 def test_pipeline_rejects_empty_query():
     pipeline = RAGPipeline(
         retriever=FakeRetriever(),
-        generator=FakeGenerator(),
+        generator=FakeGenerator(
+            "RRF combines ranked retrieval results. [Evidence 1]"
+        ),
     )
 
     try:
