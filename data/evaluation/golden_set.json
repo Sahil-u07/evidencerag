@@ -126,7 +126,8 @@
     "id": "q17",
     "query": "What is the difference between a validation dataset and a test dataset in supervised machine learning?",
     "relevant_ids": [
-      "machine_learning.md:1"
+      "machine_learning.md:1",
+      "machine_learning.md:2"
     ]
   },
   {
@@ -140,16 +141,16 @@
     "id": "q19",
     "query": "How does logistic regression convert a weighted combination of features into a binary classification decision?",
     "relevant_ids": [
-      "machine_learning.md:3",
-      "machine_learning.md:4"
+      "machine_learning.md:4",
+      "machine_learning.md:5"
     ]
   },
   {
     "id": "q20",
     "query": "Why can a deep decision tree generalize poorly, and what controls can reduce that problem?",
     "relevant_ids": [
-      "machine_learning.md:4",
-      "machine_learning.md:5"
+      "machine_learning.md:5",
+      "machine_learning.md:6"
     ]
   }
 ]
