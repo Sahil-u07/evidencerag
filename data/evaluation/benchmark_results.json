@@ -1,0 +1,1226 @@
+{
+  "chunk_size": 50,
+  "chunk_overlap": 10,
+  "evaluation_ks": [
+    1,
+    3,
+    5
+  ],
+  "ndcg_k": 5,
+  "question_count": 20,
+  "chunk_count": 33,
+  "systems": {
+    "dense": {
+      "per_query": [
+        {
+          "id": "q01",
+          "query": "Which CPU scheduling method gives each ready process a fixed amount of processor time before moving it back into the queue?",
+          "relevant_ids": [
+            "operating_systems.md:2"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:9",
+            "operating_systems.md:4"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "query": "What conditions must all hold simultaneously for a deadlock to occur?",
+          "relevant_ids": [
+            "operating_systems.md:3",
+            "operating_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:4",
+            "operating_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:2"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "query": "How does the Banker's algorithm decide whether a resource request can be safely granted?",
+          "relevant_ids": [
+            "operating_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:4",
+            "operating_systems.md:1",
+            "database_systems.md:5",
+            "operating_systems.md:8",
+            "database_systems.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "query": "What happens when a process accesses a virtual-memory page that is not currently in physical memory?",
+          "relevant_ids": [
+            "operating_systems.md:5",
+            "operating_systems.md:6"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:5",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:9",
+            "operating_systems.md:1"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "query": "Which page replacement strategy chooses the page whose next future use is farthest away?",
+          "relevant_ids": [
+            "operating_systems.md:7"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:7",
+            "operating_systems.md:6",
+            "operating_systems.md:8",
+            "information_retrieval.md:6",
+            "database_systems.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "query": "What causes a computer system to spend excessive time handling page faults instead of doing useful work?",
+          "relevant_ids": [
+            "operating_systems.md:8",
+            "operating_systems.md:9"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:9",
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:5"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q07",
+          "query": "How does a B-tree index reduce the work required to find records in a relational database?",
+          "relevant_ids": [
+            "database_systems.md:1",
+            "database_systems.md:2"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:2",
+            "database_systems.md:1",
+            "information_retrieval.md:6",
+            "database_systems.md:3",
+            "information_retrieval.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "query": "What guarantees are represented by the ACID properties of a transaction?",
+          "relevant_ids": [
+            "database_systems.md:3",
+            "database_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "operating_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q09",
+          "query": "What concurrency problems can occur when multiple database transactions interact without proper control?",
+          "relevant_ids": [
+            "database_systems.md:4",
+            "database_systems.md:5"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:4",
+            "database_systems.md:3",
+            "database_systems.md:5",
+            "operating_systems.md:4",
+            "operating_systems.md:9"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "query": "Why is database normalization used, and what kinds of redundancy or dependency problems does it address?",
+          "relevant_ids": [
+            "database_systems.md:5",
+            "database_systems.md:6"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:5",
+            "database_systems.md:6",
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:1"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "query": "Why can BM25 outperform semantic search when a query contains an exact technical identifier or keyword?",
+          "relevant_ids": [
+            "information_retrieval.md:3"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:1",
+            "information_retrieval.md:6"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "query": "How does dense retrieval find relevant text even when the wording of the query differs from the wording in the document?",
+          "relevant_ids": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:2"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "query": "Why can lexical and semantic retrieval be combined instead of choosing only one of them?",
+          "relevant_ids": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:4",
+            "information_retrieval.md:1",
+            "information_retrieval.md:3",
+            "information_retrieval.md:6"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q14",
+          "query": "How does Reciprocal Rank Fusion combine results from different retrieval algorithms?",
+          "relevant_ids": [
+            "information_retrieval.md:5"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:4"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "query": "What is the purpose of a cross-encoder reranker after the initial retrieval stage?",
+          "relevant_ids": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:5",
+            "information_retrieval.md:4"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "query": "What does nDCG reward when evaluating a ranked list of search results?",
+          "relevant_ids": [
+            "information_retrieval.md:7",
+            "information_retrieval.md:8"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:8",
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "query": "What is the difference between a validation dataset and a test dataset in supervised machine learning?",
+          "relevant_ids": [
+            "machine_learning.md:1"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:7",
+            "machine_learning.md:8",
+            "machine_learning.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "query": "What problem does regularization address when a machine-learning model fits its training data too closely?",
+          "relevant_ids": [
+            "machine_learning.md:2"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:3",
+            "machine_learning.md:2",
+            "machine_learning.md:1",
+            "machine_learning.md:4",
+            "machine_learning.md:7"
+          ],
+          "reciprocal_rank": 0.5,
+          "ndcg_at_5": 0.6309297535714575,
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "query": "How does logistic regression convert a weighted combination of features into a binary classification decision?",
+          "relevant_ids": [
+            "machine_learning.md:3",
+            "machine_learning.md:4"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:1",
+            "machine_learning.md:3",
+            "machine_learning.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "query": "Why can a deep decision tree generalize poorly, and what controls can reduce that problem?",
+          "relevant_ids": [
+            "machine_learning.md:4",
+            "machine_learning.md:5"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:6",
+            "machine_learning.md:5",
+            "machine_learning.md:3",
+            "machine_learning.md:4",
+            "machine_learning.md:7"
+          ],
+          "reciprocal_rank": 0.5,
+          "ndcg_at_5": 0.6509209298071326,
+          "recall_at_1": 0.0,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        }
+      ],
+      "average": {
+        "recall_at_1": 0.6,
+        "recall_at_3": 0.95,
+        "recall_at_5": 1.0,
+        "mrr": 0.95,
+        "ndcg_at_5": 0.9499253788506508
+      }
+    },
+    "bm25": {
+      "per_query": [
+        {
+          "id": "q01",
+          "query": "Which CPU scheduling method gives each ready process a fixed amount of processor time before moving it back into the queue?",
+          "relevant_ids": [
+            "operating_systems.md:2"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:5",
+            "information_retrieval.md:1"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "query": "What conditions must all hold simultaneously for a deadlock to occur?",
+          "relevant_ids": [
+            "operating_systems.md:3",
+            "operating_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "operating_systems.md:6",
+            "database_systems.md:3",
+            "operating_systems.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "query": "How does the Banker's algorithm decide whether a resource request can be safely granted?",
+          "relevant_ids": [
+            "operating_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:4",
+            "machine_learning.md:3",
+            "operating_systems.md:7",
+            "database_systems.md:5",
+            "operating_systems.md:2"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "query": "What happens when a process accesses a virtual-memory page that is not currently in physical memory?",
+          "relevant_ids": [
+            "operating_systems.md:5",
+            "operating_systems.md:6"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:5",
+            "operating_systems.md:6",
+            "operating_systems.md:8",
+            "operating_systems.md:7",
+            "operating_systems.md:9"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "query": "Which page replacement strategy chooses the page whose next future use is farthest away?",
+          "relevant_ids": [
+            "operating_systems.md:7"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:7",
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "operating_systems.md:5",
+            "operating_systems.md:9"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "query": "What causes a computer system to spend excessive time handling page faults instead of doing useful work?",
+          "relevant_ids": [
+            "operating_systems.md:8",
+            "operating_systems.md:9"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "database_systems.md:3",
+            "operating_systems.md:7",
+            "operating_systems.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 0.5
+        },
+        {
+          "id": "q07",
+          "query": "How does a B-tree index reduce the work required to find records in a relational database?",
+          "relevant_ids": [
+            "database_systems.md:1",
+            "database_systems.md:2"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:2",
+            "database_systems.md:1",
+            "database_systems.md:3",
+            "database_systems.md:5",
+            "machine_learning.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "query": "What guarantees are represented by the ACID properties of a transaction?",
+          "relevant_ids": [
+            "database_systems.md:3",
+            "database_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:3",
+            "operating_systems.md:3",
+            "machine_learning.md:3",
+            "machine_learning.md:4",
+            "machine_learning.md:2"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 0.5
+        },
+        {
+          "id": "q09",
+          "query": "What concurrency problems can occur when multiple database transactions interact without proper control?",
+          "relevant_ids": [
+            "database_systems.md:4",
+            "database_systems.md:5"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:4",
+            "operating_systems.md:9",
+            "database_systems.md:3",
+            "database_systems.md:5",
+            "database_systems.md:2"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "query": "Why is database normalization used, and what kinds of redundancy or dependency problems does it address?",
+          "relevant_ids": [
+            "database_systems.md:5",
+            "database_systems.md:6"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:5",
+            "database_systems.md:6",
+            "database_systems.md:3",
+            "operating_systems.md:1",
+            "information_retrieval.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "query": "Why can BM25 outperform semantic search when a query contains an exact technical identifier or keyword?",
+          "relevant_ids": [
+            "information_retrieval.md:3"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "database_systems.md:3",
+            "machine_learning.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "query": "How does dense retrieval find relevant text even when the wording of the query differs from the wording in the document?",
+          "relevant_ids": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:4",
+            "information_retrieval.md:3",
+            "information_retrieval.md:8",
+            "information_retrieval.md:7"
+          ],
+          "reciprocal_rank": 0.5,
+          "ndcg_at_5": 0.6934264036172708,
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "query": "Why can lexical and semantic retrieval be combined instead of choosing only one of them?",
+          "relevant_ids": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "machine_learning.md:5",
+            "information_retrieval.md:1",
+            "operating_systems.md:8"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 0.5
+        },
+        {
+          "id": "q14",
+          "query": "How does Reciprocal Rank Fusion combine results from different retrieval algorithms?",
+          "relevant_ids": [
+            "information_retrieval.md:5"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "information_retrieval.md:4",
+            "database_systems.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "query": "What is the purpose of a cross-encoder reranker after the initial retrieval stage?",
+          "relevant_ids": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:1",
+            "information_retrieval.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "query": "What does nDCG reward when evaluating a ranked list of search results?",
+          "relevant_ids": [
+            "information_retrieval.md:7",
+            "information_retrieval.md:8"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "information_retrieval.md:8",
+            "operating_systems.md:3"
+          ],
+          "reciprocal_rank": 0.5,
+          "ndcg_at_5": 0.6509209298071326,
+          "recall_at_1": 0.0,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "query": "What is the difference between a validation dataset and a test dataset in supervised machine learning?",
+          "relevant_ids": [
+            "machine_learning.md:1"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "information_retrieval.md:6",
+            "machine_learning.md:5",
+            "machine_learning.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "query": "What problem does regularization address when a machine-learning model fits its training data too closely?",
+          "relevant_ids": [
+            "machine_learning.md:2"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "operating_systems.md:1",
+            "machine_learning.md:3",
+            "operating_systems.md:5"
+          ],
+          "reciprocal_rank": 0.5,
+          "ndcg_at_5": 0.6309297535714575,
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "query": "How does logistic regression convert a weighted combination of features into a binary classification decision?",
+          "relevant_ids": [
+            "machine_learning.md:3",
+            "machine_learning.md:4"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:3",
+            "machine_learning.md:1",
+            "machine_learning.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "query": "Why can a deep decision tree generalize poorly, and what controls can reduce that problem?",
+          "relevant_ids": [
+            "machine_learning.md:4",
+            "machine_learning.md:5"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:5",
+            "machine_learning.md:6",
+            "machine_learning.md:2",
+            "database_systems.md:2",
+            "information_retrieval.md:9"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 0.5
+        }
+      ],
+      "average": {
+        "recall_at_1": 0.575,
+        "recall_at_3": 0.85,
+        "recall_at_5": 0.9,
+        "mrr": 0.925,
+        "ndcg_at_5": 0.8612400981271966
+      }
+    },
+    "hybrid": {
+      "per_query": [
+        {
+          "id": "q01",
+          "query": "Which CPU scheduling method gives each ready process a fixed amount of processor time before moving it back into the queue?",
+          "relevant_ids": [
+            "operating_systems.md:2"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:5",
+            "operating_systems.md:8"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "query": "What conditions must all hold simultaneously for a deadlock to occur?",
+          "relevant_ids": [
+            "operating_systems.md:3",
+            "operating_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "database_systems.md:3",
+            "operating_systems.md:6",
+            "operating_systems.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "query": "How does the Banker's algorithm decide whether a resource request can be safely granted?",
+          "relevant_ids": [
+            "operating_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:2",
+            "database_systems.md:3",
+            "operating_systems.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "query": "What happens when a process accesses a virtual-memory page that is not currently in physical memory?",
+          "relevant_ids": [
+            "operating_systems.md:5",
+            "operating_systems.md:6"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:5",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:8",
+            "operating_systems.md:9"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "query": "Which page replacement strategy chooses the page whose next future use is farthest away?",
+          "relevant_ids": [
+            "operating_systems.md:7"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:7",
+            "operating_systems.md:6",
+            "operating_systems.md:8",
+            "operating_systems.md:5",
+            "database_systems.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "query": "What causes a computer system to spend excessive time handling page faults instead of doing useful work?",
+          "relevant_ids": [
+            "operating_systems.md:8",
+            "operating_systems.md:9"
+          ],
+          "retrieved_ids": [
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:9",
+            "operating_systems.md:5"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q07",
+          "query": "How does a B-tree index reduce the work required to find records in a relational database?",
+          "relevant_ids": [
+            "database_systems.md:1",
+            "database_systems.md:2"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:2",
+            "database_systems.md:1",
+            "database_systems.md:3",
+            "information_retrieval.md:7",
+            "database_systems.md:6"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "query": "What guarantees are represented by the ACID properties of a transaction?",
+          "relevant_ids": [
+            "database_systems.md:3",
+            "database_systems.md:4"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:3",
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "database_systems.md:1",
+            "machine_learning.md:4"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 0.5
+        },
+        {
+          "id": "q09",
+          "query": "What concurrency problems can occur when multiple database transactions interact without proper control?",
+          "relevant_ids": [
+            "database_systems.md:4",
+            "database_systems.md:5"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:4",
+            "database_systems.md:3",
+            "operating_systems.md:9",
+            "database_systems.md:5",
+            "database_systems.md:6"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "query": "Why is database normalization used, and what kinds of redundancy or dependency problems does it address?",
+          "relevant_ids": [
+            "database_systems.md:5",
+            "database_systems.md:6"
+          ],
+          "retrieved_ids": [
+            "database_systems.md:5",
+            "database_systems.md:6",
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:1"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "query": "Why can BM25 outperform semantic search when a query contains an exact technical identifier or keyword?",
+          "relevant_ids": [
+            "information_retrieval.md:3"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "database_systems.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "query": "How does dense retrieval find relevant text even when the wording of the query differs from the wording in the document?",
+          "relevant_ids": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:8"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "query": "Why can lexical and semantic retrieval be combined instead of choosing only one of them?",
+          "relevant_ids": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:4",
+            "information_retrieval.md:8"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q14",
+          "query": "How does Reciprocal Rank Fusion combine results from different retrieval algorithms?",
+          "relevant_ids": [
+            "information_retrieval.md:5"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:4",
+            "information_retrieval.md:8"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "query": "What is the purpose of a cross-encoder reranker after the initial retrieval stage?",
+          "relevant_ids": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:5",
+            "information_retrieval.md:1"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "query": "What does nDCG reward when evaluating a ranked list of search results?",
+          "relevant_ids": [
+            "information_retrieval.md:7",
+            "information_retrieval.md:8"
+          ],
+          "retrieved_ids": [
+            "information_retrieval.md:7",
+            "information_retrieval.md:5",
+            "information_retrieval.md:8",
+            "information_retrieval.md:6",
+            "information_retrieval.md:3"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "recall_at_1": 0.5,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "query": "What is the difference between a validation dataset and a test dataset in supervised machine learning?",
+          "relevant_ids": [
+            "machine_learning.md:1"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "machine_learning.md:5",
+            "machine_learning.md:4"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 1.0,
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "query": "What problem does regularization address when a machine-learning model fits its training data too closely?",
+          "relevant_ids": [
+            "machine_learning.md:2"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "machine_learning.md:7",
+            "machine_learning.md:6"
+          ],
+          "reciprocal_rank": 0.5,
+          "ndcg_at_5": 0.6309297535714575,
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "query": "How does logistic regression convert a weighted combination of features into a binary classification decision?",
+          "relevant_ids": [
+            "machine_learning.md:3",
+            "machine_learning.md:4"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:1",
+            "machine_learning.md:3",
+            "machine_learning.md:7"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "query": "Why can a deep decision tree generalize poorly, and what controls can reduce that problem?",
+          "relevant_ids": [
+            "machine_learning.md:4",
+            "machine_learning.md:5"
+          ],
+          "retrieved_ids": [
+            "machine_learning.md:5",
+            "machine_learning.md:6",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "database_systems.md:2"
+          ],
+          "reciprocal_rank": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "recall_at_1": 0.5,
+          "recall_at_3": 0.5,
+          "recall_at_5": 0.5
+        }
+      ],
+      "average": {
+        "recall_at_1": 0.625,
+        "recall_at_3": 0.85,
+        "recall_at_5": 0.95,
+        "mrr": 0.975,
+        "ndcg_at_5": 0.9102763489375474
+      }
+    }
+  }
+}
