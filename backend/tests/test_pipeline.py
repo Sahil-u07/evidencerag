@@ -5,14 +5,21 @@ from app.generation.pipeline import RAGPipeline
 
 class FakeRetriever:
     def search(self, query, top_k=5):
+        chunk = SimpleNamespace(
+            text="RRF combines ranked retrieval results.",
+            source="information_retrieval.md",
+            page=None,
+            chunk_id="ir:5",
+        )
+
+        search_result = SimpleNamespace(
+            chunk=chunk,
+            score=0.95,
+        )
+
         return [
             SimpleNamespace(
-                chunk=SimpleNamespace(
-                    text="RRF combines ranked retrieval results.",
-                    source="information_retrieval.md",
-                    page=None,
-                    chunk_id="ir:5",
-                ),
+                result=search_result,
                 score=0.95,
             )
         ]
@@ -49,6 +56,9 @@ def test_pipeline_connects_retrieval_and_generation():
 
     assert generator.received_query == "What is RRF?"
     assert generator.received_evidence == result.evidence
+
+    assert result.verification.supported is True
+    assert result.verification.cited_evidence == [1]
 
 
 def test_pipeline_rejects_empty_query():

@@ -25,7 +25,7 @@ class RAGPipeline:
           ↓
         Grounded generation
           ↓
-        Evidence verification
+        Semantic grounding verification
     """
 
     def __init__(
@@ -56,9 +56,9 @@ class RAGPipeline:
             evidence=evidence,
         )
 
-        verification = self.verifier.verify_citations(
+        verification = self.verifier.verify_grounding(
             answer=answer.answer,
-            evidence_count=len(evidence),
+            evidence=evidence,
         )
 
         return RAGResponse(
