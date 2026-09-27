@@ -32,12 +32,19 @@ class RAGPipeline:
           ↓
         Grounded generation
           ↓
+        Citation normalization
+          ↓
         Deterministic citation alignment
           ↓
         Grounding verification
           ↓
         Verified answer or abstention
     """
+
+    CITATION_PATTERN = re.compile(
+        r"\[\s*Evidence\s*(\d+)\s*\]",
+        re.IGNORECASE,
+    )
 
     def __init__(
         self,
@@ -60,6 +67,26 @@ class RAGPipeline:
             if len(token) > 2
         }
 
+    @classmethod
+    def _normalize_citations(cls, answer: str) -> str:
+        """
+        Normalize citation formatting produced by the generator.
+
+        Examples:
+            [Evidence1]  -> [Evidence 1]
+            [Evidence 2] -> [Evidence 2]
+            [ evidence3 ] -> [Evidence 3]
+        """
+
+        def replace(match: re.Match) -> str:
+            evidence_id = match.group(1)
+            return f"[Evidence {evidence_id}]"
+
+        return cls.CITATION_PATTERN.sub(
+            replace,
+            answer,
+        )
+
     def _attach_citation(
         self,
         answer: str,
@@ -73,8 +100,11 @@ class RAGPipeline:
         the language model so the model does not have to guess
         evidence IDs.
         """
+
         if not answer.strip() or not evidence:
             return answer
+
+        answer = self._normalize_citations(answer)
 
         sentences = re.split(
             r"(?<=[.!?])\s+",
@@ -90,12 +120,10 @@ class RAGPipeline:
                 continue
 
             # Already cited.
-            if re.search(
-                r"\[Evidence\s+\d+\]",
-                sentence,
-                re.IGNORECASE,
-            ):
-                cited_sentences.append(sentence)
+            if self.CITATION_PATTERN.search(sentence):
+                cited_sentences.append(
+                    self._normalize_citations(sentence)
+                )
                 continue
 
             claim_tokens = self._tokens(sentence)
