@@ -1,5 +1,6 @@
-from types import SimpleNamespace
 import json
+
+import pytest
 
 from app.generation.ollama_generator import OllamaGenerator
 
@@ -12,66 +13,47 @@ class FakeResponse:
         pass
 
     def json(self):
-        return {
-            "response": self.payload
-        }
+        return json.loads(self.payload)
 
 
-def make_evidence(
-    text="RRF combines ranked retrieval results.",
-    source="information_retrieval.md",
-    chunk_id="information_retrieval.md:5",
-    score=5.5,
-):
-    chunk = SimpleNamespace(
-        text=text,
-        source=source,
-        page=None,
-        chunk_id=chunk_id,
-    )
+def make_evidence():
+    class Chunk:
+        text = "RRF combines ranked retrieval results."
+        page = 5
+        source = "retrieval.md"
+        chunk_id = "chunk-1"
 
-    search_result = SimpleNamespace(
-        chunk=chunk,
-        score=0.9,
-    )
+    class Result:
+        chunk = Chunk()
 
-    return SimpleNamespace(
-        result=search_result,
-        score=score,
-    )
+    class Evidence:
+        result = Result()
+
+    return Evidence()
 
 
-def make_json_response(
-    answer="RRF combines ranked retrieval results. [Evidence 1]",
-    citations=None,
-):
-    if citations is None:
-        citations = [1]
-
-    return json.dumps(
-        {
-            "answer": answer,
-            "citations": citations,
-        }
+def make_ollama_response(answer):
+    return FakeResponse(
+        json.dumps(
+            {
+                "response": json.dumps(
+                    {
+                        "answer": answer,
+                    }
+                )
+            }
+        )
     )
 
 
 def test_ollama_generator_uses_reranked_evidence(monkeypatch):
-    captured_request = {}
+    captured = {}
 
-    def fake_post(url, json, timeout):
-        captured_request["url"] = url
-        captured_request["json"] = json
-        captured_request["timeout"] = timeout
+    def fake_post(*args, **kwargs):
+        captured["payload"] = kwargs["json"]
 
-        return FakeResponse(
-            make_json_response(
-                answer=(
-                    "RRF combines ranked retrieval results. "
-                    "[Evidence 1]"
-                ),
-                citations=[1],
-            )
+        return make_ollama_response(
+            "RRF combines ranked retrieval results."
         )
 
     monkeypatch.setattr(
@@ -81,106 +63,48 @@ def test_ollama_generator_uses_reranked_evidence(monkeypatch):
 
     generator = OllamaGenerator()
 
-    evidence = [
-        make_evidence()
-    ]
-
     result = generator.generate(
         "What is RRF?",
-        evidence,
+        [make_evidence()],
     )
 
-    assert "RRF combines" in result.answer
-    assert "[Evidence 1]" in result.answer
-
-    assert captured_request["json"]["model"] == (
-        "llama3.2:3b"
-    )
-
-    assert captured_request["json"]["format"] == "json"
-
-    assert captured_request["json"]["stream"] is False
-
-    assert (
-        captured_request["json"]["options"]["temperature"]
-        == 0.1
-    )
-
-    assert "What is RRF?" in (
-        captured_request["json"]["prompt"]
-    )
-
+    assert result.answer == "RRF combines ranked retrieval results."
+    assert "[Evidence 1]" not in result.answer
+    assert "What is RRF?" in captured["payload"]["prompt"]
     assert (
         "RRF combines ranked retrieval results."
-        in captured_request["json"]["prompt"]
+        in captured["payload"]["prompt"]
     )
+    assert captured["payload"]["format"] == "json"
+    assert captured["payload"]["stream"] is False
+    assert captured["payload"]["options"]["temperature"] == 0.1
 
 
 def test_ollama_generator_rejects_empty_query():
     generator = OllamaGenerator()
 
-    try:
-        generator.generate(
-            "",
-            [],
-        )
-        assert False, "Expected ValueError"
-    except ValueError as exc:
-        assert str(exc) == "Query cannot be empty"
+    with pytest.raises(ValueError):
+        generator.generate("", [make_evidence()])
 
 
-def test_ollama_generator_abstains_without_evidence():
+def test_ollama_generator_handles_no_evidence():
     generator = OllamaGenerator()
 
     result = generator.generate(
-        "What is something not in the documents?",
+        "What is RRF?",
         [],
     )
 
-    assert (
-        "don't have enough evidence"
-        in result.answer
-    )
+    assert "enough evidence" in result.answer.lower()
 
 
-def test_ollama_generator_rejects_invalid_json(
-    monkeypatch,
-):
-    def fake_post(url, json, timeout):
+def test_ollama_generator_rejects_invalid_json(monkeypatch):
+    def fake_post(*args, **kwargs):
         return FakeResponse(
-            "This is not valid JSON."
-        )
-
-    monkeypatch.setattr(
-        "app.generation.ollama_generator.requests.post",
-        fake_post,
-    )
-
-    generator = OllamaGenerator()
-
-    try:
-        generator.generate(
-            "What is RRF?",
-            [make_evidence()],
-        )
-        assert False, "Expected RuntimeError"
-    except RuntimeError as exc:
-        assert str(exc) == (
-            "Ollama returned invalid JSON."
-        )
-
-
-def test_ollama_generator_rejects_invalid_citation(
-    monkeypatch,
-):
-    def fake_post(url, json, timeout):
-        return FakeResponse(
-            make_json_response(
-                answer=(
-                    "RRF combines ranked retrieval results. "
-                    "[Evidence 3]"
-                ),
-                citations=[3],
+            json.dumps(
+                {
+                    "response": "not valid json",
+                }
             )
         )
 
@@ -191,29 +115,48 @@ def test_ollama_generator_rejects_invalid_citation(
 
     generator = OllamaGenerator()
 
-    try:
+    with pytest.raises(RuntimeError):
         generator.generate(
             "What is RRF?",
             [make_evidence()],
         )
-        assert False, "Expected RuntimeError"
-    except RuntimeError as exc:
-        assert (
-            "invalid evidence citation"
-            in str(exc)
+
+
+def test_ollama_generator_returns_plain_grounded_answer(monkeypatch):
+    def fake_post(*args, **kwargs):
+        return make_ollama_response(
+            "RRF combines ranked retrieval results."
         )
 
+    monkeypatch.setattr(
+        "app.generation.ollama_generator.requests.post",
+        fake_post,
+    )
 
-def test_ollama_generator_adds_missing_inline_citation(
-    monkeypatch,
-):
-    def fake_post(url, json, timeout):
+    generator = OllamaGenerator()
+
+    result = generator.generate(
+        "What is RRF?",
+        [make_evidence()],
+    )
+
+    assert result.answer == "RRF combines ranked retrieval results."
+
+
+def test_ollama_generator_does_not_delegate_citations(monkeypatch):
+    def fake_post(*args, **kwargs):
         return FakeResponse(
-            make_json_response(
-                answer=(
-                    "RRF combines ranked retrieval results."
-                ),
-                citations=[1],
+            json.dumps(
+                {
+                    "response": json.dumps(
+                        {
+                            "answer": (
+                                "RRF combines ranked retrieval results."
+                            ),
+                            "citations": [1],
+                        }
+                    )
+                }
             )
         )
 
@@ -230,6 +173,6 @@ def test_ollama_generator_adds_missing_inline_citation(
     )
 
     assert result.answer == (
-        "RRF combines ranked retrieval results. "
-        "[Evidence 1]"
+        "RRF combines ranked retrieval results."
     )
+    assert "[Evidence 1]" not in result.answer

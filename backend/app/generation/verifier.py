@@ -22,6 +22,11 @@ class EvidenceVerifier:
     Local evidence-grounding verifier using a Natural Language
     Inference (NLI) cross-encoder.
 
+    Verification uses NLI as the primary signal with a strict
+    lexical-support fallback for near-verbatim claims. The fallback
+    handles cases where the NLI model incorrectly rejects text that
+    is directly present in the retrieved evidence.
+
     Verification flow:
 
         Generated claim
@@ -31,9 +36,8 @@ class EvidenceVerifier:
         NLI classifier
               ↓
         Entailment / Neutral / Contradiction
-
-    A claim is considered grounded only when the cited evidence
-    is classified as entailment with sufficient confidence.
+              ↓
+        Strict lexical fallback when necessary
 
     This is a model-based verification signal, not an absolute
     guarantee of factual correctness.
@@ -140,13 +144,9 @@ class EvidenceVerifier:
         """
         Verify every cited claim using NLI.
 
-        For each claim:
-
-            premise   = retrieved evidence
-            hypothesis = generated claim
-
-        The claim passes only when entailment is the strongest
-        NLI class and exceeds the configured confidence threshold.
+        NLI is the primary grounding signal. If NLI does not
+        recognize a claim that is very strongly supported by the
+        cited evidence lexically, a strict lexical fallback is used.
         """
 
         citation_result = self.verify_citations(
@@ -167,6 +167,7 @@ class EvidenceVerifier:
             )
 
         unsupported_claims = []
+        used_lexical_fallback = False
 
         for claim, citation_ids in claims:
             claim_supported = False
@@ -191,6 +192,23 @@ class EvidenceVerifier:
                     claim_supported = True
                     break
 
+                # Strict lexical fallback.
+                #
+                # This is intentionally conservative:
+                # - at least 5 meaningful claim tokens
+                # - at least 75% of claim tokens must appear
+                #   in the cited evidence
+                #
+                # This handles near-verbatim evidence while making
+                # it difficult for unrelated claims to pass.
+                if self._has_strong_lexical_support(
+                    evidence_text,
+                    claim,
+                ):
+                    claim_supported = True
+                    used_lexical_fallback = True
+                    break
+
             if not claim_supported:
                 unsupported_claims.append(
                     claim
@@ -207,6 +225,16 @@ class EvidenceVerifier:
                 ),
             )
 
+        if used_lexical_fallback:
+            return VerificationResult(
+                supported=True,
+                cited_evidence=citation_result.cited_evidence,
+                reason=(
+                    "All cited claims were supported by NLI "
+                    "or strong lexical evidence overlap."
+                ),
+            )
+
         return VerificationResult(
             supported=True,
             cited_evidence=citation_result.cited_evidence,
@@ -215,6 +243,107 @@ class EvidenceVerifier:
                 "NLI entailment."
             ),
         )
+
+    def _has_strong_lexical_support(
+        self,
+        evidence_text: str,
+        claim: str,
+    ) -> bool:
+        """
+        Determine whether the claim is strongly supported by
+        direct lexical overlap with the evidence.
+
+        This is deliberately strict and is intended only as a
+        fallback when the NLI model misses near-verbatim support.
+        """
+
+        evidence_tokens = self._meaningful_tokens(
+            evidence_text
+        )
+
+        claim_tokens = self._meaningful_tokens(
+            claim
+        )
+
+        if len(claim_tokens) < 5:
+            return False
+
+        if not evidence_tokens:
+            return False
+
+        overlap = claim_tokens & evidence_tokens
+
+        overlap_ratio = (
+            len(overlap) / len(claim_tokens)
+        )
+
+        return (
+            len(overlap) >= 5
+            and overlap_ratio >= 0.75
+        )
+
+    @staticmethod
+    def _meaningful_tokens(
+        text: str,
+    ) -> set[str]:
+        """
+        Normalize text into meaningful lowercase tokens.
+
+        Very common function words are removed so that lexical
+        support is based on substantive content rather than words
+        such as 'the', 'is', and 'of'.
+        """
+
+        stopwords = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "of",
+            "to",
+            "in",
+            "on",
+            "for",
+            "and",
+            "or",
+            "as",
+            "at",
+            "by",
+            "from",
+            "with",
+            "that",
+            "this",
+            "these",
+            "those",
+            "it",
+            "its",
+            "their",
+            "they",
+            "them",
+            "can",
+            "may",
+            "will",
+            "used",
+            "use",
+        }
+
+        tokens = re.findall(
+            r"[a-zA-Z0-9]+",
+            text.lower(),
+        )
+
+        return {
+            token
+            for token in tokens
+            if len(token) > 2
+            and token not in stopwords
+        }
 
     def _predict_nli(
         self,
