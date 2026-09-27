@@ -225,6 +225,39 @@ def test_upload_rejects_unsupported_file(client):
     assert "Unsupported file type" in data["detail"]
 
 
+def test_upload_rejects_oversized_file(
+    client,
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        main.settings,
+        "max_upload_size_mb",
+        1,
+    )
+
+    oversized_content = b"x" * (
+        1 * 1024 * 1024 + 1
+    )
+
+    response = client.post(
+        "/documents/upload",
+        files={
+            "file": (
+                "large_document.md",
+                oversized_content,
+                "text/markdown",
+            )
+        },
+    )
+
+    assert response.status_code == 413
+
+    data = response.json()
+
+    assert "File is too large" in data["detail"]
+    assert "1 MB" in data["detail"]
+
+
 def test_upload_document(client, tmp_path):
     response = client.post(
         "/documents/upload",

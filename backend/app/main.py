@@ -6,6 +6,7 @@ from uuid import uuid4
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
+from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
 from app.ingestion.chunker import chunk_documents
@@ -354,6 +355,10 @@ async def upload_document(
             ),
         )
 
+    max_upload_size = (
+        settings.max_upload_size_mb * 1024 * 1024
+    )
+
     UPLOAD_DIR.mkdir(
         parents=True,
         exist_ok=True,
@@ -365,9 +370,23 @@ async def upload_document(
 
     destination = UPLOAD_DIR / unique_name
 
+    total_bytes = 0
+
     try:
         with destination.open("wb") as output:
             while chunk := await file.read(1024 * 1024):
+                total_bytes += len(chunk)
+
+                if total_bytes > max_upload_size:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=(
+                            f"File is too large. "
+                            f"Maximum upload size is "
+                            f"{settings.max_upload_size_mb} MB."
+                        ),
+                    )
+
                 output.write(chunk)
 
         new_retriever = build_retriever()
@@ -379,6 +398,11 @@ async def upload_document(
 
         state.retriever = new_retriever
         state.pipeline = new_pipeline
+
+    except HTTPException:
+        if destination.exists():
+            destination.unlink()
+        raise
 
     except Exception as exc:
         if destination.exists():
