@@ -69,6 +69,49 @@ def test_pipeline_returns_verified_answer():
     assert result.answer.answer != ABSTENTION_MESSAGE
 
 
+def test_pipeline_records_metrics():
+    pipeline = RAGPipeline(
+        retriever=FakeRetriever(),
+        generator=FakeGenerator(
+            "RRF combines ranked retrieval results. [Evidence 1]"
+        ),
+    )
+
+    result = pipeline.ask(
+        "What is RRF?",
+        top_k=5,
+    )
+
+    assert result.metrics.query == "What is RRF?"
+    assert result.metrics.top_k == 5
+    assert result.metrics.retrieved_evidence_count == 1
+    assert result.metrics.cited_evidence_count == 1
+    assert result.metrics.verification_supported is True
+    assert result.metrics.latency_ms >= 0
+
+
+def test_pipeline_records_abstention_metrics():
+    pipeline = RAGPipeline(
+        retriever=FakeRetriever(),
+        generator=FakeGenerator(
+            "Quantum computers use superconducting qubits. "
+            "[Evidence 1]"
+        ),
+    )
+
+    result = pipeline.ask("What is RRF?")
+
+    assert result.verification.supported is False
+    assert result.answer.answer == ABSTENTION_MESSAGE
+
+    assert result.metrics.query == "What is RRF?"
+    assert result.metrics.top_k == 5
+    assert result.metrics.retrieved_evidence_count == 1
+    assert result.metrics.cited_evidence_count == 1
+    assert result.metrics.verification_supported is False
+    assert result.metrics.latency_ms >= 0
+
+
 def test_pipeline_abstains_when_answer_is_not_grounded():
     retriever = FakeRetriever()
 

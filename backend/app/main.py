@@ -16,7 +16,7 @@ from app.ingestion.loader import load_document
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DenseRetriever
 from app.retrieval.embedder import TextEmbedder
-from app.retrieval.hybrid import HybridRetriever
+from app.retrieval.hybrid import HybridRetriever`r`nfrom app.retrieval.persistent_store import PersistentIndexStore
 from app.reranking.cross_encoder import CrossEncoderReranker
 from app.reranking.reranked_hybrid import RerankedHybridRetriever
 
@@ -85,11 +85,31 @@ class VerificationResponse(BaseModel):
     reason: str
 
 
+class MetricsResponse(BaseModel):
+    query: str
+    top_k: int
+    retrieved_evidence_count: int
+    cited_evidence_count: int
+    verification_supported: bool
+    latency_ms: float
+
+
 class AskResponse(BaseModel):
     query: str
     answer: str
     evidence: list[EvidenceItem]
     verification: VerificationResponse
+    metrics: MetricsResponse
+
+
+class DocumentItem(BaseModel):
+    filename: str
+    extension: str
+    size_bytes: int
+
+
+class DocumentListResponse(BaseModel):
+    documents: list[DocumentItem]
 
 
 class ApplicationState:
@@ -189,6 +209,20 @@ def build_retriever() -> RerankedHybridRetriever:
     )
 
 
+def rebuild_pipeline() -> None:
+    """Rebuild the retrieval and RAG pipeline from current documents."""
+
+    new_retriever = build_retriever()
+
+    new_pipeline = RAGPipeline(
+        retriever=new_retriever,
+        generator=OllamaGenerator(),
+    )
+
+    state.retriever = new_retriever
+    state.pipeline = new_pipeline
+
+
 def serialize_evidence(
     evidence: list[Any],
 ) -> list[EvidenceItem]:
@@ -212,6 +246,34 @@ def serialize_evidence(
         )
 
     return items
+
+
+def list_uploaded_documents() -> list[DocumentItem]:
+    """Return metadata for supported files in the upload directory."""
+
+    UPLOAD_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    documents = []
+
+    for path in sorted(UPLOAD_DIR.iterdir()):
+        if not path.is_file():
+            continue
+
+        if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            continue
+
+        documents.append(
+            DocumentItem(
+                filename=path.name,
+                extension=path.suffix.lower(),
+                size_bytes=path.stat().st_size,
+            )
+        )
+
+    return documents
 
 
 @asynccontextmanager
@@ -384,12 +446,91 @@ def ask_question(
         reason=result.verification.reason,
     )
 
+    metrics = MetricsResponse(
+        query=result.metrics.query,
+        top_k=result.metrics.top_k,
+        retrieved_evidence_count=(
+            result.metrics.retrieved_evidence_count
+        ),
+        cited_evidence_count=(
+            result.metrics.cited_evidence_count
+        ),
+        verification_supported=(
+            result.metrics.verification_supported
+        ),
+        latency_ms=result.metrics.latency_ms,
+    )
+
     return AskResponse(
         query=result.query,
         answer=result.answer.answer,
         evidence=evidence,
         verification=verification,
+        metrics=metrics,
     )
+
+
+@app.get(
+    "/documents",
+    response_model=DocumentListResponse,
+)
+def list_documents() -> DocumentListResponse:
+    return DocumentListResponse(
+        documents=list_uploaded_documents(),
+    )
+
+
+@app.delete(
+    "/documents/{filename}",
+)
+def delete_document(
+    filename: str,
+) -> dict[str, str]:
+    safe_filename = Path(filename).name
+
+    if safe_filename != filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid filename.",
+        )
+
+    extension = Path(safe_filename).suffix.lower()
+
+    if extension not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Unsupported file type. "
+                "Supported types: PDF, TXT, MD."
+            ),
+        )
+
+    destination = UPLOAD_DIR / safe_filename
+
+    if not destination.exists() or not destination.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found.",
+        )
+
+    try:
+        destination.unlink()
+
+        rebuild_pipeline()
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Document was deleted, but rebuilding "
+                "the retrieval index failed."
+            ),
+        ) from exc
+
+    return {
+        "message": "Document deleted and index rebuilt successfully.",
+        "filename": safe_filename,
+    }
 
 
 @app.post(
@@ -450,19 +591,12 @@ async def upload_document(
 
                 output.write(chunk)
 
-        new_retriever = build_retriever()
-
-        new_pipeline = RAGPipeline(
-            retriever=new_retriever,
-            generator=OllamaGenerator(),
-        )
-
-        state.retriever = new_retriever
-        state.pipeline = new_pipeline
+        rebuild_pipeline()
 
     except HTTPException:
         if destination.exists():
             destination.unlink()
+
         raise
 
     except Exception as exc:

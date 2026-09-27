@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import re
+import time
 
 from app.generation.generator import GeneratedAnswer, OpenAIGenerator
 from app.generation.verifier import EvidenceVerifier, VerificationResult
@@ -12,11 +13,22 @@ ABSTENTION_MESSAGE = (
 
 
 @dataclass
+class PipelineMetrics:
+    query: str
+    top_k: int
+    retrieved_evidence_count: int
+    cited_evidence_count: int
+    verification_supported: bool
+    latency_ms: float
+
+
+@dataclass
 class RAGResponse:
     query: str
     answer: GeneratedAnswer
     evidence: list
     verification: VerificationResult
+    metrics: PipelineMetrics
 
 
 class RAGPipeline:
@@ -37,6 +49,8 @@ class RAGPipeline:
         Deterministic citation alignment
           ↓
         Grounding verification
+          ↓
+        Metrics collection
           ↓
         Verified answer or abstention
     """
@@ -119,7 +133,6 @@ class RAGPipeline:
             if not sentence:
                 continue
 
-            # Already cited.
             if self.CITATION_PATTERN.search(sentence):
                 cited_sentences.append(
                     self._normalize_citations(sentence)
@@ -152,16 +165,12 @@ class RAGPipeline:
 
                 overlap = claim_tokens & evidence_tokens
 
-                # Fraction of meaningful claim tokens supported
-                # by the evidence.
                 score = len(overlap) / len(claim_tokens)
 
                 if score > best_score:
                     best_score = score
                     best_index = index
 
-            # Require substantial lexical support before attaching
-            # a citation. This prevents arbitrary citations.
             if (
                 best_index is not None
                 and best_score >= 0.50
@@ -181,6 +190,8 @@ class RAGPipeline:
     ) -> RAGResponse:
         if not query.strip():
             raise ValueError("Query cannot be empty")
+
+        start_time = time.perf_counter()
 
         evidence = self.retriever.search(
             query,
@@ -206,6 +217,21 @@ class RAGPipeline:
             evidence=evidence,
         )
 
+        cited_evidence_count = len(
+            verification.cited_evidence
+        )
+
+        metrics = PipelineMetrics(
+            query=query,
+            top_k=top_k,
+            retrieved_evidence_count=len(evidence),
+            cited_evidence_count=cited_evidence_count,
+            verification_supported=verification.supported,
+            latency_ms=(
+                time.perf_counter() - start_time
+            ) * 1000,
+        )
+
         if not verification.supported:
             answer = GeneratedAnswer(
                 answer=ABSTENTION_MESSAGE
@@ -216,4 +242,5 @@ class RAGPipeline:
             answer=answer,
             evidence=evidence,
             verification=verification,
+            metrics=metrics,
         )

@@ -49,6 +49,15 @@ class FakePipeline:
             reason="All cited claims have sufficient textual support.",
         )
 
+        metrics = SimpleNamespace(
+            query=query,
+            top_k=top_k,
+            retrieved_evidence_count=1,
+            cited_evidence_count=1,
+            verification_supported=True,
+            latency_ms=12.34,
+        )
+
         return SimpleNamespace(
             query=query,
             answer=SimpleNamespace(
@@ -59,6 +68,7 @@ class FakePipeline:
             ),
             evidence=evidence,
             verification=verification,
+            metrics=metrics,
         )
 
 
@@ -186,6 +196,111 @@ def test_ask_endpoint(monkeypatch, client):
     assert len(data["evidence"]) == 1
     assert data["evidence"][0]["evidence_id"] == 1
 
+    assert data["metrics"]["query"] == (
+        "What is reciprocal rank fusion?"
+    )
+    assert data["metrics"]["top_k"] == 5
+    assert data["metrics"]["retrieved_evidence_count"] == 1
+    assert data["metrics"]["cited_evidence_count"] == 1
+    assert data["metrics"]["verification_supported"] is True
+    assert data["metrics"]["latency_ms"] == 12.34
+
+
+def test_list_documents_empty(client):
+    response = client.get("/documents")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["documents"] == []
+
+
+def test_list_documents(client, tmp_path):
+    document = tmp_path / "test_document.md"
+    document.write_text(
+        "# Test Document\n\nRRF combines ranked lists.",
+        encoding="utf-8",
+    )
+
+    response = client.get("/documents")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data["documents"]) == 1
+
+    item = data["documents"][0]
+
+    assert item["filename"] == "test_document.md"
+    assert item["extension"] == ".md"
+    assert item["size_bytes"] == document.stat().st_size
+
+
+def test_delete_document(client, tmp_path, monkeypatch):
+    document = tmp_path / "test_document.md"
+    document.write_text(
+        "# Test Document\n\nRRF combines ranked lists.",
+        encoding="utf-8",
+    )
+
+    rebuild_calls = []
+
+    monkeypatch.setattr(
+        main,
+        "rebuild_pipeline",
+        lambda: rebuild_calls.append(True),
+    )
+
+    response = client.delete(
+        "/documents/test_document.md"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["message"] == (
+        "Document deleted and index rebuilt successfully."
+    )
+    assert data["filename"] == "test_document.md"
+
+    assert not document.exists()
+    assert rebuild_calls == [True]
+
+
+def test_delete_document_not_found(client):
+    response = client.delete(
+        "/documents/missing_document.md"
+    )
+
+    assert response.status_code == 404
+
+    data = response.json()
+
+    assert data["detail"] == "Document not found."
+
+
+def test_delete_document_rejects_path_traversal(client):
+    response = client.delete(
+        "/documents/../secret.md"
+    )
+
+    assert response.status_code in {400, 404}
+
+
+def test_delete_document_rejects_unsupported_file(client):
+    response = client.delete(
+        "/documents/malicious.exe"
+    )
+
+    assert response.status_code == 400
+
+    data = response.json()
+
+    assert "Unsupported file type" in data["detail"]
+
 
 def test_search_rejects_empty_query(client):
     response = client.post(
@@ -312,6 +427,7 @@ def test_upload_document(client, tmp_path):
     uploaded_files = list(tmp_path.iterdir())
 
     assert len(uploaded_files) == 1
+
     assert uploaded_files[0].read_text(
         encoding="utf-8"
     ) == "# Test Document\n\nRRF combines ranked lists."

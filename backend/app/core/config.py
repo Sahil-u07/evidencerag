@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-5.6-luna"
     max_context_chunks: int = 5
     max_upload_size_mb: int = 10
+    index_storage_dir: str = "data/index"
 
     model_config = SettingsConfigDict(
         env_file=".env",
