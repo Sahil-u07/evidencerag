@@ -101,6 +101,33 @@ def test_health_endpoint(client):
     assert data["model"] == "llama3.2:3b"
 
 
+def test_request_id_header(client):
+    response = client.get("/health")
+
+    assert response.status_code == 200
+
+    request_id = response.headers.get("X-Request-ID")
+
+    assert request_id is not None
+    assert len(request_id) == 36
+
+
+def test_request_ids_are_unique(client):
+    first_response = client.get("/health")
+    second_response = client.get("/health")
+
+    first_request_id = first_response.headers.get(
+        "X-Request-ID"
+    )
+    second_request_id = second_response.headers.get(
+        "X-Request-ID"
+    )
+
+    assert first_request_id is not None
+    assert second_request_id is not None
+    assert first_request_id != second_request_id
+
+
 def test_search_endpoint(client):
     response = client.post(
         "/search",

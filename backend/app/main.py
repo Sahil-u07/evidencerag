@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
+import logging
 from pathlib import Path
+import time
 from typing import Any
 from uuid import uuid4
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
@@ -17,6 +19,17 @@ from app.retrieval.embedder import TextEmbedder
 from app.retrieval.hybrid import HybridRetriever
 from app.reranking.cross_encoder import CrossEncoderReranker
 from app.reranking.reranked_hybrid import RerankedHybridRetriever
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=(
+        "%(asctime)s | %(levelname)s | "
+        "%(name)s | %(message)s"
+    ),
+)
+
+logger = logging.getLogger("evidencerag.api")
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -233,6 +246,54 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def request_logging_middleware(
+    request: Request,
+    call_next,
+):
+    request_id = str(uuid4())
+    request.state.request_id = request_id
+
+    start_time = time.perf_counter()
+
+    try:
+        response = await call_next(request)
+
+    except Exception:
+        duration_ms = (
+            time.perf_counter() - start_time
+        ) * 1000
+
+        logger.exception(
+            "request_id=%s method=%s path=%s "
+            "status=500 duration_ms=%.2f",
+            request_id,
+            request.method,
+            request.url.path,
+            duration_ms,
+        )
+
+        raise
+
+    duration_ms = (
+        time.perf_counter() - start_time
+    ) * 1000
+
+    response.headers["X-Request-ID"] = request_id
+
+    logger.info(
+        "request_id=%s method=%s path=%s "
+        "status=%s duration_ms=%.2f",
+        request_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+
+    return response
 
 
 @app.get("/")
