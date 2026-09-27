@@ -160,6 +160,52 @@ def test_ask_endpoint(monkeypatch, client):
     assert data["evidence"][0]["evidence_id"] == 1
 
 
+def test_search_rejects_empty_query(client):
+    response = client.post(
+        "/search",
+        json={
+            "query": "",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_ask_rejects_empty_query(client):
+    response = client.post(
+        "/ask",
+        json={
+            "query": "",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_search_rejects_invalid_top_k(client):
+    response = client.post(
+        "/search",
+        json={
+            "query": "RRF",
+            "top_k": 0,
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_ask_rejects_invalid_top_k(client):
+    response = client.post(
+        "/ask",
+        json={
+            "query": "RRF",
+            "top_k": 21,
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_upload_rejects_unsupported_file(client):
     response = client.post(
         "/documents/upload",
