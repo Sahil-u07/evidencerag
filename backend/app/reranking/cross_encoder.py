@@ -1,8 +1,16 @@
 from dataclasses import dataclass
+from functools import lru_cache
 
 from sentence_transformers import CrossEncoder
 
 from app.retrieval.dense import SearchResult
+
+
+@lru_cache(maxsize=4)
+def _get_model(
+    model_name: str,
+) -> CrossEncoder:
+    return CrossEncoder(model_name)
 
 
 @dataclass
@@ -18,7 +26,7 @@ class CrossEncoderReranker:
         self,
         model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
     ) -> None:
-        self.model = CrossEncoder(model_name)
+        self.model = _get_model(model_name)
 
     def rerank(
         self,

@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
+import json
 import logging
 from pathlib import Path
 import time
 from typing import Any
 from uuid import uuid4
 
+import numpy as np
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
 
@@ -16,7 +18,8 @@ from app.ingestion.loader import load_document
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DenseRetriever
 from app.retrieval.embedder import TextEmbedder
-from app.retrieval.hybrid import HybridRetriever`r`nfrom app.retrieval.persistent_store import PersistentIndexStore
+from app.retrieval.hybrid import HybridRetriever
+from app.retrieval.persistent_store import PersistentIndexStore
 from app.reranking.cross_encoder import CrossEncoderReranker
 from app.reranking.reranked_hybrid import RerankedHybridRetriever
 
@@ -121,35 +124,28 @@ class ApplicationState:
 state = ApplicationState()
 
 
-def build_retriever() -> RerankedHybridRetriever:
-    """
-    Build the complete retrieval and reranking stack.
+def get_index_storage_dir() -> Path:
+    """Resolve the configured persistent index directory."""
+    index_storage_dir = Path(
+        settings.index_storage_dir
+    )
 
-    Pipeline:
+    if not index_storage_dir.is_absolute():
+        index_storage_dir = (
+            PROJECT_ROOT / index_storage_dir
+        )
 
-        Documents
-            ↓
-        Chunking
-            ↓
-        Embeddings
-            ↓
-        Dense Retrieval
-            +
-        BM25 Retrieval
-            ↓
-        Reciprocal Rank Fusion
-            ↓
-        Cross-Encoder Reranking
-    """
+    return index_storage_dir
 
+
+def collect_source_paths() -> list[Path]:
+    """Collect all supported source documents."""
     UPLOAD_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    embedder = TextEmbedder()
-
-    documents = []
+    source_paths: list[Path] = []
 
     source_directories = [
         EVALUATION_CORPUS,
@@ -160,33 +156,27 @@ def build_retriever() -> RerankedHybridRetriever:
         if not directory.exists():
             continue
 
-        for path in sorted(directory.iterdir()):
+        for path in sorted(
+            directory.iterdir(),
+            key=lambda item: str(item),
+        ):
             if not path.is_file():
                 continue
 
             if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
                 continue
 
-            documents.extend(
-                load_document(path)
-            )
+            source_paths.append(path)
 
-    if not documents:
-        raise RuntimeError(
-            "No supported documents found in the configured "
-            "document directories."
-        )
+    return source_paths
 
-    chunks = chunk_documents(
-        documents,
-        chunk_size=50,
-        overlap=10,
-    )
 
-    embeddings = embedder.encode(
-        [chunk.text for chunk in chunks]
-    )
-
+def build_runtime_retriever(
+    chunks,
+    embeddings,
+    embedder: TextEmbedder,
+) -> RerankedHybridRetriever:
+    """Build the in-memory retrieval and reranking stack."""
     dense_retriever = DenseRetriever()
     bm25_retriever = BM25Retriever()
 
@@ -209,9 +199,392 @@ def build_retriever() -> RerankedHybridRetriever:
     )
 
 
-def rebuild_pipeline() -> None:
-    """Rebuild the retrieval and RAG pipeline from current documents."""
+def build_full_persistent_index(
+    store: PersistentIndexStore,
+    source_paths: list[Path],
+    manifest: dict[str, str],
+    embedder: TextEmbedder,
+):
+    """Parse, chunk, embed, and persist the complete corpus."""
+    documents = []
 
+    for path in source_paths:
+        documents.extend(
+            load_document(path)
+        )
+
+    chunks = chunk_documents(
+        documents,
+        chunk_size=50,
+        overlap=10,
+    )
+
+    if not chunks:
+        raise RuntimeError(
+            "Documents produced no indexable chunks."
+        )
+
+    embeddings = embedder.encode(
+        [chunk.text for chunk in chunks]
+    )
+
+    store.save(
+        chunks,
+        embeddings,
+        manifest=manifest,
+    )
+
+    logger.info(
+        "Built and persisted index "
+        "(chunks=%d, files=%d)",
+        len(chunks),
+        len(manifest),
+    )
+
+    return chunks, embeddings
+
+
+def update_persistent_index_incrementally(
+    store: PersistentIndexStore,
+    source_paths: list[Path],
+    current_manifest: dict[str, str],
+    previous_manifest: dict[str, str],
+    existing_chunks,
+    existing_embeddings,
+    embedder: TextEmbedder,
+):
+    """
+    Incrementally update the persistent index.
+
+    Only added or modified source files are parsed,
+    chunked, and embedded. Deleted files are removed
+    from the persisted index.
+    """
+    changed_paths = [
+        path
+        for path in source_paths
+        if previous_manifest.get(
+            str(path.resolve())
+        )
+        != current_manifest.get(
+            str(path.resolve())
+        )
+    ]
+
+    deleted_paths = [
+        Path(path)
+        for path in previous_manifest
+        if path not in current_manifest
+    ]
+
+    sources_to_replace = {
+        path.name
+        for path in changed_paths
+    }
+
+    sources_to_replace.update(
+        path.name
+        for path in deleted_paths
+    )
+
+    kept_indices = [
+        index
+        for index, chunk in enumerate(
+            existing_chunks
+        )
+        if chunk.source not in sources_to_replace
+    ]
+
+    kept_chunks = [
+        existing_chunks[index]
+        for index in kept_indices
+    ]
+
+    if kept_indices:
+        kept_embeddings = existing_embeddings[
+            kept_indices
+        ]
+    else:
+        kept_embeddings = np.empty(
+            (
+                0,
+                existing_embeddings.shape[1],
+            ),
+            dtype=np.float32,
+        )
+
+    new_chunks = []
+    new_embedding_blocks = []
+
+    for path in changed_paths:
+        documents = load_document(path)
+
+        document_chunks = chunk_documents(
+            documents,
+            chunk_size=50,
+            overlap=10,
+        )
+
+        if not document_chunks:
+            logger.warning(
+                "Document produced no indexable chunks: %s",
+                path,
+            )
+            continue
+
+        document_embeddings = embedder.encode(
+            [
+                chunk.text
+                for chunk in document_chunks
+            ]
+        )
+
+        document_embeddings = np.asarray(
+            document_embeddings,
+            dtype=np.float32,
+        )
+
+        if document_embeddings.ndim != 2:
+            raise ValueError(
+                "Document embeddings must be a 2D matrix"
+            )
+
+        if (
+            len(document_embeddings)
+            != len(document_chunks)
+        ):
+            raise ValueError(
+                "Document chunks and embeddings "
+                "are out of sync"
+            )
+
+        if (
+            len(kept_embeddings) > 0
+            and (
+                kept_embeddings.shape[1]
+                != document_embeddings.shape[1]
+            )
+        ):
+            raise ValueError(
+                "Embedding dimensions do not match"
+            )
+
+        new_chunks.extend(
+            document_chunks
+        )
+
+        new_embedding_blocks.append(
+            document_embeddings
+        )
+
+    combined_chunks = (
+        kept_chunks + new_chunks
+    )
+
+    embedding_blocks = []
+
+    if len(kept_embeddings) > 0:
+        embedding_blocks.append(
+            kept_embeddings
+        )
+
+    embedding_blocks.extend(
+        new_embedding_blocks
+    )
+
+    if embedding_blocks:
+        combined_embeddings = np.vstack(
+            embedding_blocks
+        )
+    else:
+        combined_embeddings = np.empty(
+            (
+                0,
+                existing_embeddings.shape[1],
+            ),
+            dtype=np.float32,
+        )
+
+    if not combined_chunks:
+        raise RuntimeError(
+            "Documents produced no indexable chunks."
+        )
+
+    store.save(
+        combined_chunks,
+        combined_embeddings,
+        manifest=current_manifest,
+    )
+
+    logger.info(
+        "Incrementally updated persistent index "
+        "(added_or_modified=%d, deleted=%d, "
+        "chunks=%d, files=%d)",
+        len(changed_paths),
+        len(deleted_paths),
+        len(combined_chunks),
+        len(current_manifest),
+    )
+
+    return (
+        combined_chunks,
+        combined_embeddings,
+    )
+
+
+def build_retriever() -> RerankedHybridRetriever:
+    """
+    Build the complete retrieval and reranking stack.
+
+    Uses a persistent local index when possible.
+
+    Startup behavior:
+
+        Matching manifest
+            ↓
+        Load persisted index
+
+        Changed manifest
+            ↓
+        Incremental update
+            ↓
+        Persist updated index
+
+        Missing/corrupt index
+            ↓
+        Full index rebuild
+
+    Pipeline:
+
+        Documents
+            ↓
+        Persistent Index
+            ↓
+        Dense Retrieval
+            +
+        BM25 Retrieval
+            ↓
+        Reciprocal Rank Fusion
+            ↓
+        Cross-Encoder Reranking
+    """
+    source_paths = collect_source_paths()
+
+    if not source_paths:
+        raise RuntimeError(
+            "No supported documents found in the configured "
+            "document directories."
+        )
+
+    index_storage_dir = (
+        get_index_storage_dir()
+    )
+
+    store = PersistentIndexStore(
+        index_storage_dir
+    )
+
+    embedder = TextEmbedder()
+
+    current_manifest = store.build_manifest(
+        source_paths
+    )
+
+    if store.matches_manifest(
+        current_manifest
+    ):
+        try:
+            chunks, embeddings = store.load()
+
+            logger.info(
+                "Loaded persistent index from %s "
+                "(chunks=%d, files=%d)",
+                index_storage_dir,
+                len(chunks),
+                len(current_manifest),
+            )
+
+        except (
+            OSError,
+            ValueError,
+            json.JSONDecodeError,
+        ):
+            logger.warning(
+                "Persistent index could not be loaded. "
+                "Rebuilding index."
+            )
+
+            chunks, embeddings = (
+                build_full_persistent_index(
+                    store,
+                    source_paths,
+                    current_manifest,
+                    embedder,
+                )
+            )
+
+    elif store.exists():
+        try:
+            (
+                existing_chunks,
+                existing_embeddings,
+            ) = store.load()
+
+            previous_manifest = (
+                store.load_manifest()
+            )
+
+            chunks, embeddings = (
+                update_persistent_index_incrementally(
+                    store=store,
+                    source_paths=source_paths,
+                    current_manifest=current_manifest,
+                    previous_manifest=previous_manifest,
+                    existing_chunks=existing_chunks,
+                    existing_embeddings=existing_embeddings,
+                    embedder=embedder,
+                )
+            )
+
+        except (
+            OSError,
+            ValueError,
+            json.JSONDecodeError,
+            KeyError,
+        ):
+            logger.warning(
+                "Persistent index could not be incrementally "
+                "updated. Rebuilding full index."
+            )
+
+            chunks, embeddings = (
+                build_full_persistent_index(
+                    store,
+                    source_paths,
+                    current_manifest,
+                    embedder,
+                )
+            )
+
+    else:
+        chunks, embeddings = (
+            build_full_persistent_index(
+                store,
+                source_paths,
+                current_manifest,
+                embedder,
+            )
+        )
+
+    return build_runtime_retriever(
+        chunks,
+        embeddings,
+        embedder,
+    )
+
+
+def rebuild_pipeline() -> None:
+    """Refresh the retrieval and RAG pipeline."""
     new_retriever = build_retriever()
 
     new_pipeline = RAGPipeline(
@@ -240,7 +613,9 @@ def serialize_evidence(
                 source=chunk.source,
                 chunk_id=chunk.chunk_id,
                 page=chunk.page,
-                score=float(reranked_result.score),
+                score=float(
+                    reranked_result.score
+                ),
                 text=chunk.text,
             )
         )
@@ -250,7 +625,6 @@ def serialize_evidence(
 
 def list_uploaded_documents() -> list[DocumentItem]:
     """Return metadata for supported files in the upload directory."""
-
     UPLOAD_DIR.mkdir(
         parents=True,
         exist_ok=True,
@@ -258,11 +632,16 @@ def list_uploaded_documents() -> list[DocumentItem]:
 
     documents = []
 
-    for path in sorted(UPLOAD_DIR.iterdir()):
+    for path in sorted(
+        UPLOAD_DIR.iterdir()
+    ):
         if not path.is_file():
             continue
 
-        if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+        if (
+            path.suffix.lower()
+            not in SUPPORTED_EXTENSIONS
+        ):
             continue
 
         documents.append(
@@ -281,10 +660,9 @@ async def lifespan(
     application: FastAPI,
 ):
     """
-    Build the retrieval and generation pipeline when
-    the API starts.
+    Build the retrieval and generation pipeline
+    when the API starts.
     """
-
     state.retriever = build_retriever()
 
     state.pipeline = RAGPipeline(
@@ -343,7 +721,9 @@ async def request_logging_middleware(
         time.perf_counter() - start_time
     ) * 1000
 
-    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Request-ID"] = (
+        request_id
+    )
 
     logger.info(
         "request_id=%s method=%s path=%s "
@@ -439,7 +819,9 @@ def ask_question(
 
     verification = VerificationResponse(
         supported=result.verification.supported,
-        cited_evidence=result.verification.cited_evidence,
+        cited_evidence=(
+            result.verification.cited_evidence
+        ),
         unsupported_claims=(
             result.verification.unsupported_claims
         ),
@@ -494,7 +876,11 @@ def delete_document(
             detail="Invalid filename.",
         )
 
-    extension = Path(safe_filename).suffix.lower()
+    extension = (
+        Path(safe_filename)
+        .suffix
+        .lower()
+    )
 
     if extension not in SUPPORTED_EXTENSIONS:
         raise HTTPException(
@@ -507,7 +893,10 @@ def delete_document(
 
     destination = UPLOAD_DIR / safe_filename
 
-    if not destination.exists() or not destination.is_file():
+    if (
+        not destination.exists()
+        or not destination.is_file()
+    ):
         raise HTTPException(
             status_code=404,
             detail="Document not found.",
@@ -528,7 +917,9 @@ def delete_document(
         ) from exc
 
     return {
-        "message": "Document deleted and index rebuilt successfully.",
+        "message": (
+            "Document deleted and index rebuilt successfully."
+        ),
         "filename": safe_filename,
     }
 
@@ -545,8 +936,15 @@ async def upload_document(
             detail="Filename is required.",
         )
 
-    original_name = Path(file.filename).name
-    extension = Path(original_name).suffix.lower()
+    original_name = Path(
+        file.filename
+    ).name
+
+    extension = (
+        Path(original_name)
+        .suffix
+        .lower()
+    )
 
     if extension not in SUPPORTED_EXTENSIONS:
         raise HTTPException(
@@ -558,7 +956,9 @@ async def upload_document(
         )
 
     max_upload_size = (
-        settings.max_upload_size_mb * 1024 * 1024
+        settings.max_upload_size_mb
+        * 1024
+        * 1024
     )
 
     UPLOAD_DIR.mkdir(
@@ -570,16 +970,23 @@ async def upload_document(
         f"{uuid4().hex}_{original_name}"
     )
 
-    destination = UPLOAD_DIR / unique_name
+    destination = (
+        UPLOAD_DIR / unique_name
+    )
 
     total_bytes = 0
 
     try:
         with destination.open("wb") as output:
-            while chunk := await file.read(1024 * 1024):
+            while chunk := await file.read(
+                1024 * 1024
+            ):
                 total_bytes += len(chunk)
 
-                if total_bytes > max_upload_size:
+                if (
+                    total_bytes
+                    > max_upload_size
+                ):
                     raise HTTPException(
                         status_code=413,
                         detail=(
@@ -615,7 +1022,9 @@ async def upload_document(
         await file.close()
 
     return {
-        "message": "Document uploaded and indexed successfully.",
+        "message": (
+            "Document uploaded and indexed successfully."
+        ),
         "filename": original_name,
         "stored_as": unique_name,
     }

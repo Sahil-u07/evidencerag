@@ -31,3 +31,4 @@ qdrant_storage/
 
 # Logs
 *.log
+data/index/
