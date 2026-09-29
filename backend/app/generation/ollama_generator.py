@@ -17,11 +17,9 @@ class OllamaGenerator:
     """
     Local LLM generator using Ollama.
 
-    The model receives only the evidence retrieved by EvidenceRAG
-    and generates a concise grounded answer.
-
-    Citation and grounding verification are handled separately by
-    EvidenceRAG rather than delegated to the language model.
+    EvidenceRAG supplies only retrieved evidence.
+    Citation assignment and grounding verification are
+    handled separately by the pipeline.
     """
 
     def __init__(
@@ -53,7 +51,6 @@ class OllamaGenerator:
             sections.append(
                 f"[Evidence {index}]\n"
                 f"Source: {chunk.source}{page}\n"
-                f"Chunk ID: {chunk.chunk_id}\n"
                 f"Content:\n{chunk.text}"
             )
 
@@ -78,27 +75,24 @@ class OllamaGenerator:
         context = self._build_context(evidence)
 
         prompt = f"""
-You are the answer-generation component of EvidenceRAG.
+You are EvidenceRAG's grounded answer generator.
 
 Answer the user's question using ONLY the supplied evidence.
 
-STRICT RULES:
+Rules:
+- Use only facts explicitly supported by the evidence.
 - Do not use outside knowledge.
-- Do not invent facts.
-- Do not invent sources.
-- Every factual statement must be directly supported by the evidence.
-- Use only information explicitly present in the evidence.
+- Do not invent facts or sources.
 - Keep the answer concise.
-- Use short sentences.
-- Each sentence should contain at most one main factual claim.
-- Do not combine unrelated facts.
-- Do not mention evidence IDs.
-- Do not add citations.
-- If the evidence is insufficient, return the exact abstention message.
+- Use short, clear sentences.
+- Each sentence should contain one main factual claim.
+- Do not add citations or evidence IDs.
+- If the evidence is insufficient, return exactly:
+  I don't have enough evidence in the indexed documents to answer this question.
 - Return ONLY valid JSON.
-- Do not use markdown code fences.
+- Do not use markdown.
 
-JSON FORMAT:
+JSON:
 {{
   "answer": "Your concise answer."
 }}
@@ -106,7 +100,7 @@ JSON FORMAT:
 USER QUESTION:
 {query}
 
-RETRIEVED EVIDENCE:
+EVIDENCE:
 {context}
 
 RETURN JSON:
@@ -119,9 +113,11 @@ RETURN JSON:
                 "prompt": prompt,
                 "stream": False,
                 "format": "json",
+                "keep_alive": "30m",
                 "options": {
                     "temperature": 0.1,
-                    "num_predict": 180,
+                    "num_ctx": 2048,
+                    "num_predict": 96,
                 },
             },
             timeout=120,

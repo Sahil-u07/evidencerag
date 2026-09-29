@@ -3,17 +3,19 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import Any
+from typing import Any, Iterator
 from uuid import uuid4
 
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
+from app.generation.streaming import stream_generate
 from app.ingestion.chunker import chunk_documents
 from app.ingestion.loader import load_document
 from app.retrieval.bm25 import BM25Retriever
@@ -126,7 +128,6 @@ state = ApplicationState()
 
 
 def get_index_storage_dir() -> Path:
-    """Resolve the configured persistent index directory."""
     index_storage_dir = Path(
         settings.index_storage_dir
     )
@@ -140,7 +141,6 @@ def get_index_storage_dir() -> Path:
 
 
 def collect_source_paths() -> list[Path]:
-    """Collect all supported source documents."""
     UPLOAD_DIR.mkdir(
         parents=True,
         exist_ok=True,
@@ -164,7 +164,10 @@ def collect_source_paths() -> list[Path]:
             if not path.is_file():
                 continue
 
-            if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            if (
+                path.suffix.lower()
+                not in SUPPORTED_EXTENSIONS
+            ):
                 continue
 
             source_paths.append(path)
@@ -177,7 +180,6 @@ def build_runtime_retriever(
     embeddings,
     embedder: TextEmbedder,
 ) -> RerankedHybridRetriever:
-    """Build the in-memory retrieval and reranking stack."""
     dense_retriever = DenseRetriever()
     bm25_retriever = BM25Retriever()
 
@@ -206,7 +208,6 @@ def build_full_persistent_index(
     manifest: dict[str, str],
     embedder: TextEmbedder,
 ):
-    """Parse, chunk, embed, and persist the complete corpus."""
     documents = []
 
     for path in source_paths:
@@ -254,13 +255,6 @@ def update_persistent_index_incrementally(
     existing_embeddings,
     embedder: TextEmbedder,
 ):
-    """
-    Incrementally update the persistent index.
-
-    Only added or modified source files are parsed,
-    chunked, and embedded. Deleted files are removed
-    from the persisted index.
-    """
     changed_paths = [
         path
         for path in source_paths
@@ -434,41 +428,6 @@ def update_persistent_index_incrementally(
 
 
 def build_retriever() -> RerankedHybridRetriever:
-    """
-    Build the complete retrieval and reranking stack.
-
-    Uses a persistent local index when possible.
-
-    Startup behavior:
-
-        Matching manifest
-            ↓
-        Load persisted index
-
-        Changed manifest
-            ↓
-        Incremental update
-            ↓
-        Persist updated index
-
-        Missing/corrupt index
-            ↓
-        Full index rebuild
-
-    Pipeline:
-
-        Documents
-            ↓
-        Persistent Index
-            ↓
-        Dense Retrieval
-            +
-        BM25 Retrieval
-            ↓
-        Reciprocal Rank Fusion
-            ↓
-        Cross-Encoder Reranking
-    """
     source_paths = collect_source_paths()
 
     if not source_paths:
@@ -585,7 +544,6 @@ def build_retriever() -> RerankedHybridRetriever:
 
 
 def rebuild_pipeline() -> None:
-    """Refresh the retrieval and RAG pipeline."""
     new_retriever = build_retriever()
 
     new_pipeline = RAGPipeline(
@@ -625,7 +583,6 @@ def serialize_evidence(
 
 
 def list_uploaded_documents() -> list[DocumentItem]:
-    """Return metadata for supported files in the upload directory."""
     UPLOAD_DIR.mkdir(
         parents=True,
         exist_ok=True,
@@ -656,14 +613,211 @@ def list_uploaded_documents() -> list[DocumentItem]:
     return documents
 
 
+def sse_event(
+    event_type: str,
+    payload: dict[str, Any],
+) -> str:
+    return (
+        f"event: {event_type}\n"
+        f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+    )
+
+
+def stream_query_events(
+    query: str,
+    top_k: int,
+) -> Iterator[str]:
+    if state.retriever is None:
+        yield sse_event(
+            "error",
+            {
+                "message":
+                    "Retrieval system is not ready.",
+            },
+        )
+        return
+
+    started_at = time.perf_counter()
+
+    try:
+        retrieval_start = time.perf_counter()
+
+        evidence = state.retriever.search(
+            query,
+            top_k=top_k,
+        )
+
+        retrieval_ms = (
+            time.perf_counter()
+            - retrieval_start
+        ) * 1000
+
+        yield sse_event(
+            "stage",
+            {
+                "i": 1,
+                "ms": round(
+                    retrieval_ms,
+                    2,
+                ),
+            },
+        )
+
+        yield sse_event(
+            "stage",
+            {
+                "i": 2,
+                "ms": round(
+                    retrieval_ms,
+                    2,
+                ),
+            },
+        )
+
+        answer_parts: list[str] = []
+
+        for token in stream_generate(
+            query=query,
+            evidence=evidence,
+        ):
+            answer_parts.append(token.text)
+
+            yield sse_event(
+                "token",
+                {
+                    "t": token.text,
+                },
+            )
+
+        raw_answer = "".join(
+            answer_parts
+        ).strip()
+
+        if state.pipeline is None:
+            raise RuntimeError(
+                "RAG pipeline is not ready."
+            )
+
+        cited_answer = (
+            state.pipeline._attach_citation(
+                raw_answer,
+                evidence,
+            )
+        )
+
+        verification_start = (
+            time.perf_counter()
+        )
+
+        verification = (
+            state.pipeline.verifier
+            .verify_grounding(
+                answer=cited_answer,
+                evidence=evidence,
+            )
+        )
+
+        verification_ms = (
+            time.perf_counter()
+            - verification_start
+        ) * 1000
+
+        cited_evidence_count = len(
+            verification.cited_evidence
+        )
+
+        total_ms = (
+            time.perf_counter()
+            - started_at
+        ) * 1000
+
+        yield sse_event(
+            "sources",
+            {
+                "items": [
+                    item.model_dump()
+                    for item in serialize_evidence(
+                        evidence
+                    )
+                ],
+            },
+        )
+
+        yield sse_event(
+            "verification",
+            {
+                "supported":
+                    verification.supported,
+                "total":
+                    max(
+                        1,
+                        cited_evidence_count,
+                    ),
+                "supported_claims":
+                    (
+                        max(
+                            1,
+                            cited_evidence_count,
+                        )
+                        if verification.supported
+                        else 0
+                    ),
+                "reason":
+                    verification.reason,
+            },
+        )
+
+        yield sse_event(
+            "stage",
+            {
+                "i": 3,
+                "ms": round(
+                    verification_ms,
+                    2,
+                ),
+            },
+        )
+
+        logger.info(
+            "Streaming RAG timing | total=%.0fms "
+            "retrieval=%.0fms verification=%.0fms "
+            "evidence=%d",
+            total_ms,
+            retrieval_ms,
+            verification_ms,
+            len(evidence),
+        )
+
+        yield sse_event(
+            "done",
+            {
+                "latency_ms":
+                    round(
+                        total_ms,
+                        2,
+                    ),
+                "supported":
+                    verification.supported,
+            },
+        )
+
+    except Exception as exc:
+        logger.exception(
+            "Streaming RAG generation failed."
+        )
+
+        yield sse_event(
+            "error",
+            {
+                "message": str(exc),
+            },
+        )
+
+
 @asynccontextmanager
 async def lifespan(
     application: FastAPI,
 ):
-    """
-    Build the retrieval and generation pipeline
-    when the API starts.
-    """
     state.retriever = build_retriever()
 
     state.pipeline = RAGPipeline(
@@ -716,7 +870,8 @@ async def request_logging_middleware(
 
     except Exception:
         duration_ms = (
-            time.perf_counter() - start_time
+            time.perf_counter()
+            - start_time
         ) * 1000
 
         logger.exception(
@@ -731,7 +886,8 @@ async def request_logging_middleware(
         raise
 
     duration_ms = (
-        time.perf_counter() - start_time
+        time.perf_counter()
+        - start_time
     ) * 1000
 
     response.headers["X-Request-ID"] = (
@@ -793,7 +949,29 @@ def search_documents(
 
     return SearchResponse(
         query=request.query,
-        results=serialize_evidence(results),
+        results=serialize_evidence(
+            results
+        ),
+    )
+
+
+@app.post(
+    "/query/stream",
+)
+def stream_query(
+    request: AskRequest,
+) -> StreamingResponse:
+    return StreamingResponse(
+        stream_query_events(
+            request.query,
+            request.top_k,
+        ),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 
@@ -904,7 +1082,9 @@ def delete_document(
             ),
         )
 
-    destination = UPLOAD_DIR / safe_filename
+    destination = (
+        UPLOAD_DIR / safe_filename
+    )
 
     if (
         not destination.exists()
