@@ -1,12 +1,11 @@
-:root{color-scheme:dark;
---bg:#07060f;--bg2:#0d0b1a;--glass:rgba(255,255,255,.045);--glass2:rgba(255,255,255,.08);--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.16);
---text:#f6f4ff;--text2:#cfc9e2;--mut:#9d96b4;--acc:#8b5cf6;--acc2:#a78bfa;--accs:rgba(139,92,246,.16);--accb:rgba(139,92,246,.42);
---cyan:#22d3ee;--cyans:rgba(34,211,238,.12);--cyanb:rgba(34,211,238,.34);--amber:#f59e0b;--ambers:rgba(245,158,11,.12);--amberb:rgba(245,158,11,.34);--rose:#f43f5e;--roses:rgba(244,63,94,.1);--roseb:rgba(244,63,94,.4);
---hi:inset 0 1px 0 rgba(255,255,255,.12);--sh:0 1px 2px rgba(0,0,0,.4),0 18px 50px -12px rgba(0,0,0,.6);--scene:1;--panel:#0f0d1c;
---r1:12px;--r2:16px;--r3:24px;
---display:"Inter Tight","Space Grotesk",Inter,system-ui,sans-serif;--body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
-.app-shell.theme-light{color-scheme:light;
---bg:#f6f5fd;--bg2:#eceafa;--glass:rgba(255,255,255,.66);--glass2:rgba(255,255,255,.9);--line:rgba(60,40,120,.12);--line2:rgba(60,40,120,.22);
---text:#171326;--text2:#3b3556;--mut:#665f80;--acc:#6d3fe0;--acc2:#5b2fcc;--accs:rgba(109,63,224,.1);--accb:rgba(109,63,224,.34);
---cyan:#0e7490;--cyans:rgba(14,116,144,.09);--cyanb:rgba(14,116,144,.3);--amber:#a16207;--ambers:rgba(161,98,7,.09);--amberb:rgba(161,98,7,.3);--rose:#be123c;--roses:rgba(190,18,60,.07);--roseb:rgba(190,18,60,.3);
---hi:inset 0 1px 0 rgba(255,255,255,.9);--sh:0 1px 2px rgba(60,40,120,.08),0 22px 48px -16px rgba(80,50,180,.28);--scene:.3;--panel:#fbfaff}
+:root,.theme-light{color-scheme:light;
+--page:#f2f4f8;--surface:#fff;--surface2:#e8ecf4;--ink:#101a38;--ink2:#38425f;--mut:#5b6483;--rule:rgba(16,26,56,.12);--rule2:rgba(16,26,56,.24);
+--cobalt:#2543e8;--cobalt-soft:rgba(37,67,232,.09);--mark:#ffe45c;--mark-band:#ffe45c;--mark-soft:rgba(255,228,92,.34);
+--ok:#0b7a55;--ok-soft:rgba(11,122,85,.09);--warn:#9a6200;--warn-soft:rgba(154,98,0,.1);--err:#c0263a;--err-soft:rgba(192,38,58,.06);
+--btn-bg:#101a38;--btn-fg:#fff;--shadow:0 1px 2px rgba(16,26,56,.07),0 16px 36px -16px rgba(16,26,56,.24);--scrim:rgba(16,26,56,.36)}
+.theme-dark{color-scheme:dark;
+--page:#0d1222;--surface:#151b2f;--surface2:#1e2641;--ink:#eef1fa;--ink2:#c3cadf;--mut:#8f99b8;--rule:rgba(238,241,250,.11);--rule2:rgba(238,241,250,.22);
+--cobalt:#9aacff;--cobalt-soft:rgba(154,172,255,.15);--mark:#f7d548;--mark-band:rgba(247,213,72,.3);--mark-soft:rgba(247,213,72,.13);
+--ok:#3ecf9b;--ok-soft:rgba(62,207,155,.11);--warn:#f2b04a;--warn-soft:rgba(242,176,74,.12);--err:#ff7a8a;--err-soft:rgba(255,122,138,.09);
+--btn-bg:#eef1fa;--btn-fg:#0d1222;--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 18px 40px -16px rgba(0,0,0,.7);--scrim:rgba(4,7,16,.6)}
+:root{--sans:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;--serif:Literata,Georgia,"Times New Roman",serif}

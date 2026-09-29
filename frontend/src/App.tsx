@@ -1,6 +1,4 @@
 import {
-  lazy,
-  Suspense,
   useEffect,
   useRef,
   useState,
@@ -10,16 +8,9 @@ import type {
   FormEvent,
 } from "react";
 
+import EvidenceStack from "./components/EvidenceStack";
 import "./App.css";
 
-const Scene3D = lazy(() => import("./components/Scene3D"));
-
-// 3D is skipped for reduced-motion, small/touch screens and low-core devices (CSS gradient fallback)
-const ENABLE_3D =
-  typeof window !== "undefined" &&
-  !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
-  window.innerWidth >= 768 &&
-  (navigator.hardwareConcurrency || 4) > 2;
 
 import ChatThread from "./components/ChatThread";
 import DocumentSidebar from "./components/DocumentSidebar";
@@ -88,7 +79,7 @@ export default function App() {
     useState(false);
 
   const [theme, setTheme] = useState<"dark" | "light">(
-    "dark",
+    "light",
   );
 
   const [demoMode, setDemoMode] = useState(false);
@@ -788,24 +779,14 @@ export default function App() {
 
   const hasMessages = messages.length > 0;
   const last = [...messages].reverse().find((m) => m.role === "assistant");
-  // Scene stage comes from real pipeline state: 1 searching · 2 finding · 3 checking · 4 error
-  const stage = last?.error
-    ? 4
-    : last?.loading
-      ? Math.min(3, (last.stages?.filter((s) => s.complete).length ?? 0) + 1)
-      : 0;
+  // Stack stage mirrors the real pipeline: 1 searching · 2 finding · 3 checking · 4 error · 5 done
+  const stage = !last ? 0 : last.error ? 4 : last.loading ? Math.min(3, (last.stages?.filter((s) => s.complete).length ?? 0) + 1) : 5;
+  const hits = last?.sources?.length ? Math.min(last.sources.length, 5) : 3;
   const status = demoMode ? "demo" : online;
   const statusLabel = { online: "Live", offline: "Offline", demo: "Demo", checking: "Connecting" }[status];
 
   return (
-    <div className={`app-shell ${theme === "light" ? "theme-light" : ""}`}>
-      {ENABLE_3D && (
-        <Suspense fallback={null}>
-          <Scene3D stage={stage} />
-        </Suspense>
-      )}
-      <div className="veil" aria-hidden="true" />
-
+    <div className={`app-shell theme-${theme}`}>
       <header className="app-header">
         <div className="header-left">
           <button type="button" className="icon-button" onClick={() => setSidebarOpen(true)} aria-label="Open documents">
@@ -834,6 +815,8 @@ export default function App() {
           <button type="button" className="header-button" onClick={() => setSettingsOpen(true)}>Settings</button>
         </div>
       </header>
+
+      {hasMessages && <EvidenceStack size="mini" stage={stage} hits={hits} />}
 
       <main className="app-main">
         {!hasMessages ? (

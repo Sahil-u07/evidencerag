@@ -1,4 +1,5 @@
-import Tilt from "./Tilt";
+import { useEffect, useState } from "react";
+import EvidenceStack from "./EvidenceStack";
 
 type EmptyStateProps = {
   onExampleQuestion: (question: string) => void;
@@ -17,6 +18,16 @@ export default function EmptyState({
   onAddDocument,
   hasDocuments,
 }: EmptyStateProps) {
+  // Decorative loop that shows what the product does: search, find, check.
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setStage(5); return; }
+    const seq: [number, number][] = [[0, 1400], [1, 1800], [2, 2300], [3, 2500], [5, 2800]];
+    let i = 0, t = 0;
+    const run = () => { setStage(seq[i][0]); t = window.setTimeout(() => { i = (i + 1) % seq.length; run(); }, seq[i][1]); };
+    run();
+    return () => window.clearTimeout(t);
+  }, []);
   return (
     <section className="empty-state">
       <div className="empty-state-inner">
@@ -45,34 +56,36 @@ export default function EmptyState({
           answer is supported by evidence.
         </p>
 
+        <EvidenceStack stage={stage} hits={3} />
+
         <div className="empty-steps">
-          <Tilt className="empty-step">
+          <div className={`empty-step${stage === 1 ? " is-on" : ""}`}>
             <span>1</span>
             <div>
               <strong>Ask</strong>
               <p>Ask a question in plain English.</p>
             </div>
-          </Tilt>
+          </div>
 
-          <Tilt className="empty-step">
+          <div className={`empty-step${stage === 2 ? " is-on" : ""}`}>
             <span>2</span>
             <div>
               <strong>Find</strong>
               <p>Relevant passages are retrieved.</p>
             </div>
-          </Tilt>
+          </div>
 
-          <Tilt className="empty-step">
+          <div className={`empty-step${stage === 3 || stage === 5 ? " is-on" : ""}`}>
             <span>3</span>
             <div>
               <strong>Check</strong>
               <p>Claims are checked against sources.</p>
             </div>
-          </Tilt>
+          </div>
         </div>
 
         {!hasDocuments && (
-          <Tilt className="empty-upload-card" max={3}>
+          <div className="empty-upload-card">
             <div>
               <strong>
                 Start with your documents
@@ -90,7 +103,7 @@ export default function EmptyState({
             >
               Add document
             </button>
-          </Tilt>
+          </div>
         )}
 
         <div className="example-section">

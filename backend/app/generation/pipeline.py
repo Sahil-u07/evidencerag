@@ -1,9 +1,13 @@
 from dataclasses import dataclass
+import logging
 import re
 import time
 
 from app.generation.generator import GeneratedAnswer, OpenAIGenerator
 from app.generation.verifier import EvidenceVerifier, VerificationResult
+
+
+logger = logging.getLogger(__name__)
 
 
 ABSTENTION_MESSAGE = (
@@ -83,15 +87,6 @@ class RAGPipeline:
 
     @classmethod
     def _normalize_citations(cls, answer: str) -> str:
-        """
-        Normalize citation formatting produced by the generator.
-
-        Examples:
-            [Evidence1]  -> [Evidence 1]
-            [Evidence 2] -> [Evidence 2]
-            [ evidence3 ] -> [Evidence 3]
-        """
-
         def replace(match: re.Match) -> str:
             evidence_id = match.group(1)
             return f"[Evidence {evidence_id}]"
@@ -106,15 +101,6 @@ class RAGPipeline:
         answer: str,
         evidence: list,
     ) -> str:
-        """
-        Attach the strongest lexical evidence match to each
-        generated sentence.
-
-        Citation assignment is deterministic and happens outside
-        the language model so the model does not have to guess
-        evidence IDs.
-        """
-
         if not answer.strip() or not evidence:
             return answer
 
@@ -193,15 +179,38 @@ class RAGPipeline:
 
         start_time = time.perf_counter()
 
+        # ---------------------------------------------------------
+        # Stage 1: Retrieval + reranking
+        # ---------------------------------------------------------
+        retrieval_start = time.perf_counter()
+
         evidence = self.retriever.search(
             query,
             top_k=top_k,
         )
 
+        retrieval_ms = (
+            time.perf_counter() - retrieval_start
+        ) * 1000
+
+        # ---------------------------------------------------------
+        # Stage 2: Generation
+        # ---------------------------------------------------------
+        generation_start = time.perf_counter()
+
         answer = self.generator.generate(
             query=query,
             evidence=evidence,
         )
+
+        generation_ms = (
+            time.perf_counter() - generation_start
+        ) * 1000
+
+        # ---------------------------------------------------------
+        # Stage 3: Citation alignment
+        # ---------------------------------------------------------
+        citation_start = time.perf_counter()
 
         cited_answer = self._attach_citation(
             answer.answer,
@@ -212,14 +221,31 @@ class RAGPipeline:
             answer=cited_answer,
         )
 
+        citation_ms = (
+            time.perf_counter() - citation_start
+        ) * 1000
+
+        # ---------------------------------------------------------
+        # Stage 4: Grounding verification
+        # ---------------------------------------------------------
+        verification_start = time.perf_counter()
+
         verification = self.verifier.verify_grounding(
             answer=answer.answer,
             evidence=evidence,
         )
 
+        verification_ms = (
+            time.perf_counter() - verification_start
+        ) * 1000
+
         cited_evidence_count = len(
             verification.cited_evidence
         )
+
+        total_ms = (
+            time.perf_counter() - start_time
+        ) * 1000
 
         metrics = PipelineMetrics(
             query=query,
@@ -227,9 +253,19 @@ class RAGPipeline:
             retrieved_evidence_count=len(evidence),
             cited_evidence_count=cited_evidence_count,
             verification_supported=verification.supported,
-            latency_ms=(
-                time.perf_counter() - start_time
-            ) * 1000,
+            latency_ms=total_ms,
+        )
+
+        logger.info(
+            "RAG timing | total=%.0fms retrieval=%.0fms "
+            "generation=%.0fms citation=%.0fms "
+            "verification=%.0fms evidence=%d",
+            total_ms,
+            retrieval_ms,
+            generation_ms,
+            citation_ms,
+            verification_ms,
+            len(evidence),
         )
 
         if not verification.supported:
