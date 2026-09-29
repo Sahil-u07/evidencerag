@@ -1,0 +1,12 @@
+:root{color-scheme:dark;
+--bg:#07060f;--bg2:#0d0b1a;--glass:rgba(255,255,255,.045);--glass2:rgba(255,255,255,.08);--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.16);
+--text:#f6f4ff;--text2:#cfc9e2;--mut:#9d96b4;--acc:#8b5cf6;--acc2:#a78bfa;--accs:rgba(139,92,246,.16);--accb:rgba(139,92,246,.42);
+--cyan:#22d3ee;--cyans:rgba(34,211,238,.12);--cyanb:rgba(34,211,238,.34);--amber:#f59e0b;--ambers:rgba(245,158,11,.12);--amberb:rgba(245,158,11,.34);--rose:#f43f5e;--roses:rgba(244,63,94,.1);--roseb:rgba(244,63,94,.4);
+--hi:inset 0 1px 0 rgba(255,255,255,.12);--sh:0 1px 2px rgba(0,0,0,.4),0 18px 50px -12px rgba(0,0,0,.6);--scene:1;--panel:#0f0d1c;
+--r1:12px;--r2:16px;--r3:24px;
+--display:"Inter Tight","Space Grotesk",Inter,system-ui,sans-serif;--body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+.app-shell.theme-light{color-scheme:light;
+--bg:#f6f5fd;--bg2:#eceafa;--glass:rgba(255,255,255,.66);--glass2:rgba(255,255,255,.9);--line:rgba(60,40,120,.12);--line2:rgba(60,40,120,.22);
+--text:#171326;--text2:#3b3556;--mut:#665f80;--acc:#6d3fe0;--acc2:#5b2fcc;--accs:rgba(109,63,224,.1);--accb:rgba(109,63,224,.34);
+--cyan:#0e7490;--cyans:rgba(14,116,144,.09);--cyanb:rgba(14,116,144,.3);--amber:#a16207;--ambers:rgba(161,98,7,.09);--amberb:rgba(161,98,7,.3);--rose:#be123c;--roses:rgba(190,18,60,.07);--roseb:rgba(190,18,60,.3);
+--hi:inset 0 1px 0 rgba(255,255,255,.9);--sh:0 1px 2px rgba(60,40,120,.08),0 22px 48px -16px rgba(80,50,180,.28);--scene:.3;--panel:#fbfaff}

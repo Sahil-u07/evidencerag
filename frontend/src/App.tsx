@@ -1,1512 +1,1222 @@
 import {
+  lazy,
   Suspense,
   useEffect,
-  useMemo,
   useRef,
   useState,
-  type ChangeEvent,
-  type ReactNode,
-} from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import {
-  Float,
-  Line,
-  MeshTransmissionMaterial,
-  OrbitControls,
-  PerspectiveCamera,
-  Sparkles,
-  Text,
-} from '@react-three/drei'
-import * as THREE from 'three'
-import './App.css'
-
-type Evidence = {
-  evidence_id: number
-  source: string
-  chunk_id: string
-  page: number | null
-  score: number
-  text: string
-}
-
-type SearchResponse = {
-  query: string
-  results: Evidence[]
-}
-
-type AskResponse = {
-  query: string
-  answer: string
-  evidence: Evidence[]
-  verification: {
-    supported: boolean
-    cited_evidence: number[]
-    unsupported_claims: string[]
-    reason: string
-  }
-  metrics: {
-    query: string
-    top_k: number
-    retrieved_evidence_count: number
-    cited_evidence_count: number
-    verification_supported: boolean
-    latency_ms: number
-  }
-}
-
-const API_BASE = 'http://localhost:8000'
-
-function Icon({
-  children,
-  size = 18,
-}: {
-  children: ReactNode
-  size?: number
-}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {children}
-    </svg>
-  )
-}
-
-function EvidenceNode({
-  position,
-  label,
-  color,
-  delay,
-}: {
-  position: [number, number, number]
-  label: string
-  color: string
-  delay: number
-}) {
-  const group = useRef<THREE.Group>(null)
-
-  useFrame((state) => {
-    if (!group.current) return
-
-    const t = state.clock.elapsedTime + delay
-
-    group.current.position.y =
-      position[1] + Math.sin(t * 0.7) * 0.12
-
-    group.current.rotation.y = t * 0.25
-    group.current.rotation.z =
-      Math.sin(t * 0.4) * 0.08
-  })
-
-  return (
-    <group ref={group} position={position}>
-      <mesh>
-        <icosahedronGeometry args={[0.22, 1]} />
-
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={1.8}
-          roughness={0.25}
-          metalness={0.75}
-        />
-      </mesh>
-
-      <mesh scale={1.5}>
-        <icosahedronGeometry args={[0.22, 1]} />
-
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.09}
-          wireframe
-        />
-      </mesh>
-
-      <Text
-        position={[0, -0.42, 0.22]}
-        fontSize={0.115}
-        color="#ddd6ff"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.012}
-        outlineColor="#09070f"
-        depthOffset={-1}
-      >
-        {label.toUpperCase()}
-      </Text>
-    </group>
-  )
-}
-
-function EvidenceCore({
-  active,
-}: {
-  active: boolean
-}) {
-  const group = useRef<THREE.Group>(null)
-
-  useFrame((state) => {
-    if (!group.current) return
-
-    group.current.rotation.y =
-      state.clock.elapsedTime * 0.18
-
-    group.current.rotation.x =
-      Math.sin(
-        state.clock.elapsedTime * 0.4,
-      ) * 0.08
-  })
-
-  return (
-    <group ref={group}>
-      <mesh>
-        <sphereGeometry
-          args={[0.7, 64, 64]}
-        />
-
-        <MeshTransmissionMaterial
-          backside
-          samples={8}
-          thickness={0.45}
-          roughness={0.08}
-          transmission={1}
-          ior={1.45}
-          chromaticAberration={0.04}
-          distortion={0.12}
-          distortionScale={0.18}
-          temporalDistortion={0.08}
-          color="#7665e6"
-        />
-      </mesh>
-
-      <mesh scale={1.15}>
-        <sphereGeometry
-          args={[0.7, 32, 32]}
-        />
-
-        <meshBasicMaterial
-          color="#7868ed"
-          transparent
-          opacity={
-            active
-              ? 0.1
-              : 0.045
-          }
-          wireframe
-        />
-      </mesh>
-
-      <mesh scale={0.34}>
-        <sphereGeometry
-          args={[0.7, 32, 32]}
-        />
-
-        <meshBasicMaterial
-          color="#a395ff"
-          transparent
-          opacity={
-            active
-              ? 0.48
-              : 0.28
-          }
-        />
-      </mesh>
-
-      <pointLight
-        color="#725cf1"
-        intensity={
-          active
-            ? 6
-            : 3
-        }
-        distance={7}
-      />
-    </group>
-  )
-}
-
-function NetworkScene({
-  active,
-}: {
-  active: boolean
-}) {
-  const nodes = useMemo(
-    () => [
-      {
-        position: [
-          -2.65,
-          1.25,
-          -0.2,
-        ] as [
-          number,
-          number,
-          number,
-        ],
-        label: 'dense',
-        color: '#6858df',
-        delay: 0,
-      },
-      {
-        position: [
-          -2.9,
-          -1.2,
-          -0.4,
-        ] as [
-          number,
-          number,
-          number,
-        ],
-        label: 'bm25',
-        color: '#8572ef',
-        delay: 1.8,
-      },
-      {
-        position: [
-          2.7,
-          1.35,
-          -0.4,
-        ] as [
-          number,
-          number,
-          number,
-        ],
-        label: 'rerank',
-        color: '#917ef9',
-        delay: 0.9,
-      },
-      {
-        position: [
-          2.8,
-          -1.15,
-          -0.2,
-        ] as [
-          number,
-          number,
-          number,
-        ],
-        label: 'verify',
-        color: '#67c995',
-        delay: 2.7,
-      },
-    ],
-    [],
-  )
-
-  return (
-    <>
-      <PerspectiveCamera
-        makeDefault
-        position={[
-          0,
-          0.15,
-          7.5,
-        ]}
-        fov={42}
-      />
-
-      <ambientLight intensity={0.32} />
-
-      <pointLight
-        position={[
-          0,
-          2.8,
-          3,
-        ]}
-        intensity={5}
-        color="#6e5af0"
-      />
-
-      <pointLight
-        position={[
-          -3.5,
-          -2,
-          2,
-        ]}
-        intensity={2}
-        color="#3d7af0"
-      />
-
-      <Sparkles
-        count={110}
-        scale={[
-          7,
-          5,
-          4,
-        ]}
-        size={1.2}
-        speed={0.22}
-        opacity={0.45}
-        color="#8677dc"
-      />
-
-      <Float
-        speed={1.25}
-        rotationIntensity={0.08}
-        floatIntensity={0.3}
-      >
-        <EvidenceCore
-          active={active}
-        />
-      </Float>
-
-      {nodes.map((node) => (
-        <EvidenceNode
-          key={node.label}
-          {...node}
-        />
-      ))}
-
-      <Line
-        points={[
-          [
-            -2.65,
-            1.25,
-            -0.2,
-          ],
-          [
-            -0.95,
-            0.35,
-            0,
-          ],
-          [
-            0,
-            0,
-            0,
-          ],
-        ]}
-        color="#5346a8"
-        transparent
-        opacity={0.46}
-        lineWidth={1}
-      />
-
-      <Line
-        points={[
-          [
-            -2.9,
-            -1.2,
-            -0.4,
-          ],
-          [
-            -1.0,
-            -0.35,
-            0,
-          ],
-          [
-            0,
-            0,
-            0,
-          ],
-        ]}
-        color="#6758c4"
-        transparent
-        opacity={0.5}
-        lineWidth={1}
-      />
-
-      <Line
-        points={[
-          [
-            0,
-            0,
-            0,
-          ],
-          [
-            1.15,
-            0.45,
-            -0.05,
-          ],
-          [
-            2.7,
-            1.35,
-            -0.4,
-          ],
-        ]}
-        color="#6f5fd4"
-        transparent
-        opacity={0.48}
-        lineWidth={1}
-      />
-
-      <Line
-        points={[
-          [
-            0,
-            0,
-            0,
-          ],
-          [
-            1.1,
-            -0.42,
-            -0.05,
-          ],
-          [
-            2.8,
-            -1.15,
-            -0.2,
-          ],
-        ]}
-        color="#4d9c79"
-        transparent
-        opacity={0.34}
-        lineWidth={1}
-      />
-
-      <OrbitControls
-        enablePan={false}
-        enableZoom={false}
-        minPolarAngle={
-          Math.PI / 2.7
-        }
-        maxPolarAngle={
-          Math.PI / 1.9
-        }
-        autoRotate
-        autoRotateSpeed={0.22}
-      />
-    </>
-  )
-}
-
-function ThreeHero({
-  active,
-}: {
-  active: boolean
-}) {
-  return (
-    <div className="hero-3d">
-      <Canvas
-        dpr={[1, 1.8]}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference:
-            'high-performance',
-        }}
-      >
-        <Suspense fallback={null}>
-          <NetworkScene
-            active={active}
-          />
-        </Suspense>
-      </Canvas>
-
-      <div className="hero-scanline" />
-    </div>
-  )
-}
-
-function App() {
-  const [query, setQuery] =
-    useState('')
-
-  const [answer, setAnswer] =
-    useState<AskResponse | null>(
-      null,
-    )
-
-  const [searchResults, setSearchResults] =
-    useState<SearchResponse | null>(
-      null,
-    )
-
-  const [loading, setLoading] =
-    useState(false)
-
-  const [uploading, setUploading] =
-    useState(false)
-
-  const [error, setError] =
-    useState('')
-
-  const [activeTab, setActiveTab] =
-    useState<
-      'research' | 'sources'
-    >('research')
-
-  async function askQuestion() {
-    if (
-      !query.trim() ||
-      loading
-    ) {
-      return
-    }
-
-    setLoading(true)
-    setError('')
-    setAnswer(null)
-    setSearchResults(null)
-    setActiveTab('research')
-
-    try {
-      const response =
-        await fetch(
-          `${API_BASE}/ask`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type':
-                'application/json',
-            },
-            body: JSON.stringify({
-              query:
-                query.trim(),
-              top_k: 5,
-            }),
-          },
-        )
-
-      if (!response.ok) {
-        throw new Error(
-          'The RAG API could not process this question.',
-        )
-      }
-
-      const data: AskResponse =
-        await response.json()
-
-      setAnswer(data)
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Something went wrong while contacting the API.',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function searchEvidence() {
-    if (
-      !query.trim() ||
-      loading
-    ) {
-      return
-    }
-
-    setLoading(true)
-    setError('')
-    setAnswer(null)
-    setSearchResults(null)
-    setActiveTab('sources')
-
-    try {
-      const response =
-        await fetch(
-          `${API_BASE}/search`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type':
-                'application/json',
-            },
-            body: JSON.stringify({
-              query:
-                query.trim(),
-              top_k: 5,
-            }),
-          },
-        )
-
-      if (!response.ok) {
-        throw new Error(
-          'The retrieval service could not complete the search.',
-        )
-      }
-
-      const data: SearchResponse =
-        await response.json()
-
-      setSearchResults(data)
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Something went wrong while searching.',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function uploadDocument(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target.files?.[0]
-
-    if (!file) {
-      return
-    }
-
-    setUploading(true)
-    setError('')
-
-    try {
-      const formData =
-        new FormData()
-
-      formData.append(
-        'file',
-        file,
-      )
-
-      const response =
-        await fetch(
-          `${API_BASE}/documents/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
-
-      if (!response.ok) {
-        throw new Error(
-          'Document upload failed.',
-        )
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Document upload failed.',
-      )
-    } finally {
-      setUploading(false)
-      event.target.value = ''
-    }
-  }
-
-  function handleSubmit(
-    event: React.FormEvent,
-  ) {
-    event.preventDefault()
-    void askQuestion()
-  }
-
-  const hasResult =
-    Boolean(
-      answer ||
-        searchResults,
-    )
+} from "react";
+
+import type {
+  FormEvent,
+} from "react";
+
+import "./App.css";
+
+const Scene3D = lazy(() => import("./components/Scene3D"));
+
+// 3D is skipped for reduced-motion, small/touch screens and low-core devices (CSS gradient fallback)
+const ENABLE_3D =
+  typeof window !== "undefined" &&
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  window.innerWidth >= 768 &&
+  (navigator.hardwareConcurrency || 4) > 2;
+
+import ChatThread from "./components/ChatThread";
+import DocumentSidebar from "./components/DocumentSidebar";
+import EmptyState from "./components/EmptyState";
+import SettingsPanel from "./components/SettingsPanel";
+
+import type {
+  ChatMessage,
+  DocumentItem,
+  EvidenceSource,
+  ProgressStage,
+  QueryResult,
+  VerificationState,
+} from "./types";
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  "http://127.0.0.1:8000";
+
+const DEMO_DOCUMENTS: DocumentItem[] = [
+  {
+    name: "retrieval-notes.md",
+    status: "Ready",
+  },
+  {
+    name: "rag-architecture.md",
+    status: "Ready",
+  },
+  {
+    name: "evaluation-notes.md",
+    status: "Ready",
+  },
+];
+
+const INITIAL_STAGES: ProgressStage[] = [
+  {
+    i: 1,
+    ms: 0,
+    label: "Searching your documents",
+    complete: false,
+  },
+  {
+    i: 2,
+    ms: 0,
+    label: "Finding supporting passages",
+    complete: false,
+  },
+  {
+    i: 3,
+    ms: 0,
+    label: "Checking the answer",
+    complete: false,
+  },
+];
+
+export default function App() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [query, setQuery] = useState("");
+  const [documents, setDocuments] =
+    useState<DocumentItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] =
+    useState(false);
+
+  const [theme, setTheme] = useState<"dark" | "light">(
+    "dark",
+  );
+
+  const [demoMode, setDemoMode] = useState(false);
+  const [online, setOnline] = useState<"checking" | "online" | "offline">("checking");
+  const [dragging, setDragging] = useState(false);
+
+  const inputRef =
+    useRef<HTMLTextAreaElement | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const handler = (
-      event: KeyboardEvent,
-    ) => {
-      if (
-        (event.ctrlKey ||
-          event.metaKey) &&
-        event.key === '/'
-      ) {
-        event.preventDefault()
+    const storedTheme = window.localStorage.getItem(
+      "evidencerag-theme",
+    );
 
-        document
-          .querySelector<HTMLTextAreaElement>(
-            '.command-input textarea',
-          )
-          ?.focus()
-      }
+    if (
+      storedTheme === "dark" ||
+      storedTheme === "light"
+    ) {
+      setTheme(storedTheme);
     }
 
+    const storedDemo =
+      window.localStorage.getItem(
+        "evidencerag-demo",
+      );
+
+    if (storedDemo === "true") {
+      setDemoMode(true);
+    }
+
+  }, []);
+
+  useEffect(() => {
+    void loadDocuments();
+  }, [demoMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "evidencerag-theme",
+      theme,
+    );
+  }, [theme]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "evidencerag-demo",
+      String(demoMode),
+    );
+  }, [demoMode]);
+
+  useEffect(() => {
+    const handleKeyboard = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key === "/"
+      ) {
+        event.preventDefault();
+        inputRef.current?.focus();
+      }
+
+      if (event.key === "Escape") {
+        setSidebarOpen(false);
+        setSettingsOpen(false);
+      }
+    };
+
     window.addEventListener(
-      'keydown',
-      handler,
-    )
+      "keydown",
+      handleKeyboard,
+    );
 
     return () =>
       window.removeEventListener(
-        'keydown',
-        handler,
-      )
-  }, [])
+        "keydown",
+        handleKeyboard,
+      );
+  }, []);
+
+  useEffect(() => {
+    let depth = 0;
+    const files = (e: DragEvent) => Boolean(e.dataTransfer?.types.includes("Files"));
+    const enter = (e: DragEvent) => { if (files(e)) { depth++; setDragging(true); } };
+    const leave = (e: DragEvent) => { if (files(e) && --depth <= 0) { depth = 0; setDragging(false); } };
+    const over = (e: DragEvent) => { if (files(e)) e.preventDefault(); };
+    const drop = (e: DragEvent) => {
+      if (!files(e)) return;
+      e.preventDefault(); depth = 0; setDragging(false);
+      const file = e.dataTransfer?.files?.[0];
+      if (file) void uploadDocument(file);
+    };
+    window.addEventListener("dragenter", enter);
+    window.addEventListener("dragleave", leave);
+    window.addEventListener("dragover", over);
+    window.addEventListener("drop", drop);
+    return () => {
+      window.removeEventListener("dragenter", enter);
+      window.removeEventListener("dragleave", leave);
+      window.removeEventListener("dragover", over);
+      window.removeEventListener("drop", drop);
+    };
+  }, [demoMode]);
+
+  useEffect(() => {
+    const t = inputRef.current;
+    if (!t) return;
+    t.style.height = "auto";
+    t.style.height = `${Math.min(t.scrollHeight, 168)}px`;
+  }, [query]);
+
+  async function loadDocuments() {
+    if (demoMode) {
+      setDocuments(DEMO_DOCUMENTS);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/documents`,
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Could not load documents.",
+        );
+      }
+
+      setOnline("online");
+      const data = await response.json();
+
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray(data.documents)
+          ? data.documents
+          : [];
+
+      setDocuments(
+        items.map((item: any) => ({
+          name:
+            typeof item === "string"
+              ? item
+              : item.name || item.filename,
+          status:
+            item.status ||
+            "Ready",
+          size: item.size,
+        })),
+      );
+    } catch {
+      setOnline("offline");
+      setDocuments([]);
+    }
+  }
+
+  async function askQuestion(
+    event?: FormEvent,
+    override?: string,
+  ) {
+    event?.preventDefault();
+
+    const cleanQuery = (override ?? query).trim();
+
+    if (!cleanQuery || loading) {
+      return;
+    }
+
+    setError("");
+    setQuery("");
+    setLoading(true);
+
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: cleanQuery,
+    };
+
+    const assistantId = crypto.randomUUID();
+
+    const assistantMessage: ChatMessage = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      query: cleanQuery,
+      loading: true,
+      stages: INITIAL_STAGES.map((stage) => ({
+        ...stage,
+      })),
+      sources: [],
+      verification: null,
+      responseTimeMs: null,
+    };
+
+    setMessages((current) => [
+      ...current,
+      userMessage,
+      assistantMessage,
+    ]);
+
+    const startedAt = performance.now();
+
+    try {
+      if (demoMode) {
+        await runDemoQuery(
+          cleanQuery,
+          assistantId,
+          startedAt,
+        );
+      } else {
+        await runLiveQuery(
+          cleanQuery,
+          assistantId,
+          startedAt,
+        );
+      }
+    } catch (requestError) {
+      console.error(requestError);
+
+      setOnline("offline");
+      setError(
+        "I couldn't connect to the EvidenceRAG backend.",
+      );
+
+      updateAssistant(
+        assistantId,
+        {
+          loading: false,
+          error: true,
+          content:
+            `Nothing answered at ${API_BASE}. Check that the API is running, then retry.`,
+          responseTimeMs:
+            performance.now() - startedAt,
+        },
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function runLiveQuery(
+    cleanQuery: string,
+    assistantId: string,
+    startedAt: number,
+  ) {
+    const streamed = await tryStreamingQuery(
+      cleanQuery,
+      assistantId,
+      startedAt,
+    );
+
+    if (streamed) {
+      return;
+    }
+
+    const normal = await tryNormalQuery(
+      cleanQuery,
+    );
+
+    if (normal) {
+      const elapsed =
+        performance.now() - startedAt;
+
+      updateAssistant(assistantId, {
+        loading: false,
+        content: cleanAnswer(normal.answer),
+        sources: normal.sources,
+        verification: normal.verification,
+        stages: completedStages(elapsed),
+        responseTimeMs: elapsed,
+      });
+
+      return;
+    }
+
+    throw new Error(
+      "All query endpoints failed.",
+    );
+  }
+
+  async function tryStreamingQuery(
+    cleanQuery: string,
+    assistantId: string,
+    startedAt: number,
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${API_BASE}/query/stream`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            query: cleanQuery,
+            top_k: 5,
+          }),
+        },
+      );
+
+      if (!response.ok || !response.body) {
+        return false;
+      }
+
+      const reader =
+        response.body.getReader();
+
+      const decoder = new TextDecoder();
+
+      let buffer = "";
+      let answer = "";
+      let sources: EvidenceSource[] = [];
+      let verification:
+        | VerificationState
+        | null = null;
+
+      while (true) {
+        const { done, value } =
+          await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, {
+          stream: true,
+        });
+
+        const events =
+          buffer.split("\n\n");
+
+        buffer = events.pop() || "";
+
+        for (const event of events) {
+          const parsed =
+            parseSseEvent(event);
+
+          if (!parsed) {
+            continue;
+          }
+
+          if (
+            parsed.type === "token"
+          ) {
+            const token =
+              String(parsed.data.t || "");
+
+            answer += token;
+
+            updateAssistant(
+              assistantId,
+              {
+                content:
+                  cleanAnswer(answer),
+                loading: true,
+              },
+            );
+          }
+
+          if (
+            parsed.type === "stage"
+          ) {
+            const stageData =
+              parsed.data;
+
+            updateAssistant(
+              assistantId,
+              {
+                stages:
+                  updateStagesFromEvent(
+                    stageData,
+                  ),
+              },
+            );
+          }
+
+          if (
+            parsed.type === "sources"
+          ) {
+            sources =
+              normalizeSources(
+                parsed.data.items,
+              );
+
+            updateAssistant(
+              assistantId,
+              {
+                sources,
+              },
+            );
+          }
+
+          if (
+            parsed.type ===
+            "verification"
+          ) {
+            verification =
+              normalizeVerification(
+                parsed.data,
+              );
+
+            updateAssistant(
+              assistantId,
+              {
+                verification,
+              },
+            );
+          }
+        }
+      }
+
+      const elapsed =
+        performance.now() - startedAt;
+
+      updateAssistant(
+        assistantId,
+        {
+          loading: false,
+          content: cleanAnswer(answer),
+          sources,
+          verification,
+          stages: completedStages(elapsed),
+          responseTimeMs: elapsed,
+        },
+      );
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function tryNormalQuery(
+    cleanQuery: string,
+  ): Promise<QueryResult | null> {
+    const endpoints = [
+      "/query",
+      "/ask",
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(
+          `${API_BASE}${endpoint}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              query: cleanQuery,
+              top_k: 5,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const data =
+          await response.json();
+
+        return normalizeQueryResponse(
+          data,
+        );
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  }
+
+  async function runDemoQuery(
+    cleanQuery: string,
+    assistantId: string,
+    startedAt: number,
+  ) {
+    const stages =
+      INITIAL_STAGES.map(
+        (stage) => ({
+          ...stage,
+        }),
+      );
+
+    for (let index = 0; index < 3; index++) {
+      await sleep(350);
+
+      stages[index] = {
+        ...stages[index],
+        complete: true,
+        ms: 300 + index * 120,
+      };
+
+      updateAssistant(
+        assistantId,
+        {
+          stages: stages.map(
+            (stage) => ({
+              ...stage,
+            }),
+          ),
+        },
+      );
+    }
+
+    const sources: EvidenceSource[] = [
+      {
+        id: 1,
+        file: "retrieval-notes.md",
+        page: null,
+        score: 0.94,
+        label: "Best match",
+        text:
+          "BM25 is a probabilistic lexical ranking function that considers query-term frequency, document length, and the rarity of terms across the collection.",
+        used: true,
+      },
+      {
+        id: 2,
+        file: "rag-architecture.md",
+        page: null,
+        score: 0.82,
+        label: "Good match",
+        text:
+          "Hybrid retrieval combines lexical and semantic retrieval signals to improve coverage across different types of queries.",
+        used: false,
+      },
+    ];
+
+    const answer =
+      cleanQuery
+        .toLowerCase()
+        .includes("bm25")
+        ? "BM25 is a probabilistic lexical ranking function that considers query-term frequency, document length, and the rarity of terms across the collection. [Evidence 1]"
+        : "The indexed documents contain supporting information for this question. [Evidence 1]";
+
+    const verification: VerificationState = {
+      supported: true,
+      total: 1,
+      supportedClaims: 1,
+      reason:
+        "The answer was checked against the retrieved passages.",
+    };
+
+    const elapsed =
+      performance.now() - startedAt;
+
+    updateAssistant(
+      assistantId,
+      {
+        loading: false,
+        content: answer,
+        sources,
+        verification,
+        stages,
+        responseTimeMs: elapsed,
+      },
+    );
+  }
+
+  async function uploadDocument(
+    file: File,
+  ) {
+    if (demoMode) {
+      setDocuments((current) => [
+        ...current,
+        {
+          name: file.name,
+          status: "Ready",
+        },
+      ]);
+
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+
+    try {
+      const formData =
+        new FormData();
+
+      formData.append(
+        "file",
+        file,
+      );
+
+      const response = await fetch(
+        `${API_BASE}/documents/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (!response.ok) {
+        const data =
+          await safeJson(response);
+
+        throw new Error(
+          data?.detail ||
+            "Document upload failed.",
+        );
+      }
+
+      await loadDocuments();
+    } catch (uploadError) {
+      console.error(uploadError);
+
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Document upload failed.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function deleteDocument(
+    name: string,
+  ) {
+    if (demoMode) {
+      setDocuments((current) =>
+        current.filter(
+          (document) =>
+            document.name !== name,
+        ),
+      );
+
+      return;
+    }
+
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/documents/${encodeURIComponent(
+          name,
+        )}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Could not delete the document.",
+        );
+      }
+
+      await loadDocuments();
+    } catch (deleteError) {
+      console.error(deleteError);
+
+      setError(
+        "Could not delete the document.",
+      );
+    }
+  }
+
+  function updateAssistant(
+    id: string,
+    patch: Partial<ChatMessage>,
+  ) {
+    setMessages((current) =>
+      current.map((message) =>
+        message.id === id
+          ? {
+              ...message,
+              ...patch,
+            }
+          : message,
+      ),
+    );
+  }
+
+  function handleExampleQuestion(
+    question: string,
+  ) {
+    setQuery(question);
+    window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  }
+
+  function handleAddDocument() {
+    setSidebarOpen(true);
+  }
+
+  function handleThemeChange(
+    nextTheme: "dark" | "light",
+  ) {
+    setTheme(nextTheme);
+  }
+
+  const hasMessages = messages.length > 0;
+  const last = [...messages].reverse().find((m) => m.role === "assistant");
+  // Scene stage comes from real pipeline state: 1 searching · 2 finding · 3 checking · 4 error
+  const stage = last?.error
+    ? 4
+    : last?.loading
+      ? Math.min(3, (last.stages?.filter((s) => s.complete).length ?? 0) + 1)
+      : 0;
+  const status = demoMode ? "demo" : online;
+  const statusLabel = { online: "Live", offline: "Offline", demo: "Demo", checking: "Connecting" }[status];
 
   return (
-    <div className="app">
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
+    <div className={`app-shell ${theme === "light" ? "theme-light" : ""}`}>
+      {ENABLE_3D && (
+        <Suspense fallback={null}>
+          <Scene3D stage={stage} />
+        </Suspense>
+      )}
+      <div className="veil" aria-hidden="true" />
 
-      <header className="topbar">
-        <div className="brand">
-          <div className="brand-symbol">
-            <span />
-            <span />
-            <span />
-          </div>
-
-          <div>
-            <div className="brand-title">
-              EvidenceRAG
-            </div>
-
-            <div className="brand-caption">
-              DOCUMENT INTELLIGENCE ENGINE
-            </div>
-          </div>
+      <header className="app-header">
+        <div className="header-left">
+          <button type="button" className="icon-button" onClick={() => setSidebarOpen(true)} aria-label="Open documents">
+            <span /><span /><span />
+          </button>
+          <button type="button" className="brand" onClick={() => { setMessages([]); setError(""); }} aria-label="EvidenceRAG home">
+            <span className="brand-mark"><span /><span /><span /></span>
+            <span className="brand-name">EvidenceRAG</span>
+          </button>
         </div>
 
-        <div className="topbar-actions">
-          <div className="engine-chip">
-            <span className="live-dot" />
-            LOCAL ENGINE
-          </div>
-
-          <a
-            href="https://github.com/Sahil-u07/evidencerag"
-            target="_blank"
-            rel="noreferrer"
-            className="icon-button"
+        <div className="header-actions">
+          <button
+            type="button"
+            className="pill"
+            data-status={status}
+            onClick={() => setDemoMode((c) => !c)}
+            title={demoMode ? "Switch to live backend" : "Switch to demo mode"}
+            aria-label={`Backend status: ${statusLabel}. Click to toggle demo mode`}
           >
-            <Icon size={17}>
-              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.7-1.6 6.7-7A5.5 5.5 0 0 0 19.2 4 5.1 5.1 0 0 0 19 1s-1.2-.4-4 1.3a13.4 13.4 0 0 0-6 0C6.2.6 5 1 5 1a5.1 5.1 0 0 0-.2 3A5.5 5.5 0 0 0 3.3 7.5c0 5.4 3.4 6.6 6.7 7A4.8 4.8 0 0 0 9 18v4" />
-              <path d="M9 18c-4.5 2-5-2-7-2" />
-            </Icon>
-          </a>
+            <i className="dot" />{statusLabel}
+          </button>
+          <button type="button" className="round" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
+            {theme === "dark" ? "☀" : "☾"}
+          </button>
+          <button type="button" className="header-button" onClick={() => setSettingsOpen(true)}>Settings</button>
         </div>
       </header>
 
-      <main>
-        <section className="hero-section">
-          <ThreeHero
-            active={
-              loading ||
-              hasResult
-            }
-          />
+      <main className="app-main">
+        {!hasMessages ? (
+          <EmptyState onExampleQuestion={handleExampleQuestion} onAddDocument={handleAddDocument} hasDocuments={documents.length > 0} />
+        ) : (
+          <ChatThread messages={messages} onRetry={(q) => void askQuestion(undefined, q)} onDemo={() => { setDemoMode(true); setError(""); }} />
+        )}
+      </main>
 
-          <div className="hero-content">
-            <div className="hero-kicker">
-              <span />
-              HYBRID RETRIEVAL · GROUNDED GENERATION
-            </div>
-
-            <h1>
-              Search knowledge.
-              <br />
-              <span>
-                Surface proof.
-              </span>
-            </h1>
-
-            <p>
-              A local-first document
-              intelligence layer that
-              finds relevant passages,
-              reranks them, generates
-              an answer, and checks
-              whether the answer is
-              actually supported.
-            </p>
-
-            <div className="hero-stats">
-              <div>
-                <strong>
-                  05
-                </strong>
-
-                <span>
-                  stages
-                </span>
-              </div>
-
-              <div>
-                <strong>
-                  02
-                </strong>
-
-                <span>
-                  retrievers
-                </span>
-              </div>
-
-              <div>
-                <strong>
-                  01
-                </strong>
-
-                <span>
-                  evidence layer
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-corner hero-corner-left">
-            <span>
-              SYS / READY
-            </span>
-          </div>
-
-          <div className="hero-corner hero-corner-right">
-            <span>
-              127.0.0.1
-            </span>
-          </div>
-        </section>
-
-        <section className="workspace">
-          <div className="workspace-tabs">
-            <button
-              type="button"
-              className={
-                activeTab ===
-                'research'
-                  ? 'tab active'
-                  : 'tab'
-              }
-              onClick={() =>
-                setActiveTab(
-                  'research',
-                )
-              }
-            >
-              Research
+      <form className="composer" onSubmit={askQuestion}>
+        <div className="composer-inner">
+          <div className="composer-row">
+            <input ref={fileRef} type="file" accept=".pdf,.txt,.md" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadDocument(f); e.target.value = ""; }} />
+            <button type="button" className="clip" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Add a document (PDF, TXT, MD)" title="Add document">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 01-7.8-7.8l8.9-8.9a3.7 3.7 0 015.2 5.2l-8.9 8.9a1.8 1.8 0 01-2.6-2.6l8.2-8.2" /></svg>
             </button>
-
-            <button
-              type="button"
-              className={
-                activeTab ===
-                'sources'
-                  ? 'tab active'
-                  : 'tab'
-              }
-              onClick={() => {
-                setActiveTab(
-                  'sources',
-                )
-
-                if (
-                  query.trim()
-                ) {
-                  void searchEvidence()
+            <textarea
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (!loading) void askQuestion();
                 }
               }}
-            >
-              Evidence
+              placeholder={documents.length > 0 ? "Ask a question about your documents…" : "Ask a question or add a document…"}
+              rows={1}
+              aria-label="Ask EvidenceRAG"
+              readOnly={loading}
+            />
+            <button type="submit" className="send-button" disabled={loading || !query.trim()} aria-label="Ask question">
+              {loading ? <span className="spin" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>}
             </button>
-
-            <label className="upload-control">
-              <Icon size={14}>
-                <path d="M12 16V4" />
-                <path d="m7 9 5-5 5 5" />
-                <path d="M4 20h16" />
-              </Icon>
-
-              {uploading
-                ? 'Indexing...'
-                : 'Add document'}
-
-              <input
-                type="file"
-                accept=".pdf,.txt,.md"
-                onChange={
-                  uploadDocument
-                }
-                disabled={
-                  uploading
-                }
-              />
-            </label>
           </div>
-
-          <div className="command-panel">
-            <div className="command-header">
-              <div className="command-status">
-                <span />
-                QUERY CONSOLE
-              </div>
-
-              <div className="command-meta">
-                HYBRID / RRF / RERANK
-              </div>
-            </div>
-
-            <form
-              onSubmit={
-                handleSubmit
-              }
-            >
-              <div className="command-input">
-                <div className="prompt-symbol">
-                  ›
-                </div>
-
-                <textarea
-                  value={query}
-                  onChange={(event) =>
-                    setQuery(
-                      event.target
-                        .value,
-                    )
-                  }
-                  onKeyDown={(
-                    event,
-                  ) => {
-                    if (
-                      event.key ===
-                        'Enter' &&
-                      (event.ctrlKey ||
-                        event.metaKey)
-                    ) {
-                      event.preventDefault()
-                      void askQuestion()
-                    }
-                  }}
-                  placeholder="Ask your indexed knowledge base..."
-                  rows={2}
-                />
-
-                <button
-                  type="submit"
-                  disabled={
-                    loading ||
-                    !query.trim()
-                  }
-                  className="execute-button"
-                >
-                  {loading ? (
-                    <span className="execute-loading">
-                      <span />
-                      <span />
-                      <span />
-                    </span>
-                  ) : (
-                    <>
-                      RUN
-                      <span>
-                        ↗
-                      </span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-
-            <div className="command-footer">
-              <div className="prompt-suggestions">
-                <span>
-                  EXAMPLES
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuery(
-                      'What are the main findings in these documents?',
-                    )
-                  }
-                >
-                  main findings
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuery(
-                      'What evidence supports the key conclusions?',
-                    )
-                  }
-                >
-                  supporting evidence
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuery(
-                      'What are the most important limitations?',
-                    )
-                  }
-                >
-                  limitations
-                </button>
-              </div>
-
-              <div className="shortcut">
-                CTRL + ENTER
-              </div>
-            </div>
-          </div>
-
-          <div className="pipeline-strip">
-            <div className="pipeline-title">
-              <span>
-                01
-              </span>
-
-              EXECUTION GRAPH
-            </div>
-
-            <div className="pipeline-nodes">
-              {[
-                [
-                  'Query',
-                  'Input',
-                ],
-                [
-                  'Hybrid',
-                  'Dense + BM25',
-                ],
-                [
-                  'RRF',
-                  'Fusion',
-                ],
-                [
-                  'Rerank',
-                  'Cross-encoder',
-                ],
-                [
-                  'Verify',
-                  'Grounding',
-                ],
-              ].map(
-                (
-                  [
-                    title,
-                    subtitle,
-                  ],
-                  index,
-                ) => (
-                  <div
-                    className="pipeline-node"
-                    key={title}
-                  >
-                    <div className="pipeline-node-number">
-                      0
-                      {index + 1}
-                    </div>
-
-                    <div className="pipeline-node-body">
-                      <strong>
-                        {title}
-                      </strong>
-
-                      <span>
-                        {subtitle}
-                      </span>
-                    </div>
-
-                    {index <
-                      4 && (
-                      <div className="pipeline-connector">
-                        <span />
-                      </div>
-                    )}
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
-
-          {error && (
-            <div className="error-box">
-              <div className="error-mark">
-                !
-              </div>
-
-              <div>
-                <strong>
-                  ENGINE ERROR
-                </strong>
-
-                <p>
-                  {error}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {answer && (
-            <section className="result-section">
-              <div className="result-section-heading">
-                <div>
-                  <span className="section-code">
-                    RESULT / 01
-                  </span>
-
-                  <h2>
-                    Grounded response
-                  </h2>
-                </div>
-
-                <div
-                  className={
-                    answer
-                      .verification
-                      .supported
-                      ? 'verification-state verified'
-                      : 'verification-state failed'
-                  }
-                >
-                  <span />
-
-                  {answer
-                    .verification
-                    .supported
-                    ? 'VERIFIED'
-                    : 'NOT VERIFIED'}
-                </div>
-              </div>
-
-              <div className="answer-result-grid">
-                <article className="answer-result-card">
-                  <div className="answer-result-bar">
-                    <span>
-                      GENERATED ANSWER
-                    </span>
-
-                    <span>
-                      {answer.query}
-                    </span>
-                  </div>
-
-                  <div className="answer-result-body">
-                    {answer.answer}
-                  </div>
-
-                  <div className="telemetry-row">
-                    <div>
-                      <span>
-                        RETRIEVED
-                      </span>
-
-                      <strong>
-                        {
-                          answer
-                            .metrics
-                            .retrieved_evidence_count
-                        }
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        CITED
-                      </span>
-
-                      <strong>
-                        {
-                          answer
-                            .metrics
-                            .cited_evidence_count
-                        }
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        LATENCY
-                      </span>
-
-                      <strong>
-                        {answer.metrics.latency_ms.toFixed(
-                          0,
-                        )}
-                        ms
-                      </strong>
-                    </div>
-                  </div>
-                </article>
-
-                <aside className="verification-card">
-                  <span className="section-code">
-                    VERIFICATION
-                  </span>
-
-                  <div
-                    className={
-                      answer
-                        .verification
-                        .supported
-                        ? 'verification-orb success'
-                        : 'verification-orb'
-                    }
-                  >
-                    <div>
-                      {answer
-                        .verification
-                        .supported
-                        ? '✓'
-                        : '!'}
-                    </div>
-                  </div>
-
-                  <strong>
-                    {answer
-                      .verification
-                      .supported
-                      ? 'Evidence aligned'
-                      : 'Evidence insufficient'}
-                  </strong>
-
-                  <p>
-                    {answer
-                      .verification
-                      .supported
-                      ? 'The generated response passed the grounding layer.'
-                      : answer
-                          .verification
-                          .reason ||
-                        'The response did not meet the grounding threshold.'}
-                  </p>
-                </aside>
-              </div>
-
-              <EvidenceList
-                evidence={
-                  answer.evidence
-                }
-              />
-            </section>
-          )}
-
-          {searchResults && (
-            <section className="result-section">
-              <div className="result-section-heading">
-                <div>
-                  <span className="section-code">
-                    RETRIEVAL / 01
-                  </span>
-
-                  <h2>
-                    Retrieved evidence
-                  </h2>
-                </div>
-
-                <span className="results-count">
-                  {
-                    searchResults
-                      .results
-                      .length
-                  }{' '}
-                  passages
-                </span>
-              </div>
-
-              <EvidenceList
-                evidence={
-                  searchResults.results
-                }
-              />
-            </section>
-          )}
-
-          {!hasResult &&
-            !loading && (
-              <section className="system-grid">
-                <div className="system-card">
-                  <div className="system-card-top">
-                    <span>
-                      ARCHITECTURE
-                    </span>
-
-                    <span>
-                      01
-                    </span>
-                  </div>
-
-                  <div className="system-visual">
-                    <div className="system-ring ring-a" />
-                    <div className="system-ring ring-b" />
-                    <div className="system-dot" />
-                  </div>
-
-                  <h3>
-                    Retrieval is a system.
-                  </h3>
-
-                  <p>
-                    Dense similarity
-                    and lexical matching
-                    enter the same
-                    retrieval graph before
-                    rank fusion and
-                    semantic reranking.
-                  </p>
-                </div>
-
-                <div className="system-card">
-                  <div className="system-card-top">
-                    <span>
-                      GUARDRAIL
-                    </span>
-
-                    <span>
-                      02
-                    </span>
-                  </div>
-
-                  <div className="guardrail-visual">
-                    <div className="guardrail-line" />
-
-                    <div className="guardrail-node">
-                      <Icon size={17}>
-                        <path d="M12 3 5 6v5c0 4.5 2.8 8 7 10 4.2-2 7-5.5 7-10V6z" />
-                        <path d="m9 12 2 2 4-4" />
-                      </Icon>
-                    </div>
-                  </div>
-
-                  <h3>
-                    Generation needs proof.
-                  </h3>
-
-                  <p>
-                    Answers are checked
-                    against the evidence
-                    that was actually
-                    retrieved instead of
-                    treating generated text
-                    as ground truth.
-                  </p>
-                </div>
-
-                <div className="system-card system-card-small">
-                  <div className="system-card-top">
-                    <span>
-                      ENGINE
-                    </span>
-
-                    <span>
-                      03
-                    </span>
-                  </div>
-
-                  <div className="engine-readout">
-                    <strong>
-                      LOCAL
-                    </strong>
-
-                    <span>
-                      INFERENCE
-                    </span>
-
-                    <div className="readout-bar">
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                    </div>
-                  </div>
-
-                  <h3>
-                    Private by design.
-                  </h3>
-
-                  <p>
-                    Retrieval, reranking,
-                    verification, and
-                    generation can run
-                    locally.
-                  </p>
-                </div>
-              </section>
-            )}
-        </section>
-      </main>
-    </div>
-  )
-}
-
-function EvidenceList({
-  evidence,
-}: {
-  evidence: Evidence[]
-}) {
-  return (
-    <div className="evidence-section">
-      <div className="evidence-section-heading">
-        <div>
-          <span className="section-code">
-            SOURCE MATERIAL
-          </span>
-
-          <h3>
-            Evidence traces
-          </h3>
+          <span className="composer-hint">Enter to ask · Shift+Enter for new line</span>
         </div>
+      </form>
 
-        <span>
-          {evidence.length} chunks
-        </span>
-      </div>
+      {error && (
+        <div className="toast" role="alert">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button>
+        </div>
+      )}
 
-      <div className="evidence-list">
-        {evidence.map(
-          (item, index) => (
-            <article
-              className="evidence-card"
-              key={`${item.chunk_id}-${index}`}
-            >
-              <div className="evidence-number">
-                {String(
-                  item.evidence_id,
-                ).padStart(
-                  2,
-                  '0',
-                )}
-              </div>
+      {dragging && (
+        <div className="drop" aria-hidden="true">
+          <div className="drop-card"><i /><i /><i /><strong>Drop to add document</strong><span>PDF, TXT or Markdown</span></div>
+        </div>
+      )}
 
-              <div className="evidence-main">
-                <div className="evidence-meta">
-                  <span>
-                    {item.source}
-                  </span>
-
-                  {item.page !==
-                    null && (
-                    <>
-                      <i />
-                      <span>
-                        PAGE{' '}
-                        {item.page}
-                      </span>
-                    </>
-                  )}
-
-                  <div className="score">
-                    SCORE{' '}
-                    {item.score.toFixed(
-                      3,
-                    )}
-                  </div>
-                </div>
-
-                <p>
-                  {item.text}
-                </p>
-
-                <div className="evidence-footer">
-                  <span>
-                    {item.chunk_id}
-                  </span>
-
-                  <span>
-                    RETRIEVED PASSAGE
-                  </span>
-                </div>
-              </div>
-            </article>
-          ),
-        )}
-      </div>
+      <DocumentSidebar documents={documents} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onUpload={uploadDocument} onDelete={deleteDocument} uploading={uploading} error={error} />
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} apiBase={API_BASE} theme={theme} onThemeChange={handleThemeChange} demoMode={demoMode} onDemoModeChange={setDemoMode} />
     </div>
-  )
+  );
 }
 
-export default App
+function normalizeQueryResponse(
+  data: any,
+): QueryResult {
+  const rawSources =
+    data?.sources ||
+    data?.evidence ||
+    [];
+
+  const answer =
+    data?.answer?.answer ||
+    data?.answer ||
+    "I could not find a verified answer in the indexed documents.";
+
+  const citedIds =
+    extractCitationIds(answer);
+
+  const sources =
+    normalizeSources(
+      rawSources,
+      citedIds,
+    );
+
+  const verification =
+    normalizeVerification(
+      data?.verification,
+    );
+
+  return {
+    answer: cleanAnswer(answer),
+    sources,
+    verification,
+  };
+}
+
+function normalizeSources(
+  rawSources: any,
+  citedIds: Set<number> = new Set<number>(),
+): EvidenceSource[] {
+  if (!Array.isArray(rawSources)) {
+    return [];
+  }
+
+  return rawSources.map(
+    (item: any, index: number) => {
+      const id =
+        Number(
+          item?.id ??
+            item?.evidence_id ??
+            index + 1,
+        );
+
+      const score =
+        Number(
+          item?.score ??
+            item?.relevance ??
+            item?.reranker_score ??
+            0,
+        );
+
+      return {
+        id,
+        file:
+          item?.file ||
+          item?.source ||
+          item?.filename ||
+          "Unknown document",
+        page:
+          item?.page === undefined ||
+          item?.page === null
+            ? null
+            : Number(item.page),
+        score,
+        label:
+          getRelevanceLabel(
+            score,
+            index,
+          ),
+        text:
+          item?.text ||
+          item?.chunk ||
+          item?.content ||
+          "",
+        used:
+          citedIds.size === 0
+            ? index === 0
+            : citedIds.has(id),
+      };
+    },
+  );
+}
+
+function normalizeVerification(
+  raw: any,
+): VerificationState {
+  if (!raw) {
+    return {
+      supported: false,
+      total: 0,
+      supportedClaims: 0,
+      reason:
+        "No verification details were returned.",
+    };
+  }
+
+  const total = Number(
+    raw.total ??
+      raw.total_claims ??
+      raw.claims ??
+      0,
+  );
+
+  const supportedClaims =
+    Number(
+      raw.supportedClaims ??
+        raw.supported_claims ??
+        (raw.supported
+          ? total || 1
+          : 0),
+    );
+
+  return {
+    supported: Boolean(
+      raw.supported,
+    ),
+    total:
+      total ||
+      (raw.supported ? 1 : 0),
+    supportedClaims,
+    reason:
+      raw.reason ||
+      (raw.supported
+        ? "The answer was checked against the retrieved passages."
+        : "Some statements could not be fully verified."),
+  };
+}
+
+function extractCitationIds(
+  text: string,
+): Set<number> {
+  const ids = new Set<number>();
+
+  const pattern =
+    /\[\s*Evidence\s*(\d+)\s*\]/gi;
+
+  let match: RegExpExecArray | null;
+
+  while (
+    (match =
+      pattern.exec(text)) !== null
+  ) {
+    ids.add(Number(match[1]));
+  }
+
+  return ids;
+}
+
+function cleanAnswer(
+  text: string,
+) {
+  return String(text || "")
+    .replace(
+      /\[\s*Evidence\s*(\d+)\s*\]/gi,
+      "[Evidence $1]",
+    )
+    .replace(
+      /```[\s\S]*?```/g,
+      "",
+    )
+    .trim();
+}
+
+function getRelevanceLabel(
+  score: number,
+  index: number,
+): EvidenceSource["label"] {
+  if (
+    score >= 0.75 ||
+    index === 0
+  ) {
+    return "Best match";
+  }
+
+  if (
+    score >= 0.45 ||
+    index <= 2
+  ) {
+    return "Good match";
+  }
+
+  return "Weak match";
+}
+
+function completedStages(
+  elapsed: number,
+): ProgressStage[] {
+  const total =
+    Math.max(elapsed, 300);
+
+  return [
+    {
+      i: 1,
+      ms: Math.round(
+        total * 0.4,
+      ),
+      label:
+        "Searching your documents",
+      complete: true,
+    },
+    {
+      i: 2,
+      ms: Math.round(
+        total * 0.35,
+      ),
+      label:
+        "Finding supporting passages",
+      complete: true,
+    },
+    {
+      i: 3,
+      ms: Math.round(
+        total * 0.25,
+      ),
+      label:
+        "Checking the answer",
+      complete: true,
+    },
+  ];
+}
+
+function updateStagesFromEvent(
+  data: any,
+): ProgressStage[] {
+  const stageNumber =
+    Number(
+      data?.i ??
+        data?.stage ??
+        data?.index ??
+        1,
+    );
+
+  const ms =
+    Number(
+      data?.ms ??
+        data?.elapsed_ms ??
+        0,
+    );
+
+  return INITIAL_STAGES.map(
+    (stage) => ({
+      ...stage,
+      complete:
+        stage.i <= stageNumber,
+      ms:
+        stage.i <= stageNumber
+          ? ms
+          : 0,
+    }),
+  );
+}
+
+function parseSseEvent(
+  event: string,
+): {
+  type: string;
+  data: any;
+} | null {
+  const lines =
+    event.split("\n");
+
+  let eventType = "message";
+  let data = "";
+
+  for (const line of lines) {
+    if (
+      line.startsWith("event:")
+    ) {
+      eventType =
+        line.slice(6).trim();
+    }
+
+    if (
+      line.startsWith("data:")
+    ) {
+      data +=
+        line.slice(5).trim();
+    }
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  try {
+    return {
+      type: eventType,
+      data: JSON.parse(data),
+    };
+  } catch {
+    return {
+      type: eventType,
+      data: {
+        t: data,
+      },
+    };
+  }
+}
+
+async function safeJson(
+  response: Response,
+) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function sleep(
+  milliseconds: number,
+) {
+  return new Promise<void>(
+    (resolve) =>
+      window.setTimeout(
+        resolve,
+        milliseconds,
+      ),
+  );
+}
