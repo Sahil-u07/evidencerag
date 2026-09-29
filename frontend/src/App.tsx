@@ -11,7 +11,6 @@ import type {
 import EvidenceStack from "./components/EvidenceStack";
 import "./App.css";
 
-
 import ChatThread from "./components/ChatThread";
 import DocumentSidebar from "./components/DocumentSidebar";
 import EmptyState from "./components/EmptyState";
@@ -67,33 +66,61 @@ const INITIAL_STAGES: ProgressStage[] = [
 ];
 
 export default function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [query, setQuery] = useState("");
+  const [messages, setMessages] =
+    useState<ChatMessage[]>([]);
+
+  const [query, setQuery] =
+    useState("");
+
   const [documents, setDocuments] =
     useState<DocumentItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [uploading, setUploading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
+
   const [settingsOpen, setSettingsOpen] =
     useState(false);
 
-  const [theme, setTheme] = useState<"dark" | "light">(
-    "light",
-  );
+  const [theme, setTheme] =
+    useState<"dark" | "light">(
+      "light",
+    );
 
-  const [demoMode, setDemoMode] = useState(false);
-  const [online, setOnline] = useState<"checking" | "online" | "offline">("checking");
-  const [dragging, setDragging] = useState(false);
+  const [demoMode, setDemoMode] =
+    useState(false);
+
+  const [online, setOnline] =
+    useState<
+      "checking" | "online" | "offline"
+    >("checking");
+
+  const [dragging, setDragging] =
+    useState(false);
 
   const inputRef =
-    useRef<HTMLTextAreaElement | null>(null);
-  const fileRef = useRef<HTMLInputElement | null>(null);
+    useRef<HTMLTextAreaElement | null>(
+      null,
+    );
+
+  const fileRef =
+    useRef<HTMLInputElement | null>(
+      null,
+    );
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem(
-      "evidencerag-theme",
-    );
+    const storedTheme =
+      window.localStorage.getItem(
+        "evidencerag-theme",
+      );
 
     if (
       storedTheme === "dark" ||
@@ -110,7 +137,6 @@ export default function App() {
     if (storedDemo === "true") {
       setDemoMode(true);
     }
-
   }, []);
 
   useEffect(() => {
@@ -132,9 +158,12 @@ export default function App() {
   }, [demoMode]);
 
   useEffect(() => {
-    const handleKeyboard = (event: KeyboardEvent) => {
+    const handleKeyboard = (
+      event: KeyboardEvent,
+    ) => {
       if (
-        (event.ctrlKey || event.metaKey) &&
+        (event.ctrlKey ||
+          event.metaKey) &&
         event.key === "/"
       ) {
         event.preventDefault();
@@ -161,45 +190,145 @@ export default function App() {
 
   useEffect(() => {
     let depth = 0;
-    const files = (e: DragEvent) => Boolean(e.dataTransfer?.types.includes("Files"));
-    const enter = (e: DragEvent) => { if (files(e)) { depth++; setDragging(true); } };
-    const leave = (e: DragEvent) => { if (files(e) && --depth <= 0) { depth = 0; setDragging(false); } };
-    const over = (e: DragEvent) => { if (files(e)) e.preventDefault(); };
-    const drop = (e: DragEvent) => {
-      if (!files(e)) return;
-      e.preventDefault(); depth = 0; setDragging(false);
-      const file = e.dataTransfer?.files?.[0];
-      if (file) void uploadDocument(file);
+
+    const isFileDrag = (
+      event: DragEvent,
+    ) =>
+      Boolean(
+        event.dataTransfer?.types.includes(
+          "Files",
+        ),
+      );
+
+    const handleDragEnter = (
+      event: DragEvent,
+    ) => {
+      if (!isFileDrag(event)) {
+        return;
+      }
+
+      depth += 1;
+      setDragging(true);
     };
-    window.addEventListener("dragenter", enter);
-    window.addEventListener("dragleave", leave);
-    window.addEventListener("dragover", over);
-    window.addEventListener("drop", drop);
+
+    const handleDragLeave = (
+      event: DragEvent,
+    ) => {
+      if (!isFileDrag(event)) {
+        return;
+      }
+
+      depth -= 1;
+
+      if (depth <= 0) {
+        depth = 0;
+        setDragging(false);
+      }
+    };
+
+    const handleDragOver = (
+      event: DragEvent,
+    ) => {
+      if (isFileDrag(event)) {
+        event.preventDefault();
+      }
+    };
+
+    const handleDrop = (
+      event: DragEvent,
+    ) => {
+      if (!isFileDrag(event)) {
+        return;
+      }
+
+      event.preventDefault();
+
+      depth = 0;
+      setDragging(false);
+
+      const file =
+        event.dataTransfer?.files?.[0];
+
+      if (file) {
+        void uploadDocument(file);
+      }
+    };
+
+    window.addEventListener(
+      "dragenter",
+      handleDragEnter,
+    );
+
+    window.addEventListener(
+      "dragleave",
+      handleDragLeave,
+    );
+
+    window.addEventListener(
+      "dragover",
+      handleDragOver,
+    );
+
+    window.addEventListener(
+      "drop",
+      handleDrop,
+    );
+
     return () => {
-      window.removeEventListener("dragenter", enter);
-      window.removeEventListener("dragleave", leave);
-      window.removeEventListener("dragover", over);
-      window.removeEventListener("drop", drop);
+      window.removeEventListener(
+        "dragenter",
+        handleDragEnter,
+      );
+
+      window.removeEventListener(
+        "dragleave",
+        handleDragLeave,
+      );
+
+      window.removeEventListener(
+        "dragover",
+        handleDragOver,
+      );
+
+      window.removeEventListener(
+        "drop",
+        handleDrop,
+      );
     };
   }, [demoMode]);
 
   useEffect(() => {
-    const t = inputRef.current;
-    if (!t) return;
-    t.style.height = "auto";
-    t.style.height = `${Math.min(t.scrollHeight, 168)}px`;
+    const textarea =
+      inputRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height =
+      "auto";
+
+    textarea.style.height =
+      `${Math.min(
+        textarea.scrollHeight,
+        168,
+      )}px`;
   }, [query]);
 
   async function loadDocuments() {
     if (demoMode) {
-      setDocuments(DEMO_DOCUMENTS);
+      setDocuments(
+        DEMO_DOCUMENTS,
+      );
+      setOnline("online");
       return;
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE}/documents`,
-      );
+      const response =
+        await fetch(
+          `${API_BASE}/documents`,
+        );
 
       if (!response.ok) {
         throw new Error(
@@ -208,25 +337,35 @@ export default function App() {
       }
 
       setOnline("online");
-      const data = await response.json();
 
-      const items = Array.isArray(data)
-        ? data
-        : Array.isArray(data.documents)
-          ? data.documents
-          : [];
+      const data =
+        await response.json();
+
+      const items =
+        Array.isArray(data)
+          ? data
+          : Array.isArray(
+              data.documents,
+            )
+            ? data.documents
+            : [];
 
       setDocuments(
-        items.map((item: any) => ({
-          name:
-            typeof item === "string"
-              ? item
-              : item.name || item.filename,
-          status:
-            item.status ||
-            "Ready",
-          size: item.size,
-        })),
+        items.map(
+          (item: any) => ({
+            name:
+              typeof item ===
+              "string"
+                ? item
+                : item.name ||
+                  item.filename,
+            status:
+              item.status ||
+              "Ready",
+            size:
+              item.size,
+          }),
+        ),
       );
     } catch {
       setOnline("offline");
@@ -240,9 +379,16 @@ export default function App() {
   ) {
     event?.preventDefault();
 
-    const cleanQuery = (override ?? query).trim();
+    const cleanQuery =
+      (
+        override ??
+        query
+      ).trim();
 
-    if (!cleanQuery || loading) {
+    if (
+      !cleanQuery ||
+      loading
+    ) {
       return;
     }
 
@@ -250,35 +396,44 @@ export default function App() {
     setQuery("");
     setLoading(true);
 
-    const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: cleanQuery,
-    };
+    const userMessage:
+      ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: cleanQuery,
+      };
 
-    const assistantId = crypto.randomUUID();
+    const assistantId =
+      crypto.randomUUID();
 
-    const assistantMessage: ChatMessage = {
-      id: assistantId,
-      role: "assistant",
-      content: "",
-      query: cleanQuery,
-      loading: true,
-      stages: INITIAL_STAGES.map((stage) => ({
-        ...stage,
-      })),
-      sources: [],
-      verification: null,
-      responseTimeMs: null,
-    };
+    const assistantMessage:
+      ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        query: cleanQuery,
+        loading: true,
+        stages:
+          INITIAL_STAGES.map(
+            (stage) => ({
+              ...stage,
+            }),
+          ),
+        sources: [],
+        verification: null,
+        responseTimeMs: null,
+      };
 
-    setMessages((current) => [
-      ...current,
-      userMessage,
-      assistantMessage,
-    ]);
+    setMessages(
+      (current) => [
+        ...current,
+        userMessage,
+        assistantMessage,
+      ],
+    );
 
-    const startedAt = performance.now();
+    const startedAt =
+      performance.now();
 
     try {
       if (demoMode) {
@@ -294,10 +449,15 @@ export default function App() {
           startedAt,
         );
       }
-    } catch (requestError) {
-      console.error(requestError);
+    } catch (
+      requestError
+    ) {
+      console.error(
+        requestError,
+      );
 
       setOnline("offline");
+
       setError(
         "I couldn't connect to the EvidenceRAG backend.",
       );
@@ -310,7 +470,8 @@ export default function App() {
           content:
             `Nothing answered at ${API_BASE}. Check that the API is running, then retry.`,
           responseTimeMs:
-            performance.now() - startedAt,
+            performance.now() -
+            startedAt,
         },
       );
     } finally {
@@ -323,32 +484,47 @@ export default function App() {
     assistantId: string,
     startedAt: number,
   ) {
-    const streamed = await tryStreamingQuery(
-      cleanQuery,
-      assistantId,
-      startedAt,
-    );
+    const streamed =
+      await tryStreamingQuery(
+        cleanQuery,
+        assistantId,
+        startedAt,
+      );
 
     if (streamed) {
       return;
     }
 
-    const normal = await tryNormalQuery(
-      cleanQuery,
-    );
+    const normal =
+      await tryNormalQuery(
+        cleanQuery,
+      );
 
     if (normal) {
       const elapsed =
-        performance.now() - startedAt;
+        performance.now() -
+        startedAt;
 
-      updateAssistant(assistantId, {
-        loading: false,
-        content: cleanAnswer(normal.answer),
-        sources: normal.sources,
-        verification: normal.verification,
-        stages: completedStages(elapsed),
-        responseTimeMs: elapsed,
-      });
+      updateAssistant(
+        assistantId,
+        {
+          loading: false,
+          content:
+            cleanAnswer(
+              normal.answer,
+            ),
+          sources:
+            normal.sources,
+          verification:
+            normal.verification,
+          stages:
+            completedStages(
+              elapsed,
+            ),
+          responseTimeMs:
+            elapsed,
+        },
+      );
 
       return;
     }
@@ -364,67 +540,130 @@ export default function App() {
     startedAt: number,
   ): Promise<boolean> {
     try {
-      const response = await fetch(
-        `${API_BASE}/query/stream`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
+      const response =
+        await fetch(
+          `${API_BASE}/query/stream`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              query: cleanQuery,
+              top_k: 5,
+            }),
           },
-          body: JSON.stringify({
-            query: cleanQuery,
-            top_k: 5,
-          }),
-        },
-      );
+        );
 
-      if (!response.ok || !response.body) {
+      if (
+        !response.ok ||
+        !response.body
+      ) {
         return false;
       }
+
+      setOnline("online");
 
       const reader =
         response.body.getReader();
 
-      const decoder = new TextDecoder();
+      const decoder =
+        new TextDecoder();
 
       let buffer = "";
       let answer = "";
-      let sources: EvidenceSource[] = [];
+      let finalAnswer = "";
+
+      let sources:
+        EvidenceSource[] =
+        [];
+
       let verification:
         | VerificationState
         | null = null;
 
       while (true) {
-        const { done, value } =
+        const {
+          done,
+          value,
+        } =
           await reader.read();
 
         if (done) {
           break;
         }
 
-        buffer += decoder.decode(value, {
-          stream: true,
-        });
+        buffer +=
+          decoder.decode(
+            value,
+            {
+              stream: true,
+            },
+          );
 
         const events =
-          buffer.split("\n\n");
+          buffer.split(
+            "\n\n",
+          );
 
-        buffer = events.pop() || "";
+        buffer =
+          events.pop() ||
+          "";
 
-        for (const event of events) {
+        for (
+          const event of events
+        ) {
           const parsed =
-            parseSseEvent(event);
+            parseSseEvent(
+              event,
+            );
 
           if (!parsed) {
             continue;
           }
 
           if (
-            parsed.type === "token"
+            parsed.type ===
+            "stage"
+          ) {
+            updateAssistant(
+              assistantId,
+              {
+                stages:
+                  updateStagesFromEvent(
+                    parsed.data,
+                  ),
+              },
+            );
+          }
+
+          if (
+            parsed.type ===
+            "sources"
+          ) {
+            sources =
+              normalizeSources(
+                parsed.data?.items,
+              );
+
+            updateAssistant(
+              assistantId,
+              {
+                sources,
+              },
+            );
+          }
+
+          if (
+            parsed.type ===
+            "token"
           ) {
             const token =
-              String(parsed.data.t || "");
+              String(
+                parsed.data?.t ||
+                  "",
+              );
 
             answer += token;
 
@@ -432,41 +671,10 @@ export default function App() {
               assistantId,
               {
                 content:
-                  cleanAnswer(answer),
-                loading: true,
-              },
-            );
-          }
-
-          if (
-            parsed.type === "stage"
-          ) {
-            const stageData =
-              parsed.data;
-
-            updateAssistant(
-              assistantId,
-              {
-                stages:
-                  updateStagesFromEvent(
-                    stageData,
+                  cleanAnswer(
+                    answer,
                   ),
-              },
-            );
-          }
-
-          if (
-            parsed.type === "sources"
-          ) {
-            sources =
-              normalizeSources(
-                parsed.data.items,
-              );
-
-            updateAssistant(
-              assistantId,
-              {
-                sources,
+                loading: true,
               },
             );
           }
@@ -487,54 +695,143 @@ export default function App() {
               },
             );
           }
+
+          if (
+            parsed.type ===
+            "final"
+          ) {
+            finalAnswer =
+              String(
+                parsed.data?.answer ||
+                  "",
+              );
+
+            updateAssistant(
+              assistantId,
+              {
+                content:
+                  cleanAnswer(
+                    finalAnswer,
+                  ),
+                verification,
+                loading: false,
+              },
+            );
+          }
+
+          if (
+            parsed.type ===
+            "done"
+          ) {
+            const elapsed =
+              performance.now() -
+              startedAt;
+
+            updateAssistant(
+              assistantId,
+              {
+                loading: false,
+                content:
+                  cleanAnswer(
+                    finalAnswer ||
+                      answer,
+                  ),
+                sources,
+                verification,
+                stages:
+                  completedStages(
+                    elapsed,
+                  ),
+                responseTimeMs:
+                  parsed.data
+                    ?.latency_ms ||
+                  elapsed,
+              },
+            );
+          }
+
+          if (
+            parsed.type ===
+            "error"
+          ) {
+            throw new Error(
+              String(
+                parsed.data
+                  ?.message ||
+                  "Streaming request failed.",
+              ),
+            );
+          }
         }
       }
 
       const elapsed =
-        performance.now() - startedAt;
+        performance.now() -
+        startedAt;
 
       updateAssistant(
         assistantId,
         {
           loading: false,
-          content: cleanAnswer(answer),
+          content:
+            cleanAnswer(
+              finalAnswer ||
+                answer,
+            ),
           sources,
           verification,
-          stages: completedStages(elapsed),
-          responseTimeMs: elapsed,
+          stages:
+            completedStages(
+              elapsed,
+            ),
+          responseTimeMs:
+            elapsed,
         },
       );
 
       return true;
-    } catch {
+    } catch (
+      streamError
+    ) {
+      console.error(
+        "Streaming query failed:",
+        streamError,
+      );
+
       return false;
     }
   }
 
   async function tryNormalQuery(
     cleanQuery: string,
-  ): Promise<QueryResult | null> {
+  ): Promise<
+    QueryResult | null
+  > {
     const endpoints = [
       "/query",
       "/ask",
     ];
 
-    for (const endpoint of endpoints) {
+    for (
+      const endpoint of endpoints
+    ) {
       try {
-        const response = await fetch(
-          `${API_BASE}${endpoint}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
+        const response =
+          await fetch(
+            `${API_BASE}${endpoint}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+              body: JSON.stringify({
+                query:
+                  cleanQuery,
+                top_k: 5,
+              }),
             },
-            body: JSON.stringify({
-              query: cleanQuery,
-              top_k: 5,
-            }),
-          },
-        );
+          );
 
         if (!response.ok) {
           continue;
@@ -566,44 +863,56 @@ export default function App() {
         }),
       );
 
-    for (let index = 0; index < 3; index++) {
+    for (
+      let index = 0;
+      index < 3;
+      index++
+    ) {
       await sleep(350);
 
       stages[index] = {
         ...stages[index],
         complete: true,
-        ms: 300 + index * 120,
+        ms:
+          300 +
+          index * 120,
       };
 
       updateAssistant(
         assistantId,
         {
-          stages: stages.map(
-            (stage) => ({
-              ...stage,
-            }),
-          ),
+          stages:
+            stages.map(
+              (stage) => ({
+                ...stage,
+              }),
+            ),
         },
       );
     }
 
-    const sources: EvidenceSource[] = [
+    const sources:
+      EvidenceSource[] = [
       {
         id: 1,
-        file: "retrieval-notes.md",
+        file:
+          "retrieval-notes.md",
         page: null,
         score: 0.94,
-        label: "Best match",
+        label:
+          "Best match",
         text:
           "BM25 is a probabilistic lexical ranking function that considers query-term frequency, document length, and the rarity of terms across the collection.",
         used: true,
       },
       {
         id: 2,
-        file: "rag-architecture.md",
+        file:
+          "rag-architecture.md",
         page: null,
         score: 0.82,
-        label: "Good match",
+        label:
+          "Good match",
         text:
           "Hybrid retrieval combines lexical and semantic retrieval signals to improve coverage across different types of queries.",
         used: false,
@@ -617,7 +926,8 @@ export default function App() {
         ? "BM25 is a probabilistic lexical ranking function that considers query-term frequency, document length, and the rarity of terms across the collection. [Evidence 1]"
         : "The indexed documents contain supporting information for this question. [Evidence 1]";
 
-    const verification: VerificationState = {
+    const verification:
+      VerificationState = {
       supported: true,
       total: 1,
       supportedClaims: 1,
@@ -626,7 +936,8 @@ export default function App() {
     };
 
     const elapsed =
-      performance.now() - startedAt;
+      performance.now() -
+      startedAt;
 
     updateAssistant(
       assistantId,
@@ -636,7 +947,8 @@ export default function App() {
         sources,
         verification,
         stages,
-        responseTimeMs: elapsed,
+        responseTimeMs:
+          elapsed,
       },
     );
   }
@@ -645,13 +957,15 @@ export default function App() {
     file: File,
   ) {
     if (demoMode) {
-      setDocuments((current) => [
-        ...current,
-        {
-          name: file.name,
-          status: "Ready",
-        },
-      ]);
+      setDocuments(
+        (current) => [
+          ...current,
+          {
+            name: file.name,
+            status: "Ready",
+          },
+        ],
+      );
 
       return;
     }
@@ -668,17 +982,20 @@ export default function App() {
         file,
       );
 
-      const response = await fetch(
-        `${API_BASE}/documents/upload`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const response =
+        await fetch(
+          `${API_BASE}/documents/upload`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
 
       if (!response.ok) {
         const data =
-          await safeJson(response);
+          await safeJson(
+            response,
+          );
 
         throw new Error(
           data?.detail ||
@@ -687,11 +1004,16 @@ export default function App() {
       }
 
       await loadDocuments();
-    } catch (uploadError) {
-      console.error(uploadError);
+    } catch (
+      uploadError
+    ) {
+      console.error(
+        uploadError,
+      );
 
       setError(
-        uploadError instanceof Error
+        uploadError instanceof
+        Error
           ? uploadError.message
           : "Document upload failed.",
       );
@@ -704,11 +1026,13 @@ export default function App() {
     name: string,
   ) {
     if (demoMode) {
-      setDocuments((current) =>
-        current.filter(
-          (document) =>
-            document.name !== name,
-        ),
+      setDocuments(
+        (current) =>
+          current.filter(
+            (document) =>
+              document.name !==
+              name,
+          ),
       );
 
       return;
@@ -717,14 +1041,15 @@ export default function App() {
     setError("");
 
     try {
-      const response = await fetch(
-        `${API_BASE}/documents/${encodeURIComponent(
-          name,
-        )}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response =
+        await fetch(
+          `${API_BASE}/documents/${encodeURIComponent(
+            name,
+          )}`,
+          {
+            method: "DELETE",
+          },
+        );
 
       if (!response.ok) {
         throw new Error(
@@ -733,8 +1058,12 @@ export default function App() {
       }
 
       await loadDocuments();
-    } catch (deleteError) {
-      console.error(deleteError);
+    } catch (
+      deleteError
+    ) {
+      console.error(
+        deleteError,
+      );
 
       setError(
         "Could not delete the document.",
@@ -746,15 +1075,17 @@ export default function App() {
     id: string,
     patch: Partial<ChatMessage>,
   ) {
-    setMessages((current) =>
-      current.map((message) =>
-        message.id === id
-          ? {
-              ...message,
-              ...patch,
-            }
-          : message,
-      ),
+    setMessages(
+      (current) =>
+        current.map(
+          (message) =>
+            message.id === id
+              ? {
+                  ...message,
+                  ...patch,
+                }
+              : message,
+        ),
     );
   }
 
@@ -762,9 +1093,13 @@ export default function App() {
     question: string,
   ) {
     setQuery(question);
-    window.setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
+
+    window.setTimeout(
+      () => {
+        inputRef.current?.focus();
+      },
+      0,
+    );
   }
 
   function handleAddDocument() {
@@ -772,29 +1107,108 @@ export default function App() {
   }
 
   function handleThemeChange(
-    nextTheme: "dark" | "light",
+    nextTheme:
+      | "dark"
+      | "light",
   ) {
     setTheme(nextTheme);
   }
 
-  const hasMessages = messages.length > 0;
-  const last = [...messages].reverse().find((m) => m.role === "assistant");
-  // Stack stage mirrors the real pipeline: 1 searching · 2 finding · 3 checking · 4 error · 5 done
-  const stage = !last ? 0 : last.error ? 4 : last.loading ? Math.min(3, (last.stages?.filter((s) => s.complete).length ?? 0) + 1) : 5;
-  const hits = last?.sources?.length ? Math.min(last.sources.length, 5) : 3;
-  const status = demoMode ? "demo" : online;
-  const statusLabel = { online: "Live", offline: "Offline", demo: "Demo", checking: "Connecting" }[status];
+  const hasMessages =
+    messages.length > 0;
+
+  const lastAssistant =
+    [...messages]
+      .reverse()
+      .find(
+        (message) =>
+          message.role ===
+          "assistant",
+      );
+
+  const stage =
+    !lastAssistant
+      ? 0
+      : lastAssistant.error
+        ? 4
+        : lastAssistant.loading
+          ? Math.min(
+              3,
+              (
+                lastAssistant
+                  .stages ||
+                []
+              ).filter(
+                (item) =>
+                  item.complete,
+              ).length + 1,
+            )
+          : 5;
+
+  const hits =
+    lastAssistant?.sources
+      ?.length
+      ? Math.min(
+          lastAssistant.sources
+            .length,
+          5,
+        )
+      : 3;
+
+  const status =
+    demoMode
+      ? "demo"
+      : online;
+
+  const statusLabel =
+    {
+      online: "Live",
+      offline: "Offline",
+      demo: "Demo",
+      checking: "Connecting",
+    }[
+      status
+    ];
 
   return (
-    <div className={`app-shell theme-${theme}`}>
+    <div
+      className={`app-shell theme-${theme}`}
+    >
       <header className="app-header">
         <div className="header-left">
-          <button type="button" className="icon-button" onClick={() => setSidebarOpen(true)} aria-label="Open documents">
-            <span /><span /><span />
+          <button
+            type="button"
+            className="icon-button"
+            onClick={() =>
+              setSidebarOpen(
+                true,
+              )
+            }
+            aria-label="Open documents"
+          >
+            <span />
+            <span />
+            <span />
           </button>
-          <button type="button" className="brand" onClick={() => { setMessages([]); setError(""); }} aria-label="EvidenceRAG home">
-            <span className="brand-mark"><span /><span /><span /></span>
-            <span className="brand-name">EvidenceRAG</span>
+
+          <button
+            type="button"
+            className="brand"
+            onClick={() => {
+              setMessages([]);
+              setError("");
+            }}
+            aria-label="EvidenceRAG home"
+          >
+            <span className="brand-mark">
+              <span />
+              <span />
+              <span />
+            </span>
+
+            <span className="brand-name">
+              EvidenceRAG
+            </span>
           </button>
         </div>
 
@@ -803,74 +1217,282 @@ export default function App() {
             type="button"
             className="pill"
             data-status={status}
-            onClick={() => setDemoMode((c) => !c)}
-            title={demoMode ? "Switch to live backend" : "Switch to demo mode"}
+            onClick={() =>
+              setDemoMode(
+                (current) =>
+                  !current,
+              )
+            }
+            title={
+              demoMode
+                ? "Switch to live backend"
+                : "Switch to demo mode"
+            }
             aria-label={`Backend status: ${statusLabel}. Click to toggle demo mode`}
           >
-            <i className="dot" />{statusLabel}
+            <i className="dot" />
+            {statusLabel}
           </button>
-          <button type="button" className="round" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
-            {theme === "dark" ? "☀" : "☾"}
+
+          <button
+            type="button"
+            className="round"
+            onClick={() =>
+              setTheme(
+                theme === "dark"
+                  ? "light"
+                  : "dark",
+              )
+            }
+            aria-label={`Switch to ${
+              theme === "dark"
+                ? "light"
+                : "dark"
+            } theme`}
+          >
+            {theme === "dark"
+              ? "☀"
+              : "☾"}
           </button>
-          <button type="button" className="header-button" onClick={() => setSettingsOpen(true)}>Settings</button>
+
+          <button
+            type="button"
+            className="header-button"
+            onClick={() =>
+              setSettingsOpen(
+                true,
+              )
+            }
+          >
+            Settings
+          </button>
         </div>
       </header>
 
-      {hasMessages && <EvidenceStack size="mini" stage={stage} hits={hits} />}
+      {hasMessages && (
+        <EvidenceStack
+          size="mini"
+          stage={stage}
+          hits={hits}
+        />
+      )}
 
       <main className="app-main">
         {!hasMessages ? (
-          <EmptyState onExampleQuestion={handleExampleQuestion} onAddDocument={handleAddDocument} hasDocuments={documents.length > 0} />
+          <EmptyState
+            onExampleQuestion={
+              handleExampleQuestion
+            }
+            onAddDocument={
+              handleAddDocument
+            }
+            hasDocuments={
+              documents.length > 0
+            }
+          />
         ) : (
-          <ChatThread messages={messages} onRetry={(q) => void askQuestion(undefined, q)} onDemo={() => { setDemoMode(true); setError(""); }} />
+          <ChatThread
+            messages={messages}
+            onRetry={(question) =>
+              void askQuestion(
+                undefined,
+                question,
+              )
+            }
+            onDemo={() => {
+              setDemoMode(true);
+              setError("");
+            }}
+          />
         )}
       </main>
 
-      <form className="composer" onSubmit={askQuestion}>
+      <form
+        className="composer"
+        onSubmit={askQuestion}
+      >
         <div className="composer-inner">
           <div className="composer-row">
-            <input ref={fileRef} type="file" accept=".pdf,.txt,.md" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadDocument(f); e.target.value = ""; }} />
-            <button type="button" className="clip" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Add a document (PDF, TXT, MD)" title="Add document">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 01-7.8-7.8l8.9-8.9a3.7 3.7 0 015.2 5.2l-8.9 8.9a1.8 1.8 0 01-2.6-2.6l8.2-8.2" /></svg>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.txt,.md"
+              hidden
+              onChange={(event) => {
+                const file =
+                  event.target
+                    .files?.[0];
+
+                if (file) {
+                  void uploadDocument(
+                    file,
+                  );
+                }
+
+                event.target.value =
+                  "";
+              }}
+            />
+
+            <button
+              type="button"
+              className="clip"
+              onClick={() =>
+                fileRef.current?.click()
+              }
+              disabled={uploading}
+              aria-label="Add a document"
+              title="Add document"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 11.5l-8.6 8.6a5.5 5.5 0 01-7.8-7.8l8.9-8.9a3.7 3.7 0 015.2 5.2l-8.9 8.9a1.8 1.8 0 01-2.6-2.6l8.2-8.2" />
+              </svg>
             </button>
+
             <textarea
               ref={inputRef}
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (!loading) void askQuestion();
+              onChange={(event) =>
+                setQuery(
+                  event.target.value,
+                )
+              }
+              onKeyDown={(event) => {
+                if (
+                  event.key ===
+                    "Enter" &&
+                  !event.shiftKey
+                ) {
+                  event.preventDefault();
+
+                  if (!loading) {
+                    void askQuestion();
+                  }
                 }
               }}
-              placeholder={documents.length > 0 ? "Ask a question about your documents…" : "Ask a question or add a document…"}
+              placeholder={
+                documents.length > 0
+                  ? "Ask a question about your documents…"
+                  : "Ask a question or add a document…"
+              }
               rows={1}
               aria-label="Ask EvidenceRAG"
               readOnly={loading}
             />
-            <button type="submit" className="send-button" disabled={loading || !query.trim()} aria-label="Ask question">
-              {loading ? <span className="spin" /> : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>}
+
+            <button
+              type="submit"
+              className="send-button"
+              disabled={
+                loading ||
+                !query.trim()
+              }
+              aria-label="Ask question"
+            >
+              {loading ? (
+                <span className="spin" />
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+              )}
             </button>
           </div>
-          <span className="composer-hint">Enter to ask · Shift+Enter for new line</span>
+
+          <span className="composer-hint">
+            Enter to ask ·
+            Shift+Enter for new line
+          </span>
         </div>
       </form>
 
       {error && (
-        <div className="toast" role="alert">
+        <div
+          className="toast"
+          role="alert"
+        >
           <span>{error}</span>
-          <button type="button" onClick={() => setError("")} aria-label="Dismiss error">×</button>
+
+          <button
+            type="button"
+            onClick={() =>
+              setError("")
+            }
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
         </div>
       )}
 
       {dragging && (
-        <div className="drop" aria-hidden="true">
-          <div className="drop-card"><i /><i /><i /><strong>Drop to add document</strong><span>PDF, TXT or Markdown</span></div>
+        <div
+          className="drop"
+          aria-hidden="true"
+        >
+          <div className="drop-card">
+            <i />
+            <i />
+            <i />
+            <strong>
+              Drop to add document
+            </strong>
+            <span>
+              PDF, TXT or Markdown
+            </span>
+          </div>
         </div>
       )}
 
-      <DocumentSidebar documents={documents} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onUpload={uploadDocument} onDelete={deleteDocument} uploading={uploading} error={error} />
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} apiBase={API_BASE} theme={theme} onThemeChange={handleThemeChange} demoMode={demoMode} onDemoModeChange={setDemoMode} />
+      <DocumentSidebar
+        documents={documents}
+        open={sidebarOpen}
+        onClose={() =>
+          setSidebarOpen(false)
+        }
+        onUpload={
+          uploadDocument
+        }
+        onDelete={
+          deleteDocument
+        }
+        uploading={uploading}
+        error={error}
+      />
+
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={() =>
+          setSettingsOpen(false)
+        }
+        apiBase={API_BASE}
+        theme={theme}
+        onThemeChange={
+          handleThemeChange
+        }
+        demoMode={demoMode}
+        onDemoModeChange={
+          setDemoMode
+        }
+      />
     </div>
   );
 }
@@ -889,7 +1511,9 @@ function normalizeQueryResponse(
     "I could not find a verified answer in the indexed documents.";
 
   const citedIds =
-    extractCitationIds(answer);
+    extractCitationIds(
+      answer,
+    );
 
   const sources =
     normalizeSources(
@@ -903,7 +1527,8 @@ function normalizeQueryResponse(
     );
 
   return {
-    answer: cleanAnswer(answer),
+    answer:
+      cleanAnswer(answer),
     sources,
     verification,
   };
@@ -911,18 +1536,27 @@ function normalizeQueryResponse(
 
 function normalizeSources(
   rawSources: any,
-  citedIds: Set<number> = new Set<number>(),
+  citedIds: Set<number> =
+    new Set<number>(),
 ): EvidenceSource[] {
-  if (!Array.isArray(rawSources)) {
+  if (
+    !Array.isArray(
+      rawSources,
+    )
+  ) {
     return [];
   }
 
   return rawSources.map(
-    (item: any, index: number) => {
+    (
+      item: any,
+      index: number,
+    ) => {
       const id =
         Number(
           item?.id ??
             item?.evidence_id ??
+            item?.evidenceId ??
             index + 1,
         );
 
@@ -942,10 +1576,13 @@ function normalizeSources(
           item?.filename ||
           "Unknown document",
         page:
-          item?.page === undefined ||
+          item?.page ===
+              undefined ||
           item?.page === null
             ? null
-            : Number(item.page),
+            : Number(
+                item.page,
+              ),
         score,
         label:
           getRelevanceLabel(
@@ -979,12 +1616,13 @@ function normalizeVerification(
     };
   }
 
-  const total = Number(
-    raw.total ??
-      raw.total_claims ??
-      raw.claims ??
-      0,
-  );
+  const total =
+    Number(
+      raw.total ??
+        raw.total_claims ??
+        raw.claims ??
+        0,
+    );
 
   const supportedClaims =
     Number(
@@ -996,12 +1634,15 @@ function normalizeVerification(
     );
 
   return {
-    supported: Boolean(
-      raw.supported,
-    ),
+    supported:
+      Boolean(
+        raw.supported,
+      ),
     total:
       total ||
-      (raw.supported ? 1 : 0),
+      (raw.supported
+        ? 1
+        : 0),
     supportedClaims,
     reason:
       raw.reason ||
@@ -1014,18 +1655,26 @@ function normalizeVerification(
 function extractCitationIds(
   text: string,
 ): Set<number> {
-  const ids = new Set<number>();
+  const ids =
+    new Set<number>();
 
   const pattern =
     /\[\s*Evidence\s*(\d+)\s*\]/gi;
 
-  let match: RegExpExecArray | null;
+  let match:
+    RegExpExecArray | null;
 
   while (
     (match =
-      pattern.exec(text)) !== null
+      pattern.exec(
+        text,
+      )) !== null
   ) {
-    ids.add(Number(match[1]));
+    ids.add(
+      Number(
+        match[1],
+      ),
+    );
   }
 
   return ids;
@@ -1034,7 +1683,9 @@ function extractCitationIds(
 function cleanAnswer(
   text: string,
 ) {
-  return String(text || "")
+  return String(
+    text || "",
+  )
     .replace(
       /\[\s*Evidence\s*(\d+)\s*\]/gi,
       "[Evidence $1]",
@@ -1071,7 +1722,10 @@ function completedStages(
   elapsed: number,
 ): ProgressStage[] {
   const total =
-    Math.max(elapsed, 300);
+    Math.max(
+      elapsed,
+      300,
+    );
 
   return [
     {
@@ -1126,9 +1780,11 @@ function updateStagesFromEvent(
     (stage) => ({
       ...stage,
       complete:
-        stage.i <= stageNumber,
+        stage.i <=
+        stageNumber,
       ms:
-        stage.i <= stageNumber
+        stage.i <=
+        stageNumber
           ? ms
           : 0,
     }),
@@ -1142,24 +1798,38 @@ function parseSseEvent(
   data: any;
 } | null {
   const lines =
-    event.split("\n");
+    event.split(
+      "\n",
+    );
 
-  let eventType = "message";
+  let eventType =
+    "message";
+
   let data = "";
 
-  for (const line of lines) {
+  for (
+    const line of lines
+  ) {
     if (
-      line.startsWith("event:")
+      line.startsWith(
+        "event:",
+      )
     ) {
       eventType =
-        line.slice(6).trim();
+        line
+          .slice(6)
+          .trim();
     }
 
     if (
-      line.startsWith("data:")
+      line.startsWith(
+        "data:",
+      )
     ) {
       data +=
-        line.slice(5).trim();
+        line
+          .slice(5)
+          .trim();
     }
   }
 
@@ -1169,12 +1839,17 @@ function parseSseEvent(
 
   try {
     return {
-      type: eventType,
-      data: JSON.parse(data),
+      type:
+        eventType,
+      data:
+        JSON.parse(
+          data,
+        ),
     };
   } catch {
     return {
-      type: eventType,
+      type:
+        eventType,
       data: {
         t: data,
       },

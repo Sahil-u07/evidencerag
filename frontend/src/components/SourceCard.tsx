@@ -55,12 +55,10 @@ export default function SourceCard({
         </span>
 
         <details className="full-passage">
-          <summary>
-            Show full passage
-          </summary>
+          <summary>Show full passage</summary>
 
           <div className="full-passage-content">
-            {source.text}
+            {cleanPassage(source.text)}
           </div>
         </details>
       </div>
@@ -68,8 +66,9 @@ export default function SourceCard({
   );
 }
 
-function cleanPassage(text: string) {
+function cleanPassage(text: string): string {
   return text
+    .replace(/\\([#*_`])/g, "$1")
     .replace(/^#{1,6}\s*/gm, "")
     .replace(/```[\s\S]*?```/g, "")
     .replace(/\*\*(.*?)\*\*/g, "$1")

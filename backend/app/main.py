@@ -631,8 +631,9 @@ def stream_query_events(
         yield sse_event(
             "error",
             {
-                "message":
-                    "Retrieval system is not ready.",
+                "message": (
+                    "Retrieval system is not ready."
+                ),
             },
         )
         return
@@ -660,6 +661,18 @@ def stream_query_events(
                     retrieval_ms,
                     2,
                 ),
+            },
+        )
+
+        yield sse_event(
+            "sources",
+            {
+                "items": [
+                    item.model_dump()
+                    for item in serialize_evidence(
+                        evidence
+                    )
+                ],
             },
         )
 
@@ -732,38 +745,43 @@ def stream_query_events(
         ) * 1000
 
         yield sse_event(
-            "sources",
-            {
-                "items": [
-                    item.model_dump()
-                    for item in serialize_evidence(
-                        evidence
-                    )
-                ],
-            },
-        )
-
-        yield sse_event(
             "verification",
             {
                 "supported":
                     verification.supported,
                 "total":
-                    max(
-                        1,
-                        cited_evidence_count,
-                    ),
+                    1 if cited_evidence_count else 0,
                 "supported_claims":
                     (
-                        max(
-                            1,
-                            cited_evidence_count,
-                        )
+                        1
                         if verification.supported
                         else 0
                     ),
                 "reason":
                     verification.reason,
+            },
+        )
+
+        if verification.supported:
+            final_answer = cited_answer
+        else:
+            final_answer = (
+                "I don't have enough verified evidence "
+                "in the indexed documents to answer "
+                "this question."
+            )
+
+        yield sse_event(
+            "final",
+            {
+                "answer": final_answer,
+                "supported":
+                    verification.supported,
+                "latency_ms":
+                    round(
+                        total_ms,
+                        2,
+                    ),
             },
         )
 
