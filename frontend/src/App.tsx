@@ -714,6 +714,14 @@ export default function App() {
                   "",
               );
 
+            sources =
+              normalizeSources(
+                sources,
+                extractCitationIds(
+                  finalAnswer,
+                ),
+              );
+
             updateAssistant(
               assistantId,
               {
@@ -721,6 +729,7 @@ export default function App() {
                   cleanAnswer(
                     finalAnswer,
                   ),
+                sources,
                 verification,
                 loading: false,
               },
@@ -1603,9 +1612,7 @@ function normalizeSources(
           item?.content ||
           "",
         used:
-          citedIds.size === 0
-            ? index === 0
-            : citedIds.has(id),
+          citedIds.has(id),
       };
     },
   );

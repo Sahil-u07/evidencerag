@@ -67,13 +67,18 @@ export default function SourceCard({
 }
 
 function cleanPassage(text: string): string {
-  return text
-    .replace(/\\([#*_`])/g, "$1")
-    .replace(/^#{1,6}\s*/gm, "")
+  return String(text || "")
+    // Remove escaped Markdown markers such as \# and \\#.
+    .replace(/\\+(?=[#*_`])/g, "")
+    // Remove Markdown heading markers while preserving the text.
+    .replace(/(^|\s)#{1,6}\s+/g, "$1")
+    // Remove fenced code blocks.
     .replace(/```[\s\S]*?```/g, "")
+    // Remove common inline Markdown emphasis/code.
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/\*(.*?)\*/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
+    // Flatten extracted document whitespace for readable cards.
     .replace(/\r?\n+/g, " ")
     .replace(/\s{2,}/g, " ")
     .trim();
