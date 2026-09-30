@@ -108,7 +108,7 @@ def test_health_endpoint(client):
     assert data["status"] == "ok"
     assert data["ready"] is True
     assert data["generator"] == "ollama"
-    assert data["model"] == "llama3.2:3b"
+    assert data["model"] == "llama3.2:1b"
 
 
 def test_request_id_header(client):

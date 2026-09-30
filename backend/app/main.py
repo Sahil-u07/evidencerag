@@ -641,6 +641,9 @@ def stream_query_events(
     started_at = time.perf_counter()
 
     try:
+        # -----------------------------------------------------
+        # Stage 1: Retrieval + reranking
+        # -----------------------------------------------------
         retrieval_start = time.perf_counter()
 
         evidence = state.retriever.search(
@@ -676,16 +679,11 @@ def stream_query_events(
             },
         )
 
-        yield sse_event(
-            "stage",
-            {
-                "i": 2,
-                "ms": round(
-                    retrieval_ms,
-                    2,
-                ),
-            },
-        )
+        # -----------------------------------------------------
+        # Stage 2: Generation
+        # Tokens stream while this stage is active.
+        # -----------------------------------------------------
+        generation_start = time.perf_counter()
 
         answer_parts: list[str] = []
 
@@ -702,6 +700,22 @@ def stream_query_events(
                 },
             )
 
+        generation_ms = (
+            time.perf_counter()
+            - generation_start
+        ) * 1000
+
+        yield sse_event(
+            "stage",
+            {
+                "i": 2,
+                "ms": round(
+                    generation_ms,
+                    2,
+                ),
+            },
+        )
+
         raw_answer = "".join(
             answer_parts
         ).strip()
@@ -711,6 +725,11 @@ def stream_query_events(
                 "RAG pipeline is not ready."
             )
 
+        # -----------------------------------------------------
+        # Citation alignment
+        # -----------------------------------------------------
+        citation_start = time.perf_counter()
+
         cited_answer = (
             state.pipeline._attach_citation(
                 raw_answer,
@@ -718,9 +737,15 @@ def stream_query_events(
             )
         )
 
-        verification_start = (
+        citation_ms = (
             time.perf_counter()
-        )
+            - citation_start
+        ) * 1000
+
+        # -----------------------------------------------------
+        # Stage 3: Grounding verification
+        # -----------------------------------------------------
+        verification_start = time.perf_counter()
 
         verification = (
             state.pipeline.verifier
@@ -735,30 +760,32 @@ def stream_query_events(
             - verification_start
         ) * 1000
 
+        yield sse_event(
+            "stage",
+            {
+                "i": 3,
+                "ms": round(
+                    verification_ms,
+                    2,
+                ),
+            },
+        )
+
         cited_evidence_count = len(
             verification.cited_evidence
         )
 
-        total_ms = (
-            time.perf_counter()
-            - started_at
-        ) * 1000
-
         yield sse_event(
             "verification",
             {
-                "supported":
-                    verification.supported,
-                "total":
-                    1 if cited_evidence_count else 0,
-                "supported_claims":
-                    (
-                        1
-                        if verification.supported
-                        else 0
-                    ),
-                "reason":
-                    verification.reason,
+                "supported": verification.supported,
+                "total": 1 if cited_evidence_count else 0,
+                "supported_claims": (
+                    1
+                    if verification.supported
+                    else 0
+                ),
+                "reason": verification.reason,
             },
         )
 
@@ -771,26 +798,18 @@ def stream_query_events(
                 "this question."
             )
 
+        total_ms = (
+            time.perf_counter()
+            - started_at
+        ) * 1000
+
         yield sse_event(
             "final",
             {
                 "answer": final_answer,
-                "supported":
-                    verification.supported,
-                "latency_ms":
-                    round(
-                        total_ms,
-                        2,
-                    ),
-            },
-        )
-
-        yield sse_event(
-            "stage",
-            {
-                "i": 3,
-                "ms": round(
-                    verification_ms,
+                "supported": verification.supported,
+                "latency_ms": round(
+                    total_ms,
                     2,
                 ),
             },
@@ -798,10 +817,13 @@ def stream_query_events(
 
         logger.info(
             "Streaming RAG timing | total=%.0fms "
-            "retrieval=%.0fms verification=%.0fms "
+            "retrieval=%.0fms generation=%.0fms "
+            "citation=%.0fms verification=%.0fms "
             "evidence=%d",
             total_ms,
             retrieval_ms,
+            generation_ms,
+            citation_ms,
             verification_ms,
             len(evidence),
         )
@@ -809,13 +831,11 @@ def stream_query_events(
         yield sse_event(
             "done",
             {
-                "latency_ms":
-                    round(
-                        total_ms,
-                        2,
-                    ),
-                "supported":
-                    verification.supported,
+                "latency_ms": round(
+                    total_ms,
+                    2,
+                ),
+                "supported": verification.supported,
             },
         )
 
@@ -943,7 +963,7 @@ def health() -> dict[str, str | bool]:
             and state.retriever is not None
         ),
         "generator": "ollama",
-        "model": "llama3.2:3b",
+        "model": "llama3.2:1b",
     }
 
 
@@ -1018,7 +1038,7 @@ def ask_question(
             detail=(
                 "RAG generation failed. "
                 "Make sure Ollama is running and "
-                "llama3.2:3b is available."
+                "llama3.2:1b is available."
             ),
         ) from exc
 

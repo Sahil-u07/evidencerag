@@ -21,18 +21,20 @@ export default function ProgressSteps({
       aria-label="Answer progress"
     >
       {stages.map((stage, index) => {
+        const firstIncomplete =
+          stages.findIndex(
+            (item) => !item.complete,
+          );
+
         const isActive =
           loading &&
           !stage.complete &&
-          index ===
-            stages.findIndex(
-              (item) => !item.complete,
-            );
+          index === firstIncomplete;
 
         const isFailed =
           failed &&
           !stage.complete &&
-          index === stages.findIndex((item) => !item.complete);
+          index === firstIncomplete;
 
         return (
           <div
@@ -42,8 +44,8 @@ export default function ProgressSteps({
                 : isFailed
                   ? "is-failed"
                   : isActive
-                  ? "is-active"
-                  : ""
+                    ? "is-active"
+                    : ""
             }`}
             key={`${stage.i}-${stage.label}`}
           >
@@ -51,7 +53,11 @@ export default function ProgressSteps({
               className="progress-icon"
               aria-hidden="true"
             >
-              {stage.complete ? "✓" : isFailed ? "!" : ""}
+              {stage.complete
+                ? "?"
+                : isFailed
+                  ? "!"
+                  : ""}
             </span>
 
             <span className="progress-label">
@@ -72,7 +78,7 @@ export default function ProgressSteps({
 
 function formatStageTime(ms: number) {
   if (ms < 1000) {
-    return `${Math.round(ms)} ms`;
+    return "<1 s";
   }
 
   return `${(ms / 1000).toFixed(1)} s`;

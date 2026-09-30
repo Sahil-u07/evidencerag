@@ -583,6 +583,13 @@ export default function App() {
         | VerificationState
         | null = null;
 
+      let stages =
+        INITIAL_STAGES.map(
+          (stage) => ({
+            ...stage,
+          }),
+        );
+
       while (true) {
         const {
           done,
@@ -632,6 +639,7 @@ export default function App() {
               {
                 stages:
                   updateStagesFromEvent(
+                    stages,
                     parsed.data,
                   ),
               },
@@ -1759,6 +1767,7 @@ function completedStages(
 }
 
 function updateStagesFromEvent(
+  previousStages: ProgressStage[],
   data: any,
 ): ProgressStage[] {
   const stageNumber =
@@ -1769,25 +1778,38 @@ function updateStagesFromEvent(
         1,
     );
 
-  const ms =
+  const stageMs =
     Number(
       data?.ms ??
         data?.elapsed_ms ??
         0,
     );
 
-  return INITIAL_STAGES.map(
-    (stage) => ({
-      ...stage,
-      complete:
-        stage.i <=
-        stageNumber,
-      ms:
-        stage.i <=
-        stageNumber
-          ? ms
-          : 0,
-    }),
+  return previousStages.map(
+    (stage) => {
+      if (stage.i < stageNumber) {
+        return {
+          ...stage,
+          complete: true,
+        };
+      }
+
+      if (stage.i === stageNumber) {
+        return {
+          ...stage,
+          complete: true,
+          ms:
+            stageMs > 0
+              ? stageMs
+              : stage.ms,
+        };
+      }
+
+      return {
+        ...stage,
+        complete: false,
+      };
+    },
   );
 }
 
