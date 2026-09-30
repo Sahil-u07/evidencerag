@@ -634,14 +634,16 @@ export default function App() {
             parsed.type ===
             "stage"
           ) {
+            stages =
+              updateStagesFromEvent(
+                stages,
+                parsed.data,
+              );
+
             updateAssistant(
               assistantId,
               {
-                stages:
-                  updateStagesFromEvent(
-                    stages,
-                    parsed.data,
-                  ),
+                stages,
               },
             );
           }
@@ -755,10 +757,7 @@ export default function App() {
                   ),
                 sources,
                 verification,
-                stages:
-                  completedStages(
-                    elapsed,
-                  ),
+                stages,
                 responseTimeMs:
                   parsed.data
                     ?.latency_ms ||
@@ -797,10 +796,7 @@ export default function App() {
             ),
           sources,
           verification,
-          stages:
-            completedStages(
-              elapsed,
-            ),
+          stages,
           responseTimeMs:
             elapsed,
         },

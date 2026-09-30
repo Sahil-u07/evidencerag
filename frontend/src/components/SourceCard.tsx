@@ -67,18 +67,57 @@ export default function SourceCard({
 }
 
 function cleanPassage(text: string): string {
-  return String(text || "")
-    // Remove escaped Markdown markers such as \# and \\#.
-    .replace(/\\+(?=[#*_`])/g, "")
-    // Remove Markdown heading markers while preserving the text.
-    .replace(/(^|\s)#{1,6}\s+/g, "$1")
-    // Remove fenced code blocks.
-    .replace(/```[\s\S]*?```/g, "")
-    // Remove common inline Markdown emphasis/code.
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/\*(.*?)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    // Flatten extracted document whitespace for readable cards.
+  let cleaned = String(text || "");
+
+  // Normalize escaped Markdown markers.
+  cleaned = cleaned.replace(
+    /\\+(?=[#*_`])/g,
+    "",
+  );
+
+  // Remove duplicated Markdown heading titles:
+  // "## BM25 BM25 is..." -> "BM25 is..."
+  // "## Dense Retrieval Dense retrieval..." -> "Dense retrieval..."
+  cleaned = cleaned.replace(
+    /#{1,6}\s+([A-Za-z][A-Za-z0-9 _/-]{1,40})\s+\1\b/gi,
+    "$1",
+  );
+
+  // Remove remaining Markdown heading markers.
+  cleaned = cleaned.replace(
+    /(^|\s)#{1,6}\s+/g,
+    "$1",
+  );
+
+  // Remove fenced code blocks.
+  cleaned = cleaned.replace(
+    /```[\s\S]*?```/g,
+    "",
+  );
+
+  // Remove common inline Markdown formatting.
+  cleaned = cleaned
+    .replace(
+      /\*\*(.*?)\*\*/g,
+      "$1",
+    )
+    .replace(
+      /\*(.*?)\*/g,
+      "$1",
+    )
+    .replace(
+      /`([^`]+)`/g,
+      "$1",
+    );
+
+  // Remove accidental immediately repeated words/phrases.
+  cleaned = cleaned.replace(
+    /\b([A-Za-z0-9][A-Za-z0-9_-]{1,30})\s+\1\b/gi,
+    "$1",
+  );
+
+  // Flatten document whitespace for the source card.
+  return cleaned
     .replace(/\r?\n+/g, " ")
     .replace(/\s{2,}/g, " ")
     .trim();
