@@ -107,65 +107,47 @@ class RAGPipeline:
 
         answer = self._normalize_citations(answer)
 
-        sentences = split_sentences(answer)
+        cited_lines = []
 
-        cited_sentences = []
+        for line in answer.splitlines():
+            sentences = [
+                self._cite_sentence(sentence, evidence)
+                for sentence in split_sentences(line)
+            ]
 
-        for sentence in sentences:
-            sentence = sentence.strip()
+            if sentences:
+                cited_lines.append(" ".join(sentences))
 
-            if not sentence:
+        return "\n".join(cited_lines)
+
+    def _cite_sentence(self, sentence: str, evidence: list) -> str:
+        if self.CITATION_PATTERN.search(sentence):
+            return self._normalize_citations(sentence)
+
+        claim_tokens = self._tokens(sentence)
+
+        if not claim_tokens:
+            return sentence
+
+        best_index = None
+        best_score = 0.0
+
+        for index, reranked_result in enumerate(evidence, start=1):
+            evidence_tokens = self._tokens(reranked_result.result.chunk.text)
+
+            if not evidence_tokens:
                 continue
 
-            if self.CITATION_PATTERN.search(sentence):
-                cited_sentences.append(
-                    self._normalize_citations(sentence)
-                )
-                continue
+            score = len(claim_tokens & evidence_tokens) / len(claim_tokens)
 
-            claim_tokens = self._tokens(sentence)
+            if score > best_score:
+                best_score = score
+                best_index = index
 
-            if not claim_tokens:
-                cited_sentences.append(sentence)
-                continue
+        if best_index is not None and best_score >= 0.50:
+            return f"{sentence} [Evidence {best_index}]"
 
-            best_index = None
-            best_score = 0.0
-
-            for index, reranked_result in enumerate(
-                evidence,
-                start=1,
-            ):
-                evidence_text = (
-                    reranked_result.result.chunk.text
-                )
-
-                evidence_tokens = self._tokens(
-                    evidence_text
-                )
-
-                if not evidence_tokens:
-                    continue
-
-                overlap = claim_tokens & evidence_tokens
-
-                score = len(overlap) / len(claim_tokens)
-
-                if score > best_score:
-                    best_score = score
-                    best_index = index
-
-            if (
-                best_index is not None
-                and best_score >= 0.50
-            ):
-                sentence = (
-                    f"{sentence} [Evidence {best_index}]"
-                )
-
-            cited_sentences.append(sentence)
-
-        return " ".join(cited_sentences)
+        return sentence
 
     def ask(
         self,

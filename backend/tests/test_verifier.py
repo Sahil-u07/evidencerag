@@ -435,3 +435,27 @@ def test_lexical_fallback_rejects_wrong_number(claim):
     )
 
     assert result.supported is False
+
+
+def test_lexical_fallback_treats_digit_and_word_numbers_as_equal():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "A deadlock requires 4 conditions: mutual exclusion, hold and wait, no preemption, circular wait. [Evidence 1]",
+        [make_evidence("A deadlock requires four conditions: mutual exclusion, hold and wait, no preemption, circular wait.")],
+    )
+
+    assert result.supported is True
+
+
+def test_lexical_fallback_does_not_treat_pronoun_one_as_a_number():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "One of the fields must be present in the request message header. [Evidence 1]",
+        [make_evidence("The fields must be present in the request message header.")],
+    )
+
+    assert result.supported is True

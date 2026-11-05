@@ -10,10 +10,12 @@ from app.core.text import split_sentences
 
 NLI_MODEL = "cross-encoder/nli-MiniLM2-L6-H768"
 
-NUMBER_WORDS = frozenset(
-    "zero one two three four five six seven eight nine ten eleven twelve "
-    "hundred thousand million".split()
-)
+# "one" is left out because it is mostly a pronoun.
+NUMBER_WORDS = {
+    word: str(value)
+    for value, word in enumerate("zero one two three four five six seven eight nine ten eleven twelve".split())
+    if word != "one"
+} | {word: word for word in ("hundred", "thousand", "million")}
 NEGATION = re.compile(r"\b(?:not|no|never|none|cannot|without|neither|nor)\b|n't\b", re.IGNORECASE)
 
 
@@ -263,7 +265,7 @@ class EvidenceVerifier:
     @staticmethod
     def _numbers(text: str) -> set[str]:
         lowered = text.lower()
-        words = set(re.findall(r"[a-z]+", lowered)) & NUMBER_WORDS
+        words = {NUMBER_WORDS[word] for word in re.findall(r"[a-z]+", lowered) if word in NUMBER_WORDS}
         return words | set(re.findall(r"\d+(?:\.\d+)?", lowered))
 
     @staticmethod
