@@ -24,7 +24,7 @@ from app.evaluation.metrics import (
     recall_at_k,
     reciprocal_rank,
 )
-from app.ingestion.chunker import chunk_documents
+from app.ingestion.chunker import build_chunks
 from app.ingestion.loader import load_document
 from app.reranking.cross_encoder import CrossEncoderReranker
 from app.reranking.reranked_hybrid import RerankedHybridRetriever
@@ -68,7 +68,7 @@ def v1_config(config: RetrievalConfig) -> RetrievalConfig:
 
 def chunk_corpus(paths: list[Path], config: RetrievalConfig) -> list:
     documents = [document for path in paths for document in load_document(path)]
-    return chunk_documents(documents, chunk_size=config.chunk_size, overlap=config.chunk_overlap)
+    return build_chunks(documents, config.chunking, config.chunk_size, config.chunk_overlap)
 
 
 def v2_corpus_paths() -> list[Path]:
