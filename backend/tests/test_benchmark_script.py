@@ -65,3 +65,16 @@ def test_report_counts_repeat_test_runs(tmp_path, monkeypatch):
     assert report["run_count"] == 2
     assert report["config"]["candidate_k"] == config.candidate_k
     assert "git_commit" in report
+
+
+def test_v1_report_records_the_pinned_config(tmp_path, monkeypatch):
+    monkeypatch.setattr(benchmark, "REPORTS_DIR", tmp_path)
+    monkeypatch.setattr(benchmark, "run_v1", lambda config: {"ran_with": config.chunk_size})
+    monkeypatch.setattr(benchmark, "print_retrieval", lambda result: None)
+
+    benchmark.main(["retrieval", "--set", "v1", "--chunk-size", "100", "--label", "x"])
+
+    report = json.loads((tmp_path / "x-retrieval-v1.json").read_text(encoding="utf-8"))
+    assert report["config"]["chunking"] == "words"
+    assert report["config"]["chunk_size"] == 50
+    assert report["config"]["chunk_overlap"] == 10

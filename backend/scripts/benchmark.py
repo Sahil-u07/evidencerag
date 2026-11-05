@@ -62,6 +62,10 @@ class RetrievalConfig:
 V1_CONFIG_FIELDS = {"chunking": "words", "chunk_size": 50, "chunk_overlap": 10}
 
 
+def v1_config(config: RetrievalConfig) -> RetrievalConfig:
+    return RetrievalConfig(**{**asdict(config), **V1_CONFIG_FIELDS})
+
+
 def chunk_corpus(paths: list[Path], config: RetrievalConfig) -> list:
     documents = [document for path in paths for document in load_document(path)]
     return chunk_documents(documents, chunk_size=config.chunk_size, overlap=config.chunk_overlap)
@@ -146,12 +150,12 @@ def summarize(per_query: list[dict]) -> dict:
 
 
 def run_v1(config: RetrievalConfig) -> dict:
-    v1_config = RetrievalConfig(**{**asdict(config), **V1_CONFIG_FIELDS})
-    chunks = chunk_corpus(sorted(V1_CORPUS.glob("*.md")), v1_config)
+    config = v1_config(config)
+    chunks = chunk_corpus(sorted(V1_CORPUS.glob("*.md")), config)
     golden = json.loads(V1_GOLDEN.read_text(encoding="utf-8"))
     results = {}
 
-    for name, search in build_systems(chunks, v1_config).items():
+    for name, search in build_systems(chunks, config).items():
         per_query = []
         for item in golden:
             started = time.perf_counter()
@@ -350,6 +354,7 @@ def main(argv: list[str] | None = None) -> None:
         result = run_verification(args.set_name)
         print(json.dumps({key: value for key, value in result.items() if key != "per_case"}, indent=2))
     elif args.set_name == "v1":
+        config = v1_config(config)
         result = run_v1(config)
         print_retrieval(result)
     else:
