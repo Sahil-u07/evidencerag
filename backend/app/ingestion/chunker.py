@@ -1,6 +1,12 @@
 from app.ingestion.models import DocumentChunk
 
 
+def chunk_id(document: DocumentChunk, number: int) -> str:
+    if document.page is None:
+        return f"{document.source}:{number}"
+    return f"{document.source}:p{document.page}:{number}"
+
+
 def chunk_documents(
     documents: list[DocumentChunk],
     chunk_size: int = 800,
@@ -33,7 +39,7 @@ def chunk_documents(
                     text=" ".join(chunk_words),
                     source=document.source,
                     page=document.page,
-                    chunk_id=f"{document.source}:{chunk_number}",
+                    chunk_id=chunk_id(document, chunk_number),
                     metadata=document.metadata.copy(),
                 )
             )

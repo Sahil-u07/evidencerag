@@ -61,3 +61,22 @@ def test_unsupported_file_type(tmp_path: Path):
 
     with pytest.raises(ValueError, match="Unsupported file type"):
         load_document(file_path)
+
+
+def test_chunk_ids_are_unique_across_pdf_pages():
+    pages = [
+        DocumentChunk(text="alpha beta gamma", source="a.pdf", page=1),
+        DocumentChunk(text="delta epsilon zeta", source="a.pdf", page=2),
+    ]
+
+    chunks = chunk_documents(pages, chunk_size=3, overlap=0)
+
+    assert [chunk.chunk_id for chunk in chunks] == ["a.pdf:p1:1", "a.pdf:p2:1"]
+
+
+def test_unpaged_chunk_ids_stay_stable_for_v1_labels():
+    document = DocumentChunk(text="alpha beta gamma", source="a.md")
+
+    chunks = chunk_documents([document], chunk_size=3, overlap=0)
+
+    assert chunks[0].chunk_id == "a.md:1"

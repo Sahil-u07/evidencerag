@@ -263,3 +263,75 @@ def test_incremental_index_preserves_existing_embeddings(
     assert np.all(
         embeddings[new_indices] == 1.0
     )
+
+
+class _FakeEmbedder:
+    def encode(self, texts):
+        return [[1.0, 0.0] for _ in texts]
+
+    def encode_query(self, query):
+        return [1.0, 0.0]
+
+
+class _FakeReranker:
+    def rerank(self, query, results, top_k=5):
+        return []
+
+
+def _patch_main(monkeypatch, tmp_path):
+    import app.main as main
+
+    uploads = tmp_path / "uploads"
+    uploads.mkdir()
+    monkeypatch.setattr(main, "UPLOAD_DIR", uploads)
+    monkeypatch.setattr(main, "TextEmbedder", _FakeEmbedder)
+    monkeypatch.setattr(main, "CrossEncoderReranker", _FakeReranker)
+    monkeypatch.setattr(main, "get_index_storage_dir", lambda: tmp_path / "index")
+    return main, uploads
+
+
+def test_benchmark_corpus_is_not_indexed(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    upload = uploads / "mine.txt"
+    upload.write_text("my document", encoding="utf-8")
+
+    assert main.collect_source_paths() == [upload]
+
+
+def test_app_starts_with_no_documents(monkeypatch, tmp_path):
+    main, _ = _patch_main(monkeypatch, tmp_path)
+
+    retriever = main.build_retriever()
+
+    assert retriever.search("anything", top_k=5) == []
+
+
+def test_deleting_last_document_empties_index(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    upload = uploads / "mine.txt"
+    upload.write_text("my document text", encoding="utf-8")
+    main.build_retriever()
+    upload.unlink()
+
+    retriever = main.build_retriever()
+
+    assert retriever.search("document", top_k=5) == []
+    assert not (tmp_path / "index" / "index.json").exists()
+
+
+def test_old_index_format_is_rebuilt(monkeypatch, tmp_path):
+    import json
+
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "mine.txt").write_text("my document text", encoding="utf-8")
+    main.build_retriever()
+
+    index_path = tmp_path / "index" / "index.json"
+    payload = json.loads(index_path.read_text(encoding="utf-8"))
+    payload["version"] = 2
+    index_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    main.build_retriever()
+
+    rebuilt = json.loads(index_path.read_text(encoding="utf-8"))
+    assert rebuilt["version"] == main.PersistentIndexStore.VERSION
