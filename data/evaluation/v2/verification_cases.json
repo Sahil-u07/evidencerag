@@ -1,0 +1,610 @@
+[
+  {
+    "id": "vc-001",
+    "split": "test",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "The 409 (Conflict) status code indicates that the request could not be completed due to a conflict with the current state of the target resource. [Evidence 1]",
+    "evidence": [
+      "The 409 (Conflict) status code indicates that the request could not be completed due to a conflict with the current state of the target resource.  This code is used in situations where the user might be able to resolve the conflict and resubmit the request."
+    ]
+  },
+  {
+    "id": "vc-002",
+    "split": "test",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "TCP uses port numbers to identify application services and to multiplex distinct flows between hosts. [Evidence 1]",
+    "evidence": [
+      "Data flow is supported bidirectionally over TCP connections, though applications are free to send data only unidirectionally, if they so choose. TCP uses port numbers to identify application services and to multiplex distinct flows between hosts."
+    ]
+  },
+  {
+    "id": "vc-003",
+    "split": "dev",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "Any data received after a closure alert has been received MUST be ignored. [Evidence 1]",
+    "evidence": [
+      "Either party MAY initiate a close of its write side of the connection by sending a \"close_notify\" alert.  Any data received after a closure alert has been received MUST be ignored."
+    ]
+  },
+  {
+    "id": "vc-004",
+    "split": "test",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "The client SHOULD request access tokens with the minimal scope necessary. [Evidence 1]",
+    "evidence": [
+      "The client SHOULD request access tokens with the minimal scope necessary.  The authorization server SHOULD take the client identity into account when choosing how to honor the requested scope and MAY issue an access token with less rights than requested."
+    ]
+  },
+  {
+    "id": "vc-005",
+    "split": "dev",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "UDP is not acceptable for zone transfers, but is the recommended method for standard queries in the Internet. [Evidence 1]",
+    "evidence": [
+      "UDP is not acceptable for zone transfers, but is the recommended method for standard queries in the Internet.  Queries sent using UDP may be lost, and hence a retransmission strategy is required."
+    ]
+  },
+  {
+    "id": "vc-006",
+    "split": "test",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "The contents of a JWT cannot be relied upon in a trust decision unless its contents have been cryptographically secured and bound to the context necessary for the trust decision. [Evidence 1]",
+    "evidence": [
+      "The contents of a JWT cannot be relied upon in a trust decision unless its contents have been cryptographically secured and bound to the context necessary for the trust decision."
+    ]
+  },
+  {
+    "id": "vc-007",
+    "split": "dev",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "A tunnel ceases to exist when both ends of the relayed connection are closed. [Evidence 1]",
+    "evidence": [
+      "A \"tunnel\" acts as a blind relay between two connections without changing the messages.  Once active, a tunnel is not considered a party to the HTTP communication, though the tunnel might have been initiated by an HTTP request.  A tunnel ceases to exist when both ends of the relayed connection are closed."
+    ]
+  },
+  {
+    "id": "vc-008",
+    "split": "dev",
+    "category": "verbatim",
+    "supported": true,
+    "answer": "Excessive retransmission of the same segment by a TCP endpoint indicates some failure of the remote host or the internetwork path. [Evidence 1]",
+    "evidence": [
+      "Excessive retransmission of the same segment by a TCP endpoint indicates some failure of the remote host or the internetwork path. This failure may be of short or long duration."
+    ]
+  },
+  {
+    "id": "vc-009",
+    "split": "dev",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "An urgent indication cannot be sent unless at least one byte of data goes with it. [Evidence 1]",
+    "evidence": [
+      "To send an urgent indication, the user must also send at least one data octet."
+    ]
+  },
+  {
+    "id": "vc-010",
+    "split": "test",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "When a server knows a resource is likely gone for good, it should favor a 410 response over a 404. [Evidence 1]",
+    "evidence": [
+      "A 404 status code does not indicate whether this lack of representation is temporary or permanent; the 410 (Gone) status code is preferred over 404 if the origin server knows, presumably through some configurable means, that the condition is likely to be permanent."
+    ]
+  },
+  {
+    "id": "vc-011",
+    "split": "test",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "A 204 response never carries a body or trailers. [Evidence 1]",
+    "evidence": [
+      "A 204 response is terminated by the end of the header section; it cannot contain content or trailers."
+    ]
+  },
+  {
+    "id": "vc-012",
+    "split": "dev",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "Before a record is encrypted, its padding bytes have to be set to zero. [Evidence 1]",
+    "evidence": [
+      "Padding is a string of zero-valued bytes appended to the ContentType field before encryption.  Implementations MUST set the padding octets to all zeros before encrypting."
+    ]
+  },
+  {
+    "id": "vc-013",
+    "split": "test",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "An authorization code may only be redeemed once and must not stay valid for long. [Evidence 1]",
+    "evidence": [
+      "Authorization codes MUST be short lived and single-use."
+    ]
+  },
+  {
+    "id": "vc-014",
+    "split": "dev",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "Answers to inverse queries should not be stored in a cache. [Evidence 1]",
+    "evidence": [
+      "The results of an inverse query should not be cached."
+    ]
+  },
+  {
+    "id": "vc-015",
+    "split": "dev",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "The iat claim can be used to work out how old a token is. [Evidence 1]",
+    "evidence": [
+      "The \"iat\" (issued at) claim identifies the time at which the JWT was issued.  This claim can be used to determine the age of the JWT."
+    ]
+  },
+  {
+    "id": "vc-016",
+    "split": "test",
+    "category": "paraphrase",
+    "supported": true,
+    "answer": "A client must drop a session ticket within a week at most, whatever lifetime the server stated. [Evidence 1]",
+    "evidence": [
+      "Clients MUST NOT cache tickets for longer than 7 days, regardless of the ticket_lifetime, and MAY delete tickets earlier based on local policy."
+    ]
+  },
+  {
+    "id": "vc-017",
+    "split": "test",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "The 2xx class means a request was successfully received, understood, and accepted. [Evidence 1] A 201 response means the request resulted in one or more new resources being created. [Evidence 2]",
+    "evidence": [
+      "The 2xx (Successful) class of status code indicates that the client's request was successfully received, understood, and accepted.",
+      "The 201 (Created) status code indicates that the request has been fulfilled and has resulted in one or more new resources being created."
+    ]
+  },
+  {
+    "id": "vc-018",
+    "split": "dev",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "SYN and FIN are the only controls that require implicitly assigned sequence numbers. [Evidence 1] An ACK does not occupy sequence number space. [Evidence 2]",
+    "evidence": [
+      "Consequently, we must adopt rules for implicitly assigning sequence numbers to control. The SYN and FIN are the only controls requiring this protection, and these controls are used only at connection opening and closing.",
+      "Note that the sequence number of the segment in line 5 is the same as in line 4 because the ACK does not occupy sequence number space (if it did, we would wind up ACKing ACKs!)."
+    ]
+  },
+  {
+    "id": "vc-019",
+    "split": "test",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "The supported_versions extension lists versions with the most preferred first. [Evidence 1] A server has to ignore any version in that list it does not recognize. [Evidence 2]",
+    "evidence": [
+      "The extension contains a list of supported versions in preference order, with the most preferred version first.",
+      "Servers MUST only select a version of TLS present in that extension and MUST ignore any unknown versions that are present in that extension."
+    ]
+  },
+  {
+    "id": "vc-020",
+    "split": "test",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "Refresh tokens must only be sent over TLS. [Evidence 1] The authorization server must keep track of which client each refresh token was issued to. [Evidence 2]",
+    "evidence": [
+      "Refresh tokens MUST only be transmitted using TLS as described in Section 1.6 with server authentication as defined by [RFC2818].",
+      "The authorization server MUST maintain the binding between a refresh token and the client to whom it was issued."
+    ]
+  },
+  {
+    "id": "vc-021",
+    "split": "test",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "The SERIAL field is an unsigned 32 bit version number of the zone's original copy. [Evidence 1] All SOA time values are given in seconds. [Evidence 2]",
+    "evidence": [
+      "SERIAL The unsigned 32 bit version number of the original copy of the zone.  Zone transfers preserve this value.",
+      "SOA records cause no additional section processing.  All times are in units of seconds."
+    ]
+  },
+  {
+    "id": "vc-022",
+    "split": "dev",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "Support for Nested JWTs is optional for implementations. [Evidence 1] When a JWT is nested, its cty header parameter must be present with the value JWT. [Evidence 2]",
+    "evidence": [
+      "Support for Nested JWTs is OPTIONAL.",
+      "The \"cty\" (content type) Header Parameter defined by [JWS] and [JWE] is used by this specification to convey structural information about the JWT.  In the normal case in which nested signing or encryption operations are not employed, the use of this Header Parameter is NOT RECOMMENDED.  In the case that nested signing or encryption is employed, this Header Parameter MUST be present; in this case, the value MUST be \"JWT\", to indicate that a Nested JWT is carried in this JWT."
+    ]
+  },
+  {
+    "id": "vc-023",
+    "split": "dev",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "An HTTP 401 response has to include a WWW-Authenticate header field. [Evidence 1] An authorization server must answer a client that fails authentication through the Authorization header with a 401. [Evidence 2]",
+    "evidence": [
+      "The server generating a 401 response MUST send a WWW-Authenticate header field (Section 11.6.1) containing at least one challenge applicable to the target resource.",
+      "invalid_client Client authentication failed (e.g., unknown client, no client authentication included, or unsupported authentication method).  The authorization server MAY return an HTTP 401 (Unauthorized) status code to indicate which HTTP authentication schemes are supported.  If the client attempted to authenticate via the \"Authorization\" request header field, the authorization server MUST respond with an HTTP 401 (Unauthorized) status code and include the \"WWW-Authenticate\" response header field matching the authentication scheme used by the client."
+    ]
+  },
+  {
+    "id": "vc-024",
+    "split": "dev",
+    "category": "multi_sentence",
+    "supported": true,
+    "answer": "A proxy may not generate a 421 response. [Evidence 1] A proxy may not generate \"*\" in a Vary field value. [Evidence 2]",
+    "evidence": [
+      "A proxy MUST NOT generate a 421 response.",
+      "A proxy MUST NOT generate \"*\" in a Vary field value."
+    ]
+  },
+  {
+    "id": "vc-025",
+    "split": "test",
+    "category": "abbreviation_or_decimal",
+    "supported": true,
+    "answer": "TLS 1.3 uses a single point format for each curve instead of negotiating one. [Evidence 1]",
+    "evidence": [
+      "Elliptic curve algorithms are now in the base spec, and new signature algorithms, such as EdDSA, are included.  TLS 1.3 removed point format negotiation in favor of a single point format for each curve."
+    ]
+  },
+  {
+    "id": "vc-026",
+    "split": "dev",
+    "category": "abbreviation_or_decimal",
+    "supported": true,
+    "answer": "A half-closed connection, i.e., one closed in only one direction, may still carry data in the open direction. [Evidence 1]",
+    "evidence": [
+      "Since the two directions of a TCP connection are closed independently, it is possible for a connection to be \"half closed\", i.e., closed in only one direction, and a host is permitted to continue sending data in the open direction on a half-closed connection."
+    ]
+  },
+  {
+    "id": "vc-027",
+    "split": "dev",
+    "category": "abbreviation_or_decimal",
+    "supported": true,
+    "answer": "A 400 response signals a perceived client error, e.g., malformed request syntax. [Evidence 1]",
+    "evidence": [
+      "The 400 (Bad Request) status code indicates that the server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing)."
+    ]
+  },
+  {
+    "id": "vc-028",
+    "split": "dev",
+    "category": "abbreviation_or_decimal",
+    "supported": true,
+    "answer": "The clock behind TCP initial sequence numbers cycles approximately every 4.55 hours. [Evidence 1]",
+    "evidence": [
+      "The clock component is intended to ensure that with a Maximum Segment Lifetime (MSL), generated ISNs will be unique since it cycles approximately every 4.55 hours, which is much longer than the MSL."
+    ]
+  },
+  {
+    "id": "vc-029",
+    "split": "test",
+    "category": "abbreviation_or_decimal",
+    "supported": true,
+    "answer": "The OFFSET field is measured from the start of the message, i.e., the first octet of the ID field. [Evidence 1]",
+    "evidence": [
+      "The OFFSET field specifies an offset from the start of the message (i.e., the first octet of the ID field in the domain header)."
+    ]
+  },
+  {
+    "id": "vc-030",
+    "split": "test",
+    "category": "abbreviation_or_decimal",
+    "supported": true,
+    "answer": "An invalid_client error is returned when client authentication fails, e.g., because the client is unknown. [Evidence 1]",
+    "evidence": [
+      "invalid_client Client authentication failed (e.g., unknown client, no client authentication included, or unsupported authentication method)."
+    ]
+  },
+  {
+    "id": "vc-031",
+    "split": "test",
+    "category": "negation",
+    "supported": false,
+    "answer": "The TCP checksum can be left out of a segment. [Evidence 1]",
+    "evidence": [
+      "The TCP checksum is never optional."
+    ]
+  },
+  {
+    "id": "vc-032",
+    "split": "dev",
+    "category": "negation",
+    "supported": false,
+    "answer": "Responses to the DELETE method are cacheable. [Evidence 1]",
+    "evidence": [
+      "Responses to the DELETE method are not cacheable.  If a successful DELETE request passes through a cache that has one or more stored responses for the target URI, those stored responses will be invalidated (see Section 4.4 of [CACHING])."
+    ]
+  },
+  {
+    "id": "vc-033",
+    "split": "dev",
+    "category": "negation",
+    "supported": false,
+    "answer": "Handshake messages after the ServerHello are sent unencrypted in TLS 1.3. [Evidence 1]",
+    "evidence": [
+      "All handshake messages after the ServerHello are now encrypted."
+    ]
+  },
+  {
+    "id": "vc-034",
+    "split": "dev",
+    "category": "negation",
+    "supported": false,
+    "answer": "The client identifier is a secret that can be used on its own to authenticate the client. [Evidence 1]",
+    "evidence": [
+      "The client identifier is not a secret; it is exposed to the resource owner and MUST NOT be used alone for client authentication."
+    ]
+  },
+  {
+    "id": "vc-035",
+    "split": "test",
+    "category": "negation",
+    "supported": false,
+    "answer": "Name servers are required to support recursive queries. [Evidence 1]",
+    "evidence": [
+      "If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional."
+    ]
+  },
+  {
+    "id": "vc-036",
+    "split": "test",
+    "category": "negation",
+    "supported": false,
+    "answer": "Conforming JWT implementations must support encrypted JWTs. [Evidence 1]",
+    "evidence": [
+      "Support for encrypted JWTs is OPTIONAL."
+    ]
+  },
+  {
+    "id": "vc-037",
+    "split": "dev",
+    "category": "wrong_number",
+    "supported": false,
+    "answer": "The TCP pseudo-header is 96 bits for IPv4 and 160 bits for IPv6. [Evidence 1]",
+    "evidence": [
+      "The pseudo-header is 96 bits for IPv4 and 320 bits for IPv6."
+    ]
+  },
+  {
+    "id": "vc-038",
+    "split": "test",
+    "category": "wrong_number",
+    "supported": false,
+    "answer": "A sender of qvalue must not generate more than two digits after the decimal point. [Evidence 1]",
+    "evidence": [
+      "A sender of qvalue MUST NOT generate more than three digits after the decimal point."
+    ]
+  },
+  {
+    "id": "vc-039",
+    "split": "dev",
+    "category": "wrong_number",
+    "supported": false,
+    "answer": "The full encoded TLSInnerPlaintext must not exceed 2^13 + 1 octets. [Evidence 1]",
+    "evidence": [
+      "The presence of padding does not change the overall record size limitations: the full encoded TLSInnerPlaintext MUST NOT exceed 2^14 + 1 octets."
+    ]
+  },
+  {
+    "id": "vc-040",
+    "split": "test",
+    "category": "wrong_number",
+    "supported": false,
+    "answer": "A maximum authorization code lifetime of 30 minutes is recommended. [Evidence 1]",
+    "evidence": [
+      "The authorization code MUST expire shortly after it is issued to mitigate the risk of leaks.  A maximum authorization code lifetime of 10 minutes is RECOMMENDED."
+    ]
+  },
+  {
+    "id": "vc-041",
+    "split": "dev",
+    "category": "wrong_number",
+    "supported": false,
+    "answer": "Messages carried by UDP are restricted to 256 bytes, not counting the IP or UDP headers. [Evidence 1]",
+    "evidence": [
+      "Messages carried by UDP are restricted to 512 bytes (not counting the IP or UDP headers).  Longer messages are truncated and the TC bit is set in the header."
+    ]
+  },
+  {
+    "id": "vc-042",
+    "split": "test",
+    "category": "wrong_number",
+    "supported": false,
+    "answer": "A NumericDate counts the number of seconds from 1980-01-01T00:00:00Z UTC. [Evidence 1]",
+    "evidence": [
+      "A JSON numeric value representing the number of seconds from 1970-01-01T00:00:00Z UTC until the specified UTC date/time, ignoring leap seconds."
+    ]
+  },
+  {
+    "id": "vc-043",
+    "split": "test",
+    "category": "wrong_entity",
+    "supported": false,
+    "answer": "Once the local user closes the connection, the TCP implementation enters the CLOSE-WAIT state. [Evidence 1]",
+    "evidence": [
+      "In this case, a FIN segment can be constructed and placed on the outgoing segment queue. No further SENDs from the user will be accepted by the TCP implementation, and it enters the FIN-WAIT-1 state."
+    ]
+  },
+  {
+    "id": "vc-044",
+    "split": "dev",
+    "category": "wrong_entity",
+    "supported": false,
+    "answer": "The 302 (Found) status code forbids the user agent from changing the request method on an automatic redirection. [Evidence 1]",
+    "evidence": [
+      "The 307 (Temporary Redirect) status code indicates that the target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI."
+    ]
+  },
+  {
+    "id": "vc-045",
+    "split": "test",
+    "category": "wrong_entity",
+    "supported": false,
+    "answer": "A TLS-compliant application must implement the TLS_CHACHA20_POLY1305_SHA256 cipher suite. [Evidence 1]",
+    "evidence": [
+      "A TLS-compliant application MUST implement the TLS_AES_128_GCM_SHA256 [GCM] cipher suite and SHOULD implement the TLS_AES_256_GCM_SHA384 [GCM] and TLS_CHACHA20_POLY1305_SHA256 [RFC8439] cipher suites (see Appendix B.4)."
+    ]
+  },
+  {
+    "id": "vc-046",
+    "split": "dev",
+    "category": "wrong_entity",
+    "supported": false,
+    "answer": "An expired or revoked refresh token results in an invalid_scope error. [Evidence 1]",
+    "evidence": [
+      "invalid_grant The provided authorization grant (e.g., authorization code, resource owner credentials) or refresh token is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client."
+    ]
+  },
+  {
+    "id": "vc-047",
+    "split": "test",
+    "category": "wrong_entity",
+    "supported": false,
+    "answer": "Mail exchange binding uses the mail domain to locate type NS RRs that list hosts willing to accept mail. [Evidence 1]",
+    "evidence": [
+      "The essence of the method is that the <mail-domain> is used as a domain name to locate type MX RRs which list hosts willing to accept mail for <mail-domain>, together with preference values which rank the hosts according to an order specified by the administrators for <mail-domain>."
+    ]
+  },
+  {
+    "id": "vc-048",
+    "split": "dev",
+    "category": "wrong_entity",
+    "supported": false,
+    "answer": "The \"exp\" claim identifies the time before which the JWT must not be accepted for processing. [Evidence 1]",
+    "evidence": [
+      "The \"nbf\" (not before) claim identifies the time before which the JWT MUST NOT be accepted for processing."
+    ]
+  },
+  {
+    "id": "vc-049",
+    "split": "test",
+    "category": "uncited",
+    "supported": false,
+    "answer": "The window in each segment indicates the range of sequence numbers the data receiver is currently prepared to accept. [Evidence 1] TCP peers renegotiate this window every 30 seconds.",
+    "evidence": [
+      "The window sent in each segment indicates the range of sequence numbers the sender of the window (the data receiver) is currently prepared to accept."
+    ]
+  },
+  {
+    "id": "vc-050",
+    "split": "test",
+    "category": "uncited",
+    "supported": false,
+    "answer": "Most servers answer such requests within 200 milliseconds. The 411 (Length Required) status code indicates that the server refuses to accept a request without a defined Content-Length. [Evidence 1]",
+    "evidence": [
+      "The 411 (Length Required) status code indicates that the server refuses to accept the request without a defined Content-Length (Section 8.6)."
+    ]
+  },
+  {
+    "id": "vc-051",
+    "split": "dev",
+    "category": "uncited",
+    "supported": false,
+    "answer": "The Finished message is the final message in the Authentication Block. [Evidence 1] It was first introduced in SSL 2.0 to reduce handshake latency.",
+    "evidence": [
+      "The Finished message is the final message in the Authentication Block.  It is essential for providing authentication of the handshake and of the computed keys."
+    ]
+  },
+  {
+    "id": "vc-052",
+    "split": "dev",
+    "category": "uncited",
+    "supported": false,
+    "answer": "Refresh tokens expire after 90 days by default. Authorization servers may issue refresh tokens to web application clients and native application clients. [Evidence 1]",
+    "evidence": [
+      "Authorization servers MAY issue refresh tokens to web application clients and native application clients."
+    ]
+  },
+  {
+    "id": "vc-053",
+    "split": "test",
+    "category": "uncited",
+    "supported": false,
+    "answer": "The QR bit shows whether a message is a query or a response. [Evidence 1] Public resolvers set this bit to 1 only for cached answers.",
+    "evidence": [
+      "QR A one bit field that specifies whether this message is a query (0), or a response (1)."
+    ]
+  },
+  {
+    "id": "vc-054",
+    "split": "dev",
+    "category": "uncited",
+    "supported": false,
+    "answer": "A JWT may contain privacy-sensitive information. [Evidence 1] Tokens holding such data are limited to a maximum size of 4 kilobytes.",
+    "evidence": [
+      "A JWT may contain privacy-sensitive information.  When this is the case, measures MUST be taken to prevent disclosure of this information to unintended parties."
+    ]
+  },
+  {
+    "id": "vc-055",
+    "split": "test",
+    "category": "wrong_citation",
+    "supported": false,
+    "answer": "For the TCP specification, the MSL is taken to be 2 minutes. [Evidence 1]",
+    "evidence": [
+      "Messages sent over TCP connections use server port 53 (decimal)."
+    ]
+  },
+  {
+    "id": "vc-056",
+    "split": "dev",
+    "category": "wrong_citation",
+    "supported": false,
+    "answer": "The 503 (Service Unavailable) status code covers a temporary overload or scheduled maintenance. [Evidence 1]",
+    "evidence": [
+      "Error handling in TLS is very simple.  When an error is detected, the detecting party sends a message to its peer."
+    ]
+  },
+  {
+    "id": "vc-057",
+    "split": "dev",
+    "category": "wrong_citation",
+    "supported": false,
+    "answer": "TLS 1.3 removed compression. [Evidence 1]",
+    "evidence": [
+      "This specification is designed for use with HTTP ([RFC2616]).  The use of OAuth over any protocol other than HTTP is out of scope."
+    ]
+  },
+  {
+    "id": "vc-058",
+    "split": "test",
+    "category": "wrong_citation",
+    "supported": false,
+    "answer": "In OAuth, authorization codes must be short lived and single-use. [Evidence 1]",
+    "evidence": [
+      "The \"jti\" claim can be used to prevent the JWT from being replayed."
+    ]
+  },
+  {
+    "id": "vc-059",
+    "split": "test",
+    "category": "wrong_citation",
+    "supported": false,
+    "answer": "DNS labels are limited to 63 octets or less. [Evidence 1]",
+    "evidence": [
+      "HTTP does not place a predefined limit on the length of each field line, field value, or on the length of a header or trailer section as a whole, as described in Section 2."
+    ]
+  },
+  {
+    "id": "vc-060",
+    "split": "dev",
+    "category": "wrong_citation",
+    "supported": false,
+    "answer": "A JWT's \"sub\" claim identifies the principal that is the subject of the JWT. [Evidence 1]",
+    "evidence": [
+      "TCP provides a reliable, in-order, byte-stream service to applications."
+    ]
+  }
+]
