@@ -1,0 +1,2129 @@
+{
+  "git_commit": "1982b4717e9da6ccfd838959ecc2f2d400d64e04",
+  "git_dirty": false,
+  "run_count": 1,
+  "config": {
+    "chunking": "words",
+    "chunk_size": 50,
+    "chunk_overlap": 10,
+    "candidate_k": 20,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  },
+  "chunk_count": 33,
+  "question_count": 20,
+  "systems": {
+    "dense": {
+      "summary": {
+        "overall": {
+          "mrr": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.9735185665933916,
+            "ci95": [
+              0.9325975814079467,
+              1.0
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.6,
+            "ci95": [
+              0.5,
+              0.7
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.95,
+            "ci95": [
+              0.85,
+              1.0
+            ]
+          },
+          "recall_at_3": {
+            "mean": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "recall_at_5": {
+            "mean": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "by_type": {
+          "v1": {
+            "mrr": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.9735185665933916,
+              "ci95": [
+                0.9325975814079467,
+                1.0
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.6,
+              "ci95": [
+                0.5,
+                0.7
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.95,
+              "ci95": [
+                0.85,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 1.0,
+              "ci95": [
+                1.0,
+                1.0
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 1.0,
+              "ci95": [
+                1.0,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 1.0,
+              "ci95": [
+                1.0,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 1.0,
+              "ci95": [
+                1.0,
+                1.0
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 19.93705000495538,
+          "p95": 29.575974895851687
+        }
+      },
+      "per_query": [
+        {
+          "id": "q01",
+          "type": "v1",
+          "latency_ms": 29.126500012353063,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:9",
+            "operating_systems.md:4"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "type": "v1",
+          "latency_ms": 21.83880005031824,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:4",
+            "operating_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "type": "v1",
+          "latency_ms": 26.471500052139163,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:4",
+            "operating_systems.md:1",
+            "database_systems.md:5",
+            "operating_systems.md:8",
+            "database_systems.md:3"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "type": "v1",
+          "latency_ms": 31.443199957720935,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:5",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:9",
+            "operating_systems.md:1"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "type": "v1",
+          "latency_ms": 29.47769989259541,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:7",
+            "operating_systems.md:6",
+            "operating_systems.md:8",
+            "information_retrieval.md:6",
+            "database_systems.md:7"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "type": "v1",
+          "latency_ms": 24.959899950772524,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:9",
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:5"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q07",
+          "type": "v1",
+          "latency_ms": 10.990799986757338,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:2",
+            "database_systems.md:1",
+            "information_retrieval.md:6",
+            "database_systems.md:3",
+            "information_retrieval.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "type": "v1",
+          "latency_ms": 10.818200069479644,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "operating_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q09",
+          "type": "v1",
+          "latency_ms": 13.012100011110306,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "retrieved": [
+            "database_systems.md:4",
+            "database_systems.md:3",
+            "database_systems.md:5",
+            "operating_systems.md:4",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "type": "v1",
+          "latency_ms": 18.736899946816266,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:5",
+            "database_systems.md:6",
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:1"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "type": "v1",
+          "latency_ms": 19.168199971318245,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:1",
+            "information_retrieval.md:6"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "type": "v1",
+          "latency_ms": 22.03440002631396,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "retrieved": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "type": "v1",
+          "latency_ms": 20.170200034044683,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:4",
+            "information_retrieval.md:1",
+            "information_retrieval.md:3",
+            "information_retrieval.md:6"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q14",
+          "type": "v1",
+          "latency_ms": 20.696899970062077,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:4"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "type": "v1",
+          "latency_ms": 20.79440001398325,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:5",
+            "information_retrieval.md:4"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "type": "v1",
+          "latency_ms": 19.70389997586608,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:8",
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "type": "v1",
+          "latency_ms": 19.651500042527914,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:7",
+            "machine_learning.md:8",
+            "machine_learning.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "type": "v1",
+          "latency_ms": 17.910200054757297,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575,
+          "retrieved": [
+            "machine_learning.md:3",
+            "machine_learning.md:2",
+            "machine_learning.md:1",
+            "machine_learning.md:4",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "type": "v1",
+          "latency_ms": 17.7896999521181,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:1",
+            "machine_learning.md:3",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "type": "v1",
+          "latency_ms": 17.511800047941506,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:6",
+            "machine_learning.md:5",
+            "machine_learning.md:3",
+            "machine_learning.md:4",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        }
+      ]
+    },
+    "bm25": {
+      "summary": {
+        "overall": {
+          "mrr": {
+            "mean": 0.925,
+            "ci95": [
+              0.85,
+              1.0
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.8845966990315143,
+            "ci95": [
+              0.8102754536969939,
+              0.9560646130837483
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.55,
+            "ci95": [
+              0.425,
+              0.675
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.85,
+            "ci95": [
+              0.7,
+              1.0
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.875,
+            "ci95": [
+              0.775,
+              0.975
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.875,
+            "ci95": [
+              0.775,
+              0.975
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.925,
+            "ci95": [
+              0.85,
+              1.0
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.925,
+            "ci95": [
+              0.85,
+              1.0
+            ]
+          }
+        },
+        "by_type": {
+          "v1": {
+            "mrr": {
+              "mean": 0.925,
+              "ci95": [
+                0.85,
+                1.0
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.8845966990315143,
+              "ci95": [
+                0.8102754536969939,
+                0.9560646130837483
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.55,
+              "ci95": [
+                0.425,
+                0.675
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.85,
+              "ci95": [
+                0.7,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.875,
+              "ci95": [
+                0.775,
+                0.975
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.875,
+              "ci95": [
+                0.775,
+                0.975
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.925,
+              "ci95": [
+                0.85,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.925,
+              "ci95": [
+                0.85,
+                1.0
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 0.5595000111497939,
+          "p95": 0.7477400242350997
+        }
+      },
+      "per_query": [
+        {
+          "id": "q01",
+          "type": "v1",
+          "latency_ms": 0.9460999863222241,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:5",
+            "information_retrieval.md:1"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "type": "v1",
+          "latency_ms": 0.4876999882981181,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "operating_systems.md:6",
+            "database_systems.md:3",
+            "operating_systems.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "type": "v1",
+          "latency_ms": 0.5805999971926212,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:4",
+            "machine_learning.md:3",
+            "operating_systems.md:7",
+            "database_systems.md:5",
+            "operating_systems.md:2"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "type": "v1",
+          "latency_ms": 0.664799939841032,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:5",
+            "operating_systems.md:6",
+            "operating_systems.md:8",
+            "operating_systems.md:7",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "type": "v1",
+          "latency_ms": 0.5333999870344996,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:7",
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "operating_systems.md:5",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "type": "v1",
+          "latency_ms": 0.6372000789269805,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "retrieved": [
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "database_systems.md:3",
+            "operating_systems.md:7",
+            "operating_systems.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5
+        },
+        {
+          "id": "q07",
+          "type": "v1",
+          "latency_ms": 0.6495999405160546,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:2",
+            "database_systems.md:1",
+            "database_systems.md:3",
+            "database_systems.md:5",
+            "machine_learning.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "type": "v1",
+          "latency_ms": 0.42360008228570223,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "retrieved": [
+            "database_systems.md:3",
+            "operating_systems.md:3",
+            "machine_learning.md:3",
+            "machine_learning.md:4",
+            "machine_learning.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5
+        },
+        {
+          "id": "q09",
+          "type": "v1",
+          "latency_ms": 0.49350003246217966,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "retrieved": [
+            "database_systems.md:4",
+            "operating_systems.md:9",
+            "database_systems.md:3",
+            "database_systems.md:5",
+            "database_systems.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "type": "v1",
+          "latency_ms": 0.5789999850094318,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:5",
+            "database_systems.md:6",
+            "database_systems.md:3",
+            "operating_systems.md:1",
+            "information_retrieval.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "type": "v1",
+          "latency_ms": 0.592100084759295,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "database_systems.md:3",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "type": "v1",
+          "latency_ms": 0.737300026230514,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6934264036172708,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:4",
+            "information_retrieval.md:3",
+            "information_retrieval.md:8",
+            "information_retrieval.md:7"
+          ],
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "type": "v1",
+          "latency_ms": 0.541800050996244,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "machine_learning.md:5",
+            "information_retrieval.md:1",
+            "operating_systems.md:8"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5
+        },
+        {
+          "id": "q14",
+          "type": "v1",
+          "latency_ms": 0.421999953687191,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "information_retrieval.md:4",
+            "database_systems.md:7"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "type": "v1",
+          "latency_ms": 0.505700008943677,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:1",
+            "information_retrieval.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "type": "v1",
+          "latency_ms": 0.43910008389502764,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6509209298071326,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "information_retrieval.md:8",
+            "operating_systems.md:3"
+          ],
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "type": "v1",
+          "latency_ms": 0.5771999713033438,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "information_retrieval.md:6",
+            "machine_learning.md:5",
+            "machine_learning.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "type": "v1",
+          "latency_ms": 0.5858999211341143,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575,
+          "retrieved": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "operating_systems.md:1",
+            "machine_learning.md:3",
+            "operating_systems.md:5"
+          ],
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "type": "v1",
+          "latency_ms": 0.5338999908417463,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:3",
+            "machine_learning.md:1",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "type": "v1",
+          "latency_ms": 0.534699996933341,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:5",
+            "machine_learning.md:6",
+            "machine_learning.md:2",
+            "database_systems.md:2",
+            "information_retrieval.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        }
+      ]
+    },
+    "hybrid": {
+      "summary": {
+        "overall": {
+          "mrr": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.9357582235323719,
+            "ci95": [
+              0.8805081173395743,
+              0.980657359638273
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.6,
+            "ci95": [
+              0.5,
+              0.7
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.95,
+            "ci95": [
+              0.85,
+              1.0
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.9,
+            "ci95": [
+              0.8,
+              0.975
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.9,
+            "ci95": [
+              0.8,
+              0.975
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          }
+        },
+        "by_type": {
+          "v1": {
+            "mrr": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.9357582235323719,
+              "ci95": [
+                0.8805081173395743,
+                0.980657359638273
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.6,
+              "ci95": [
+                0.5,
+                0.7
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.95,
+              "ci95": [
+                0.85,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.9,
+              "ci95": [
+                0.8,
+                0.975
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.9,
+              "ci95": [
+                0.8,
+                0.975
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 17.391350003890693,
+          "p95": 19.359729951247573
+        }
+      },
+      "per_query": [
+        {
+          "id": "q01",
+          "type": "v1",
+          "latency_ms": 20.735900034196675,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:5",
+            "operating_systems.md:8"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "type": "v1",
+          "latency_ms": 16.488299937918782,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "database_systems.md:3",
+            "operating_systems.md:6",
+            "operating_systems.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "type": "v1",
+          "latency_ms": 16.972800018265843,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:2",
+            "database_systems.md:3",
+            "operating_systems.md:7"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "type": "v1",
+          "latency_ms": 17.452900065109134,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:5",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:8",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "type": "v1",
+          "latency_ms": 16.50929998140782,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:7",
+            "operating_systems.md:6",
+            "operating_systems.md:8",
+            "operating_systems.md:5",
+            "database_systems.md:7"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "type": "v1",
+          "latency_ms": 17.329799942672253,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "retrieved": [
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:9",
+            "operating_systems.md:5"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q07",
+          "type": "v1",
+          "latency_ms": 18.5674000531435,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:2",
+            "database_systems.md:1",
+            "database_systems.md:3",
+            "information_retrieval.md:7",
+            "database_systems.md:6"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "type": "v1",
+          "latency_ms": 16.724599990993738,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "retrieved": [
+            "database_systems.md:3",
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "database_systems.md:1",
+            "machine_learning.md:4"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5
+        },
+        {
+          "id": "q09",
+          "type": "v1",
+          "latency_ms": 16.248099971562624,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "retrieved": [
+            "database_systems.md:4",
+            "database_systems.md:3",
+            "operating_systems.md:9",
+            "database_systems.md:5",
+            "database_systems.md:6"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "type": "v1",
+          "latency_ms": 17.845600028522313,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:5",
+            "database_systems.md:6",
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:1"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "type": "v1",
+          "latency_ms": 18.970699980854988,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "database_systems.md:3"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "type": "v1",
+          "latency_ms": 19.28729994688183,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "retrieved": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:8"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "type": "v1",
+          "latency_ms": 18.227500026114285,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:4",
+            "information_retrieval.md:8"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q14",
+          "type": "v1",
+          "latency_ms": 18.144199973903596,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:4",
+            "information_retrieval.md:8"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "type": "v1",
+          "latency_ms": 18.801199970766902,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:6",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:5",
+            "information_retrieval.md:1"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "type": "v1",
+          "latency_ms": 15.086299972608685,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "retrieved": [
+            "information_retrieval.md:7",
+            "information_retrieval.md:5",
+            "information_retrieval.md:8",
+            "information_retrieval.md:6",
+            "information_retrieval.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "type": "v1",
+          "latency_ms": 12.702099978923798,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "machine_learning.md:5",
+            "machine_learning.md:4"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "type": "v1",
+          "latency_ms": 11.384399957023561,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575,
+          "retrieved": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "machine_learning.md:7",
+            "machine_learning.md:6"
+          ],
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "type": "v1",
+          "latency_ms": 16.76440006121993,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:1",
+            "machine_learning.md:3",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "type": "v1",
+          "latency_ms": 18.13340000808239,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:5",
+            "machine_learning.md:6",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "database_systems.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        }
+      ]
+    },
+    "reranked_hybrid": {
+      "summary": {
+        "overall": {
+          "mrr": {
+            "mean": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.9726294385530917,
+            "ci95": [
+              0.9299301972870468,
+              1.0
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.65,
+            "ci95": [
+              0.55,
+              0.75
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 1.0,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.975,
+            "ci95": [
+              0.925,
+              1.0
+            ]
+          }
+        },
+        "by_type": {
+          "v1": {
+            "mrr": {
+              "mean": 1.0,
+              "ci95": [
+                1.0,
+                1.0
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.9726294385530917,
+              "ci95": [
+                0.9299301972870468,
+                1.0
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.65,
+              "ci95": [
+                0.55,
+                0.75
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 1.0,
+              "ci95": [
+                1.0,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.975,
+              "ci95": [
+                0.925,
+                1.0
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 305.67705002613366,
+          "p95": 336.3596700131893
+        }
+      },
+      "per_query": [
+        {
+          "id": "q01",
+          "type": "v1",
+          "latency_ms": 323.1323999352753,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:2",
+            "operating_systems.md:1",
+            "operating_systems.md:3",
+            "operating_systems.md:4",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q02",
+          "type": "v1",
+          "latency_ms": 276.6360000241548,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:4",
+            "operating_systems.md:3",
+            "database_systems.md:4",
+            "database_systems.md:5",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q03",
+          "type": "v1",
+          "latency_ms": 296.9860000303015,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:4",
+            "operating_systems.md:3",
+            "operating_systems.md:2",
+            "information_retrieval.md:9",
+            "machine_learning.md:5"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q04",
+          "type": "v1",
+          "latency_ms": 323.4699999447912,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:6",
+            "operating_systems.md:5",
+            "operating_systems.md:7",
+            "operating_systems.md:8",
+            "operating_systems.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q05",
+          "type": "v1",
+          "latency_ms": 310.7894000131637,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:7",
+            "operating_systems.md:8",
+            "operating_systems.md:6",
+            "database_systems.md:7",
+            "operating_systems.md:2"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q06",
+          "type": "v1",
+          "latency_ms": 309.73029998131096,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "operating_systems.md:8",
+            "operating_systems.md:9",
+            "operating_systems.md:6",
+            "operating_systems.md:7",
+            "operating_systems.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q07",
+          "type": "v1",
+          "latency_ms": 308.60940006095916,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "retrieved": [
+            "database_systems.md:2",
+            "database_systems.md:3",
+            "database_systems.md:1",
+            "database_systems.md:6",
+            "database_systems.md:5"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q08",
+          "type": "v1",
+          "latency_ms": 293.4439000673592,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:3",
+            "database_systems.md:4",
+            "information_retrieval.md:3",
+            "database_systems.md:1",
+            "machine_learning.md:4"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q09",
+          "type": "v1",
+          "latency_ms": 277.96330000273883,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:4",
+            "database_systems.md:5",
+            "database_systems.md:3",
+            "operating_systems.md:9",
+            "database_systems.md:6"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q10",
+          "type": "v1",
+          "latency_ms": 330.06700000260025,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "database_systems.md:6",
+            "database_systems.md:5",
+            "database_systems.md:3",
+            "machine_learning.md:3",
+            "machine_learning.md:2"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q11",
+          "type": "v1",
+          "latency_ms": 335.389000014402,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:3",
+            "information_retrieval.md:4",
+            "database_systems.md:2",
+            "database_systems.md:6",
+            "information_retrieval.md:5"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q12",
+          "type": "v1",
+          "latency_ms": 354.80239999014884,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876,
+          "retrieved": [
+            "information_retrieval.md:4",
+            "information_retrieval.md:5",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:8"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q13",
+          "type": "v1",
+          "latency_ms": 312.2922000475228,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:4",
+            "information_retrieval.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:8"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q14",
+          "type": "v1",
+          "latency_ms": 286.5310999331996,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:5",
+            "information_retrieval.md:7",
+            "information_retrieval.md:8",
+            "information_retrieval.md:6",
+            "information_retrieval.md:1"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q15",
+          "type": "v1",
+          "latency_ms": 320.77649992424995,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:7",
+            "information_retrieval.md:6",
+            "machine_learning.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:8"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q16",
+          "type": "v1",
+          "latency_ms": 292.12410002946854,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "information_retrieval.md:8",
+            "information_retrieval.md:7",
+            "information_retrieval.md:5",
+            "information_retrieval.md:6",
+            "information_retrieval.md:3"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q17",
+          "type": "v1",
+          "latency_ms": 299.7682000277564,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:1",
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "information_retrieval.md:1",
+            "information_retrieval.md:9"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q18",
+          "type": "v1",
+          "latency_ms": 282.7320999931544,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:2",
+            "machine_learning.md:3",
+            "machine_learning.md:1",
+            "machine_learning.md:7",
+            "database_systems.md:5"
+          ],
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q19",
+          "type": "v1",
+          "latency_ms": 302.74469999130815,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0,
+          "retrieved": [
+            "machine_learning.md:4",
+            "machine_learning.md:5",
+            "machine_learning.md:3",
+            "machine_learning.md:1",
+            "machine_learning.md:7"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0
+        },
+        {
+          "id": "q20",
+          "type": "v1",
+          "latency_ms": 292.88029996678233,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "retrieved": [
+            "machine_learning.md:6",
+            "machine_learning.md:3",
+            "machine_learning.md:2",
+            "database_systems.md:6",
+            "database_systems.md:5"
+          ],
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5
+        }
+      ]
+    }
+  }
+}
