@@ -3,6 +3,7 @@ import logging
 import re
 import time
 
+from app.core.text import split_sentences
 from app.generation.generator import GeneratedAnswer, OpenAIGenerator
 from app.generation.verifier import EvidenceVerifier, VerificationResult
 
@@ -106,10 +107,7 @@ class RAGPipeline:
 
         answer = self._normalize_citations(answer)
 
-        sentences = re.split(
-            r"(?<=[.!?])\s+",
-            answer.strip(),
-        )
+        sentences = split_sentences(answer)
 
         cited_sentences = []
 

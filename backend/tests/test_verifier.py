@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from app.generation.verifier import EvidenceVerifier
 
 
@@ -296,3 +298,140 @@ def test_grounding_extracts_citation_attached_to_previous_sentence():
     assert result.supported is True
     assert result.cited_evidence == [1]
     assert result.unsupported_claims == []
+
+
+def entail_everything(premise, hypothesis):
+    return ("entailment", 0.95)
+
+
+def test_uncited_sentence_before_cited_one_is_unsupported():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "BM25 was invented by Napoleon in 1742. BM25 ranks documents. [Evidence 1]",
+        [make_evidence("BM25 ranks documents.")],
+    )
+
+    assert result.supported is False
+    assert "Napoleon" in result.unsupported_claims[0]
+
+
+def test_uncited_sentence_after_cited_one_is_unsupported():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "BM25 ranks documents. [Evidence 1] BM25 was invented by Napoleon in 1742.",
+        [make_evidence("BM25 ranks documents.")],
+    )
+
+    assert result.supported is False
+    assert "Napoleon" in result.unsupported_claims[0]
+
+
+def test_short_reply_word_does_not_need_a_citation():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "Yes. BM25 ranks documents. [Evidence 1]",
+        [make_evidence("BM25 ranks documents.")],
+    )
+
+    assert result.supported is True
+
+
+def test_each_sentence_is_checked_against_its_own_citation():
+    verifier = EvidenceVerifier()
+    checked = []
+
+    def record(premise, hypothesis):
+        checked.append((premise, hypothesis))
+        return ("entailment", 0.95)
+
+    verifier._predict_nli = record
+
+    result = verifier.verify_grounding(
+        "Alpha is true. [Evidence 1] Beta is true. [Evidence 2]",
+        [make_evidence("first passage"), make_evidence("second passage")],
+    )
+
+    assert result.supported is True
+    assert checked == [
+        ("first passage", "Alpha is true"),
+        ("second passage", "Beta is true"),
+    ]
+
+
+LEXICAL_EVIDENCE = (
+    "The cross encoder can rerank retrieved candidates using query document pairs "
+    "and improves top ranking precision."
+)
+
+
+def test_lexical_fallback_never_overrides_contradiction():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("contradiction", 0.99)
+
+    result = verifier.verify_grounding(
+        "The cross encoder can rerank retrieved candidates using query document pairs. [Evidence 1]",
+        [make_evidence(LEXICAL_EVIDENCE)],
+    )
+
+    assert result.supported is False
+
+
+def test_lexical_fallback_rejects_negated_claim():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "The cross encoder cannot rerank retrieved candidates using query document pairs. [Evidence 1]",
+        [make_evidence(LEXICAL_EVIDENCE)],
+    )
+
+    assert result.supported is False
+
+
+def test_lexical_fallback_rejects_contraction_negation():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "The cross encoder doesn't rerank retrieved candidates using query document pairs. [Evidence 1]",
+        [make_evidence(LEXICAL_EVIDENCE)],
+    )
+
+    assert result.supported is False
+
+
+def test_lexical_fallback_ignores_negation_in_an_unrelated_sentence():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "The cross encoder can rerank retrieved candidates using query document pairs. [Evidence 1]",
+        [make_evidence(LEXICAL_EVIDENCE + " It does not train on user data.")],
+    )
+
+    assert result.supported is True
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "A deadlock requires seven conditions: mutual exclusion, hold and wait, no preemption, circular wait.",
+        "A deadlock requires 7 conditions: mutual exclusion, hold and wait, no preemption, circular wait.",
+    ],
+)
+def test_lexical_fallback_rejects_wrong_number(claim):
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        f"{claim} [Evidence 1]",
+        [make_evidence("A deadlock requires four conditions: mutual exclusion, hold and wait, no preemption, circular wait.")],
+    )
+
+    assert result.supported is False

@@ -5,8 +5,16 @@ from typing import Any
 import numpy as np
 from sentence_transformers import CrossEncoder
 
+from app.core.text import split_sentences
+
 
 NLI_MODEL = "cross-encoder/nli-MiniLM2-L6-H768"
+
+NUMBER_WORDS = frozenset(
+    "zero one two three four five six seven eight nine ten eleven twelve "
+    "hundred thousand million".split()
+)
+NEGATION = re.compile(r"\b(?:not|no|never|none|cannot|without|neither|nor)\b|n't\b", re.IGNORECASE)
 
 
 @dataclass
@@ -184,27 +192,12 @@ class EvidenceVerifier:
                     hypothesis=claim,
                 )
 
-                if (
-                    label == "entailment"
-                    and confidence
-                    >= self.entailment_threshold
-                ):
+                if label == "entailment" and confidence >= self.entailment_threshold:
                     claim_supported = True
                     break
 
-                # Strict lexical fallback.
-                #
-                # This is intentionally conservative:
-                # - at least 5 meaningful claim tokens
-                # - at least 75% of claim tokens must appear
-                #   in the cited evidence
-                #
-                # This handles near-verbatim evidence while making
-                # it difficult for unrelated claims to pass.
-                if self._has_strong_lexical_support(
-                    evidence_text,
-                    claim,
-                ):
+                # The fallback covers NLI misses, so it must not overrule a contradiction.
+                if label != "contradiction" and self._has_strong_lexical_support(evidence_text, claim):
                     claim_supported = True
                     used_lexical_fallback = True
                     break
@@ -244,43 +237,34 @@ class EvidenceVerifier:
             ),
         )
 
-    def _has_strong_lexical_support(
-        self,
-        evidence_text: str,
-        claim: str,
-    ) -> bool:
-        """
-        Determine whether the claim is strongly supported by
-        direct lexical overlap with the evidence.
+    def _has_strong_lexical_support(self, evidence_text: str, claim: str) -> bool:
+        """Accept near-verbatim claims that the NLI model failed to recognize."""
+        evidence_tokens = self._meaningful_tokens(evidence_text)
+        claim_tokens = self._meaningful_tokens(claim)
 
-        This is deliberately strict and is intended only as a
-        fallback when the NLI model misses near-verbatim support.
-        """
-
-        evidence_tokens = self._meaningful_tokens(
-            evidence_text
-        )
-
-        claim_tokens = self._meaningful_tokens(
-            claim
-        )
-
-        if len(claim_tokens) < 5:
-            return False
-
-        if not evidence_tokens:
+        if len(claim_tokens) < 5 or not evidence_tokens:
             return False
 
         overlap = claim_tokens & evidence_tokens
 
-        overlap_ratio = (
-            len(overlap) / len(claim_tokens)
+        if len(overlap) < 5 or len(overlap) / len(claim_tokens) < 0.75:
+            return False
+
+        if not self._numbers(claim) <= self._numbers(evidence_text):
+            return False
+
+        closest = max(
+            split_sentences(evidence_text),
+            key=lambda sentence: len(self._meaningful_tokens(sentence) & claim_tokens),
         )
 
-        return (
-            len(overlap) >= 5
-            and overlap_ratio >= 0.75
-        )
+        return bool(NEGATION.search(claim)) == bool(NEGATION.search(closest))
+
+    @staticmethod
+    def _numbers(text: str) -> set[str]:
+        lowered = text.lower()
+        words = set(re.findall(r"[a-z]+", lowered)) & NUMBER_WORDS
+        return words | set(re.findall(r"\d+(?:\.\d+)?", lowered))
 
     @staticmethod
     def _meaningful_tokens(
@@ -491,82 +475,19 @@ class EvidenceVerifier:
             "_",
         )
 
-    def _extract_claims(
-        self,
-        answer: str,
-    ) -> list[tuple[str, list[int]]]:
-        """
-        Extract claims and attach citations to them.
-
-        Handles:
-
-            Claim [Evidence 1]
-
-            Claim. [Evidence 1]
-
-            Claim [Evidence 1] [Evidence 2]
-
-            First claim. [Evidence 1]
-            Second claim. [Evidence 2]
-        """
-
-        # Keep a citation attached to the preceding claim.
-        #
-        # Example:
-        #
-        #   Claim. [Evidence 1]
-        #
-        # becomes:
-        #
-        #   Claim.[Evidence 1]
-        #
-        # before sentence splitting.
-        normalized = re.sub(
-            r"\s+(\[Evidence\s+\d+\])",
-            r"\1",
-            answer.strip(),
-            flags=re.IGNORECASE,
-        )
-
-        fragments = re.split(
-            r"(?<=[.!?])\s+",
-            normalized,
-        )
-
+    def _extract_claims(self, answer: str) -> list[tuple[str, list[int]]]:
+        """Return each sentence with its citations. Uncited sentences get an empty list."""
         claims = []
 
-        for fragment in fragments:
-            citations = self.CITATION_PATTERN.findall(
-                fragment
-            )
+        for sentence in split_sentences(answer):
+            citation_ids = sorted({int(item) for item in self.CITATION_PATTERN.findall(sentence)})
+            claim = self.CITATION_PATTERN.sub("", sentence).strip(" .,:;!?\n\t")
 
-            if not citations:
+            # Replies like "Yes." state no fact of their own.
+            if len(self._meaningful_tokens(claim)) < 2 and not citation_ids:
                 continue
 
-            claim = self.CITATION_PATTERN.sub(
-                "",
-                fragment,
-            ).strip()
-
-            claim = claim.strip(
-                " .,:;"
-            )
-
-            if not claim:
-                continue
-
-            citation_ids = sorted(
-                {
-                    int(citation)
-                    for citation in citations
-                }
-            )
-
-            claims.append(
-                (
-                    claim,
-                    citation_ids,
-                )
-            )
+            if claim:
+                claims.append((claim, citation_ids))
 
         return claims
