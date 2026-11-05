@@ -189,6 +189,14 @@ class EvidenceVerifier:
 
                 evidence_text = chunk.text
 
+                if not self._numbers(claim) <= self._numbers(evidence_text):
+                    continue
+
+                if self._is_verbatim_quote(evidence_text, claim):
+                    claim_supported = True
+                    used_lexical_fallback = True
+                    break
+
                 label, confidence = self._predict_nli(
                     premise=evidence_text,
                     hypothesis=claim,
@@ -252,9 +260,16 @@ class EvidenceVerifier:
         if len(overlap) < 5 or len(overlap) / len(claim_tokens) < 0.75:
             return False
 
-        if not self._numbers(claim) <= self._numbers(evidence_text):
-            return False
+        return self._agrees_on_negation(evidence_text, claim)
 
+    def _is_verbatim_quote(self, evidence_text: str, claim: str) -> bool:
+        def normalize(text: str) -> str:
+            return " ".join(text.split()).casefold()
+
+        return normalize(claim) in normalize(evidence_text) and self._agrees_on_negation(evidence_text, claim)
+
+    def _agrees_on_negation(self, evidence_text: str, claim: str) -> bool:
+        claim_tokens = self._meaningful_tokens(claim)
         closest = max(
             split_sentences(evidence_text),
             key=lambda sentence: len(self._meaningful_tokens(sentence) & claim_tokens),

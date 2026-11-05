@@ -375,7 +375,7 @@ def test_lexical_fallback_never_overrides_contradiction():
     verifier._predict_nli = lambda premise, hypothesis: ("contradiction", 0.99)
 
     result = verifier.verify_grounding(
-        "The cross encoder can rerank retrieved candidates using query document pairs. [Evidence 1]",
+        "The cross encoder can rerank the retrieved candidates using query document pairs. [Evidence 1]",
         [make_evidence(LEXICAL_EVIDENCE)],
     )
 
@@ -411,7 +411,7 @@ def test_lexical_fallback_ignores_negation_in_an_unrelated_sentence():
     verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
 
     result = verifier.verify_grounding(
-        "The cross encoder can rerank retrieved candidates using query document pairs. [Evidence 1]",
+        "The cross encoder can rerank the retrieved candidates using query document pairs. [Evidence 1]",
         [make_evidence(LEXICAL_EVIDENCE + " It does not train on user data.")],
     )
 
@@ -459,3 +459,43 @@ def test_lexical_fallback_does_not_treat_pronoun_one_as_a_number():
     )
 
     assert result.supported is True
+
+
+def test_claim_with_a_number_missing_from_the_evidence_is_never_accepted():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "The full encoded TLSInnerPlaintext must not exceed 2^13 + 1 octets. [Evidence 1]",
+        [make_evidence("The full encoded TLSInnerPlaintext MUST NOT exceed 2^14 + 1 octets.")],
+    )
+
+    assert result.supported is False
+
+
+def test_exact_quote_is_accepted_even_when_nli_says_contradiction():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("contradiction", 0.86)
+
+    result = verifier.verify_grounding(
+        "A tunnel ceases to exist when both ends of the relayed connection are closed. [Evidence 1]",
+        [make_evidence(
+            "A tunnel is a blind relay.  A tunnel ceases to exist when both ends "
+            "of the relayed connection are CLOSED."
+        )],
+    )
+
+    assert result.supported is True
+    assert "lexical" in result.reason.lower()
+
+
+def test_exact_quote_inside_a_negated_sentence_is_not_accepted():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "The header is required. [Evidence 1]",
+        [make_evidence("It is not true that the header is required.")],
+    )
+
+    assert result.supported is False
