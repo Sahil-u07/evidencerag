@@ -1,0 +1,818 @@
+[
+  {
+    "id": "v2-001",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "How long does it take the TCP counter that generates starting sequence numbers to come back around?",
+    "evidence": [
+      "cycles approximately every 4.55 hours, which is much longer than the MSL"
+    ]
+  },
+  {
+    "id": "v2-002",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "What states does each TCP peer pass through when both ends try to connect to each other at the same moment?",
+    "evidence": [
+      "connection state cycles from CLOSED to SYN-SENT to SYN-RECEIVED to ESTABLISHED"
+    ]
+  },
+  {
+    "id": "v2-003",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "Why does TCP connection setup need a third message rather than just a request and a reply?",
+    "evidence": [
+      "to prevent old duplicate connection initiations from causing confusion"
+    ]
+  },
+  {
+    "id": "v2-004",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "What is the shortest default wait before a TCP host may check whether a silent peer is still there?",
+    "evidence": [
+      "default to no less than two hours"
+    ]
+  },
+  {
+    "id": "v2-005",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "If the other TCP peer never says how large a segment it can take, what size should an IPv4 sender assume?",
+    "evidence": [
+      "default send MSS of 536 (576 - 40) for IPv4"
+    ]
+  },
+  {
+    "id": "v2-006",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "What is a TCP connection called when one end has crashed or gone away and the other end does not know?",
+    "evidence": [
+      "is said to be \"half-open\" if one of the TCP peers has closed"
+    ]
+  },
+  {
+    "id": "v2-007",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "If a TCP receiver currently has no buffer room to offer, what incoming traffic can it still take?",
+    "evidence": [
+      "window is zero no segments should be acceptable except ACK segments"
+    ]
+  },
+  {
+    "id": "v2-008",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "Why does the TCP error check also take in addressing details from the IP layer?",
+    "evidence": [
+      "Including the pseudo-header in the checksum gives the TCP connection protection against misrouted segments"
+    ]
+  },
+  {
+    "id": "v2-009",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "What is the name for the TCP pattern where a window keeps moving forward in tiny steps and throughput collapses?",
+    "evidence": [
+      "\"Silly Window Syndrome\" (SWS) is a stable pattern of small incremental window movements"
+    ]
+  },
+  {
+    "id": "v2-010",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9293.pdf",
+    "query": "How long should a TCP sender wait before first checking whether a receiver with no buffer space has opened up again?",
+    "evidence": [
+      "when a zero window has existed for the retransmission timeout period"
+    ]
+  },
+  {
+    "id": "v2-011",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc9293.pdf",
+    "query": "When does a RST take a connection from SYN-RECEIVED back to LISTEN?",
+    "evidence": [
+      "on receiving a RST is conditional on having reached SYN-RECEIVED after a passive OPEN"
+    ]
+  },
+  {
+    "id": "v2-012",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc9293.pdf",
+    "query": "What does the SND.UNA variable hold?",
+    "evidence": [
+      "oldest unacknowledged sequence number in the variable SND.UNA"
+    ]
+  },
+  {
+    "id": "v2-013",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc9293.pdf",
+    "query": "Will a TCP implementation accept more SEND calls after it has moved to FIN-WAIT-1?",
+    "evidence": [
+      "No further SENDs from the user will be accepted by the TCP implementation"
+    ]
+  },
+  {
+    "id": "v2-014",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc9293.pdf",
+    "query": "What is the formula for Eff.snd.MSS?",
+    "evidence": [
+      "Eff.snd.MSS = min(SendMSS+20, MMS_S) - TCPhdrsize - IPoptionsize"
+    ]
+  },
+  {
+    "id": "v2-015",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc9293.pdf",
+    "query": "Does SEG.LEN count the SYN and FIN flags?",
+    "evidence": [
+      "number of octets occupied by the data in the segment (counting SYN and FIN)"
+    ]
+  },
+  {
+    "id": "v2-016",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc9293.pdf",
+    "query": "What does the URG control flag tell the receiver?",
+    "evidence": [
+      "URG control flag indicates that the urgent field is meaningful"
+    ]
+  },
+  {
+    "id": "v2-017",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc9293.pdf",
+    "query": "What limits apply to how long a TCP receiver can hold back an acknowledgment, both in time and in amount of data?",
+    "evidence": [
+      "be less than 0.5 seconds (MUST-40)",
+      "generated for at least every second full-sized segment"
+    ]
+  },
+  {
+    "id": "v2-018",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc9293.pdf",
+    "query": "What are the minimum TCP R2 retransmission limits for data segments and for SYN segments?",
+    "evidence": [
+      "correspond to at least 100 seconds (SHLD-11)",
+      "retransmission of the segment for at least 3 minutes (MUST-23)"
+    ]
+  },
+  {
+    "id": "v2-019",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc9293.pdf",
+    "query": "How does a TCP peer react to an acceptable reset if it has not finished synchronizing, versus when the connection is already synchronized?",
+    "evidence": [
+      "it returns to LISTEN on receiving an acceptable reset",
+      "it aborts the connection and informs its user"
+    ]
+  },
+  {
+    "id": "v2-020",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc9293.pdf",
+    "query": "How many minutes does a TCP connection sit in TIME-WAIT after an active close?",
+    "evidence": [
+      "linger in the TIME-WAIT state for a time 2xMSL",
+      "the MSL is taken to be 2 minutes"
+    ]
+  },
+  {
+    "id": "v2-021",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Which HTTP status code tells a client its job was taken on but has not finished yet?",
+    "evidence": [
+      "202 (Accepted) status code indicates that the request has been accepted for processing"
+    ]
+  },
+  {
+    "id": "v2-022",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Which of the standard HTTP request methods are meant to leave server data untouched?",
+    "evidence": [
+      "the GET, HEAD, OPTIONS, and TRACE methods are defined to be safe"
+    ]
+  },
+  {
+    "id": "v2-023",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Which kind of HTTP request can a client replay by itself after a connection drops before any reply arrives?",
+    "evidence": [
+      "Idempotent methods are distinguished because the request can be repeated automatically if"
+    ]
+  },
+  {
+    "id": "v2-024",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Which HTTP request method fetches a resource's headers but leaves out the body?",
+    "evidence": [
+      "HEAD is used to obtain metadata about the selected representation without transferring"
+    ]
+  },
+  {
+    "id": "v2-025",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Can a stored HTTP reply to a form submission be used to answer a later read of the same resource?",
+    "evidence": [
+      "A cached POST response can be reused to satisfy a later GET or HEAD request"
+    ]
+  },
+  {
+    "id": "v2-026",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Does a successful HTTP removal request guarantee that the server actually erases the stored data?",
+    "evidence": [
+      "they might or might not be destroyed by the origin server"
+    ]
+  },
+  {
+    "id": "v2-027",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "What abuse becomes possible if an HTTP intermediary will open a pipe to any host's mail port on request?",
+    "evidence": [
+      "that could trick the proxy into relaying spam email"
+    ]
+  },
+  {
+    "id": "v2-028",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "How many hops did an older version of the HTTP standard suggest following when being sent from one URL to the next?",
+    "evidence": [
+      "maximum of five redirections ([RFC2068], Section 10.3)."
+    ]
+  },
+  {
+    "id": "v2-029",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "Which kind of HTTP intermediary passes traffic along untouched and is not considered a participant in the exchange?",
+    "evidence": [
+      "\"tunnel\" acts as a blind relay between two connections without changing the messages"
+    ]
+  },
+  {
+    "id": "v2-030",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc9110.txt",
+    "query": "What is the HTTP term for a server that sits in front of others and looks to clients like the real site?",
+    "evidence": [
+      "A \"gateway\" (a.k.a. \"reverse proxy\") is an intermediary that acts as an origin server"
+    ]
+  },
+  {
+    "id": "v2-031",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc9110.txt",
+    "query": "What formats can a Retry-After value take?",
+    "evidence": [
+      "The Retry-After field value can be either an HTTP-date or a number of seconds"
+    ]
+  },
+  {
+    "id": "v2-032",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc9110.txt",
+    "query": "What should a server respond when If-None-Match evaluates to false on a GET?",
+    "evidence": [
+      "if false for GET/HEAD, respond 304 (Not Modified)"
+    ]
+  },
+  {
+    "id": "v2-033",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc9110.txt",
+    "query": "Besides ranges that cannot be satisfied, what else can trigger a 416 response?",
+    "evidence": [
+      "the client has requested an excessive number of small or overlapping ranges"
+    ]
+  },
+  {
+    "id": "v2-034",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc9110.txt",
+    "query": "Is a proxy allowed to generate a 421 response?",
+    "evidence": [
+      "A proxy MUST NOT generate a 421 response."
+    ]
+  },
+  {
+    "id": "v2-035",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc9110.txt",
+    "query": "What must an intermediary do with a TRACE request whose Max-Forwards is 0?",
+    "evidence": [
+      "If the received value is zero (0), the intermediary MUST NOT forward the request"
+    ]
+  },
+  {
+    "id": "v2-036",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc9110.txt",
+    "query": "Which header field must an HTTP 401 response include?",
+    "evidence": [
+      "The server generating a 401 response MUST send a WWW-Authenticate header field"
+    ]
+  },
+  {
+    "id": "v2-037",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc9110.txt",
+    "query": "What does Retry-After mean on a 503 response, and what does it mean on a 3xx response?",
+    "evidence": [
+      "Retry-After indicates how long the service is expected to be unavailable",
+      "Retry-After indicates the minimum time that the user agent is asked to wait"
+    ]
+  },
+  {
+    "id": "v2-038",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc9110.txt",
+    "query": "What range of values can a qvalue take, and how many decimal digits may a sender use?",
+    "evidence": [
+      "The weight is normalized to a real number in the range 0 through 1",
+      "MUST NOT generate more than three digits after the decimal point"
+    ]
+  },
+  {
+    "id": "v2-039",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc9110.txt",
+    "query": "Which status codes should a successful PUT return when it creates a representation, and when it modifies one?",
+    "evidence": [
+      "origin server MUST inform the user agent by sending a 201 (Created) response",
+      "origin server MUST send either a 200 (OK) or a 204 (No Content) response"
+    ]
+  },
+  {
+    "id": "v2-040",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc9110.txt",
+    "query": "What does each of the HTTP status codes 404 and 410 say about whether a resource's absence is permanent?",
+    "evidence": [
+      "status code does not indicate whether this lack of representation is temporary or permanent",
+      "origin server and that this condition is likely to be permanent"
+    ]
+  },
+  {
+    "id": "v2-041",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "What feature did TLS 1.3 add to cut latency when a connection starts?",
+    "evidence": [
+      "A zero round-trip time (0-RTT) mode was added, saving a round trip"
+    ]
+  },
+  {
+    "id": "v2-042",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "Which older TLS key exchange options were dropped so that a stolen long-term key cannot expose past sessions?",
+    "evidence": [
+      "Static RSA and Diffie-Hellman cipher suites have been removed"
+    ]
+  },
+  {
+    "id": "v2-043",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "What is the point of making encrypted TLS records larger than their contents require?",
+    "evidence": [
+      "allows the sender to hide the size of the traffic from an observer"
+    ]
+  },
+  {
+    "id": "v2-044",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "When would a TLS server ask the client to redo its opening message?",
+    "evidence": [
+      "acceptable set of parameters but the ClientHello does not contain sufficient information"
+    ]
+  },
+  {
+    "id": "v2-045",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "How many maximum-length TLS records can be protected with AES-GCM on one connection before the safety margin runs out?",
+    "evidence": [
+      "up to 2^24.5 full-size records (about 24 million) may be"
+    ]
+  },
+  {
+    "id": "v2-046",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "Why do both ends of a TLS connection have to signal that they are finishing before hanging up?",
+    "evidence": [
+      "the connection is ending in order to avoid a truncation attack"
+    ]
+  },
+  {
+    "id": "v2-047",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "At what point in the TLS handshake may each side start exchanging real payload?",
+    "evidence": [
+      "validated the Finished message from its peer, it may begin to send"
+    ]
+  },
+  {
+    "id": "v2-048",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc8446.txt",
+    "query": "From which point in the TLS handshake are messages hidden from eavesdroppers?",
+    "evidence": [
+      "All handshake messages after the ServerHello are now encrypted."
+    ]
+  },
+  {
+    "id": "v2-049",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc8446.txt",
+    "query": "What must a client do if it receives a second HelloRetryRequest on the same connection?",
+    "evidence": [
+      "HelloRetryRequest), it MUST abort the handshake with an \"unexpected_message\" alert"
+    ]
+  },
+  {
+    "id": "v2-050",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc8446.txt",
+    "query": "Is the TLS_AES_128_GCM_SHA256 cipher suite mandatory for a compliant application?",
+    "evidence": [
+      "A TLS-compliant application MUST implement the TLS_AES_128_GCM_SHA256"
+    ]
+  },
+  {
+    "id": "v2-051",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc8446.txt",
+    "query": "What is the ticket_age_add value used for?",
+    "evidence": [
+      "random 32-bit value that is used to obscure the age of the ticket"
+    ]
+  },
+  {
+    "id": "v2-052",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc8446.txt",
+    "query": "What must ServerHello.legacy_version be set to when a server negotiates TLS 1.3?",
+    "evidence": [
+      "MUST set the ServerHello.legacy_version field to 0x0303 (TLS 1.2)"
+    ]
+  },
+  {
+    "id": "v2-053",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc8446.txt",
+    "query": "To send TLS early data, which extensions must the client supply, and which PSK must encrypt that data?",
+    "evidence": [
+      "MUST supply both the \"pre_shared_key\" and \"early_data\" extensions",
+      "early data MUST be the first PSK listed in the client's"
+    ]
+  },
+  {
+    "id": "v2-054",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc8446.txt",
+    "query": "What upper limits apply to a TLS session ticket's stated lifetime on the server side and to how long clients may keep it?",
+    "evidence": [
+      "MUST NOT use any value greater than 604800 seconds (7 days)",
+      "Clients MUST NOT cache tickets for longer than 7 days"
+    ]
+  },
+  {
+    "id": "v2-055",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc6749.txt",
+    "query": "How can swapping a long-lived OAuth credential on every use reveal that it has been stolen?",
+    "evidence": [
+      "invalidated refresh token, which will inform the authorization server of the breach"
+    ]
+  },
+  {
+    "id": "v2-056",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc6749.txt",
+    "query": "In OAuth, what is the longest that the temporary value handed back after user consent should stay usable?",
+    "evidence": [
+      "A maximum authorization code lifetime of 10 minutes is RECOMMENDED."
+    ]
+  },
+  {
+    "id": "v2-057",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc6749.txt",
+    "query": "Can an OAuth application's public ID be enough on its own to prove who the application is?",
+    "evidence": [
+      "exposed to the resource owner and MUST NOT be used alone for client authentication"
+    ]
+  },
+  {
+    "id": "v2-058",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc6749.txt",
+    "query": "In OAuth, can a secret baked into a mobile or desktop app be assumed to stay hidden?",
+    "evidence": [
+      "any client authentication credentials included in the application can be extracted"
+    ]
+  },
+  {
+    "id": "v2-059",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc6749.txt",
+    "query": "Why is having the user hand their login directly to an app considered riskier than the other OAuth flows?",
+    "evidence": [
+      "it maintains the password anti-pattern this protocol seeks to avoid"
+    ]
+  },
+  {
+    "id": "v2-060",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc6749.txt",
+    "query": "Why can the browser-oriented OAuth flow leak credentials to outsiders?",
+    "evidence": [
+      "the access token is transmitted in the URI fragment, which can expose it"
+    ]
+  },
+  {
+    "id": "v2-061",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc6749.txt",
+    "query": "Which conditions on a grant or refresh token lead to an invalid_grant error?",
+    "evidence": [
+      "refresh token is invalid, expired, revoked, does not match the redirection URI"
+    ]
+  },
+  {
+    "id": "v2-062",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc6749.txt",
+    "query": "With an invalid_client error, what must the server do if the client tried to authenticate through the Authorization header?",
+    "evidence": [
+      "respond with an HTTP 401 (Unauthorized) status code and include"
+    ]
+  },
+  {
+    "id": "v2-063",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc6749.txt",
+    "query": "How does the state parameter help a client defend against CSRF?",
+    "evidence": [
+      "with the required binding value contained in the \"state\" parameter"
+    ]
+  },
+  {
+    "id": "v2-064",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc6749.txt",
+    "query": "What value must grant_type have in a refresh request?",
+    "evidence": [
+      "Value MUST be set to \"refresh_token\"."
+    ]
+  },
+  {
+    "id": "v2-065",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc6749.txt",
+    "query": "Why must an OAuth authorization code expire quickly, and what must the server do if one is presented twice?",
+    "evidence": [
+      "MUST expire shortly after it is issued to mitigate the risk of leaks",
+      "used more than once, the authorization server MUST deny the request"
+    ]
+  },
+  {
+    "id": "v2-066",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc6749.txt",
+    "query": "When an OAuth server hands out a replacement refresh token, what must the client do with the old one, and what scope must the new one have?",
+    "evidence": [
+      "client MUST discard the old refresh token and replace it with the new",
+      "the refresh token scope MUST be identical to that of the refresh token"
+    ]
+  },
+  {
+    "id": "v2-067",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc1035.txt",
+    "query": "Why can't a whole domain's records be copied between DNS servers over plain datagrams?",
+    "evidence": [
+      "Zone refresh activities must use virtual circuits because of the need for reliable transfer."
+    ]
+  },
+  {
+    "id": "v2-068",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc1035.txt",
+    "query": "If a DNS resolver holds a saved answer but can also get one from the source of truth, which should win?",
+    "evidence": [
+      "Cached data should never be used in preference to authoritative data"
+    ]
+  },
+  {
+    "id": "v2-069",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc1035.txt",
+    "query": "How does the DNS message format avoid spelling out the same hostname over and over in one packet?",
+    "evidence": [
+      "is replaced with a pointer to a prior occurance of the same name"
+    ]
+  },
+  {
+    "id": "v2-070",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc1035.txt",
+    "query": "How long should a DNS client wait before resending a lookup that got no reply?",
+    "evidence": [
+      "the minimum retransmission interval should be 2-5 seconds"
+    ]
+  },
+  {
+    "id": "v2-071",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc1035.txt",
+    "query": "What does the MINIMUM field of an SOA record set a lower bound on?",
+    "evidence": [
+      "MINIMUM is a lower bound on the TTL field for all RRs"
+    ]
+  },
+  {
+    "id": "v2-072",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc1035.txt",
+    "query": "What does setting the RD bit in a DNS query ask the name server to do?",
+    "evidence": [
+      "If RD is set, it directs the name server to pursue the query recursively."
+    ]
+  },
+  {
+    "id": "v2-073",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc1035.txt",
+    "query": "What are the maximum lengths of a single DNS label and of a full domain name?",
+    "evidence": [
+      "labels 63 octets or less",
+      "names 255 octets or less"
+    ]
+  },
+  {
+    "id": "v2-074",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc1035.txt",
+    "query": "How do DNS messages differ between UDP and TCP in size limit and framing?",
+    "evidence": [
+      "Messages carried by UDP are restricted to 512 bytes",
+      "message is prefixed with a two byte length field"
+    ]
+  },
+  {
+    "id": "v2-075",
+    "split": "dev",
+    "type": "paraphrase",
+    "source": "rfc7519.pdf",
+    "query": "Why are the names of the registered JWT fields so brief?",
+    "evidence": [
+      "a core goal of JWTs is for the representation to be compact"
+    ]
+  },
+  {
+    "id": "v2-076",
+    "split": "test",
+    "type": "paraphrase",
+    "source": "rfc7519.pdf",
+    "query": "What should JWT software do with fields it does not recognize, when no application rules say otherwise?",
+    "evidence": [
+      "all claims that are not understood by implementations MUST be ignored"
+    ]
+  },
+  {
+    "id": "v2-077",
+    "split": "test",
+    "type": "identifier",
+    "source": "rfc7519.pdf",
+    "query": "What can the jti claim be used to prevent?",
+    "evidence": [
+      "can be used to prevent the JWT from being replayed"
+    ]
+  },
+  {
+    "id": "v2-078",
+    "split": "dev",
+    "type": "identifier",
+    "source": "rfc7519.pdf",
+    "query": "When must the cty header parameter be present in a JWT?",
+    "evidence": [
+      "nested signing or encryption is employed, this Header Parameter MUST be present"
+    ]
+  },
+  {
+    "id": "v2-079",
+    "split": "test",
+    "type": "multi_fact",
+    "source": "rfc7519.pdf",
+    "query": "Which two claims bound the period in which a JWT may be accepted, and how does each limit it?",
+    "evidence": [
+      "expiration time on or after which the JWT MUST NOT be accepted",
+      "identifies the time before which the JWT MUST NOT be accepted"
+    ]
+  },
+  {
+    "id": "v2-080",
+    "split": "dev",
+    "type": "multi_fact",
+    "source": "rfc7519.pdf",
+    "query": "Which signature and MAC algorithms must every conforming JWT implementation support, and is support for encrypted JWTs required?",
+    "evidence": [
+      "only HMAC SHA-256 (\"HS256\") and \"none\" MUST be implemented by",
+      "Support for encrypted JWTs is OPTIONAL."
+    ]
+  }
+]
