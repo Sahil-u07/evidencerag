@@ -170,7 +170,7 @@ def test_empty_index_abstains_through_real_components():
     )
     pipeline = RAGPipeline(
         retriever=retriever,
-        generator=FakeGenerator(ABSTENTION_MESSAGE),
+        generator=FakeGenerator("RRF combines ranked lists. [Evidence 1]"),
         verifier=EvidenceVerifier(),
     )
 
