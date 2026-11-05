@@ -63,3 +63,20 @@ def test_bm25_preserves_chunk_metadata():
     assert results[0].chunk.source == "notes.txt"
     assert results[0].chunk.page == 4
     assert results[0].chunk.chunk_id == "notes:4"
+
+
+def test_hybrid_still_answers_a_stopword_only_query():
+    from types import SimpleNamespace
+
+    from app.retrieval.dense import DenseRetriever
+    from app.retrieval.hybrid import HybridRetriever
+
+    chunks = [DocumentChunk(text="Python language", source="a.txt", chunk_id="a:1")]
+    hybrid = HybridRetriever(
+        embedder=SimpleNamespace(encode_query=lambda query: [1.0, 0.0]),
+        dense_retriever=DenseRetriever(),
+        bm25_retriever=BM25Retriever(),
+    )
+    hybrid.add(chunks, [[1.0, 0.0]])
+
+    assert [item.chunk.chunk_id for item in hybrid.search("what is the", top_k=3)] == ["a:1"]
