@@ -303,7 +303,8 @@ def test_app_starts_with_no_documents(monkeypatch, tmp_path):
 
     retriever = main.build_retriever()
 
-    assert retriever.search("anything", top_k=5) == []
+    assert retriever.hybrid_retriever.dense_retriever.chunks == []
+    assert retriever.hybrid_retriever.bm25_retriever.chunks == []
 
 
 def test_deleting_last_document_empties_index(monkeypatch, tmp_path):
@@ -315,7 +316,8 @@ def test_deleting_last_document_empties_index(monkeypatch, tmp_path):
 
     retriever = main.build_retriever()
 
-    assert retriever.search("document", top_k=5) == []
+    assert retriever.hybrid_retriever.dense_retriever.chunks == []
+    assert retriever.hybrid_retriever.bm25_retriever.chunks == []
     assert not (tmp_path / "index" / "index.json").exists()
 
 

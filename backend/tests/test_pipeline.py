@@ -4,6 +4,12 @@ from app.generation.pipeline import (
     ABSTENTION_MESSAGE,
     RAGPipeline,
 )
+from app.generation.verifier import EvidenceVerifier
+from app.reranking.cross_encoder import CrossEncoderReranker
+from app.reranking.reranked_hybrid import RerankedHybridRetriever
+from app.retrieval.bm25 import BM25Retriever
+from app.retrieval.dense import DenseRetriever
+from app.retrieval.hybrid import HybridRetriever
 
 
 class FakeRetriever:
@@ -146,3 +152,31 @@ def test_pipeline_rejects_empty_query():
         assert False, "Expected ValueError"
     except ValueError as exc:
         assert str(exc) == "Query cannot be empty"
+
+
+def test_empty_index_abstains_through_real_components():
+    class EmbedderStub:
+        def encode_query(self, query):
+            return [1.0, 0.0]
+
+    retriever = RerankedHybridRetriever(
+        hybrid_retriever=HybridRetriever(
+            embedder=EmbedderStub(),
+            dense_retriever=DenseRetriever(),
+            bm25_retriever=BM25Retriever(),
+        ),
+        # __new__ skips loading model weights; empty input never uses them
+        reranker=CrossEncoderReranker.__new__(CrossEncoderReranker),
+    )
+    pipeline = RAGPipeline(
+        retriever=retriever,
+        generator=FakeGenerator(ABSTENTION_MESSAGE),
+        verifier=EvidenceVerifier(),
+    )
+
+    result = pipeline.ask("What is RRF?")
+
+    assert result.evidence == []
+    assert result.verification.supported is False
+    assert "No evidence was retrieved" in result.verification.reason
+    assert result.answer.answer == ABSTENTION_MESSAGE
