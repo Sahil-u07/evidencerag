@@ -12,7 +12,7 @@ from app.ingestion.models import DocumentChunk
 class PersistentIndexStore:
     """Persist document chunks, embeddings, and source fingerprints."""
 
-    VERSION = 2
+    VERSION = 3
     INDEX_FILENAME = "index.json"
     EMBEDDINGS_FILENAME = "embeddings.npy"
 

@@ -40,13 +40,6 @@ logger = logging.getLogger("evidencerag.api")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-EVALUATION_CORPUS = (
-    PROJECT_ROOT
-    / "data"
-    / "evaluation"
-    / "corpus"
-)
-
 UPLOAD_DIR = (
     PROJECT_ROOT
     / "data"
@@ -141,38 +134,13 @@ def get_index_storage_dir() -> Path:
 
 
 def collect_source_paths() -> list[Path]:
-    UPLOAD_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-    source_paths: list[Path] = []
-
-    source_directories = [
-        EVALUATION_CORPUS,
-        UPLOAD_DIR,
+    return [
+        path
+        for path in sorted(UPLOAD_DIR.iterdir(), key=str)
+        if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
     ]
-
-    for directory in source_directories:
-        if not directory.exists():
-            continue
-
-        for path in sorted(
-            directory.iterdir(),
-            key=lambda item: str(item),
-        ):
-            if not path.is_file():
-                continue
-
-            if (
-                path.suffix.lower()
-                not in SUPPORTED_EXTENSIONS
-            ):
-                continue
-
-            source_paths.append(path)
-
-    return source_paths
 
 
 def build_runtime_retriever(
@@ -429,22 +397,13 @@ def update_persistent_index_incrementally(
 
 def build_retriever() -> RerankedHybridRetriever:
     source_paths = collect_source_paths()
+    index_storage_dir = get_index_storage_dir()
+    store = PersistentIndexStore(index_storage_dir)
+    embedder = TextEmbedder()
 
     if not source_paths:
-        raise RuntimeError(
-            "No supported documents found in the configured "
-            "document directories."
-        )
-
-    index_storage_dir = (
-        get_index_storage_dir()
-    )
-
-    store = PersistentIndexStore(
-        index_storage_dir
-    )
-
-    embedder = TextEmbedder()
+        store.clear()
+        return build_runtime_retriever([], [], embedder)
 
     current_manifest = store.build_manifest(
         source_paths
