@@ -266,6 +266,9 @@ def test_incremental_index_preserves_existing_embeddings(
 
 
 class _FakeEmbedder:
+    def __init__(self, model_name=None):
+        pass
+
     def encode(self, texts):
         return [[1.0, 0.0] for _ in texts]
 
@@ -274,6 +277,9 @@ class _FakeEmbedder:
 
 
 class _FakeReranker:
+    def __init__(self, model_name=None):
+        pass
+
     def rerank(self, query, results, top_k=5):
         return []
 
@@ -337,3 +343,38 @@ def test_old_index_format_is_rebuilt(monkeypatch, tmp_path):
 
     rebuilt = json.loads(index_path.read_text(encoding="utf-8"))
     assert rebuilt["version"] == main.PersistentIndexStore.VERSION
+
+
+def test_production_uses_the_retrieval_defaults(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "mine.txt").write_text("one two three. four five six.", encoding="utf-8")
+    calls = []
+    real = main.build_chunks
+
+    def spy(documents, method, size, overlap):
+        calls.append((method, size, overlap))
+        return real(documents, method, size, overlap)
+
+    monkeypatch.setattr(main, "build_chunks", spy)
+    main.build_retriever()
+
+    defaults = main.retrieval_defaults
+    assert calls == [(defaults.CHUNKING, defaults.CHUNK_SIZE, defaults.CHUNK_OVERLAP)]
+
+
+def test_candidate_count_scales_with_top_k(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "mine.txt").write_text("one two three. four five six.", encoding="utf-8")
+    retriever = main.build_retriever()
+    requested = []
+    real = retriever.hybrid_retriever.search
+
+    def spy(query, top_k, candidate_k):
+        requested.append(candidate_k)
+        return real(query, top_k=top_k, candidate_k=candidate_k)
+
+    monkeypatch.setattr(retriever.hybrid_retriever, "search", spy)
+    retriever.search("one", top_k=5)
+    retriever.search("one", top_k=20)
+
+    assert requested == [main.retrieval_defaults.CANDIDATE_K, 80]

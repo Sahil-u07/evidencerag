@@ -12,11 +12,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from app.core import retrieval_defaults
 from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
 from app.generation.streaming import stream_generate
-from app.ingestion.chunker import chunk_documents
+from app.ingestion.chunker import build_chunks
 from app.ingestion.loader import load_document
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DenseRetriever
@@ -162,11 +163,12 @@ def build_runtime_retriever(
         embeddings,
     )
 
-    reranker = CrossEncoderReranker()
+    reranker = CrossEncoderReranker(retrieval_defaults.RERANKER_MODEL)
 
     return RerankedHybridRetriever(
         hybrid_retriever=hybrid_retriever,
         reranker=reranker,
+        minimum_candidates=retrieval_defaults.CANDIDATE_K,
     )
 
 
@@ -183,10 +185,11 @@ def build_full_persistent_index(
             load_document(path)
         )
 
-    chunks = chunk_documents(
+    chunks = build_chunks(
         documents,
-        chunk_size=50,
-        overlap=10,
+        retrieval_defaults.CHUNKING,
+        retrieval_defaults.CHUNK_SIZE,
+        retrieval_defaults.CHUNK_OVERLAP,
     )
 
     if not chunks:
@@ -282,10 +285,11 @@ def update_persistent_index_incrementally(
     for path in changed_paths:
         documents = load_document(path)
 
-        document_chunks = chunk_documents(
+        document_chunks = build_chunks(
             documents,
-            chunk_size=50,
-            overlap=10,
+            retrieval_defaults.CHUNKING,
+            retrieval_defaults.CHUNK_SIZE,
+            retrieval_defaults.CHUNK_OVERLAP,
         )
 
         if not document_chunks:
@@ -399,7 +403,7 @@ def build_retriever() -> RerankedHybridRetriever:
     source_paths = collect_source_paths()
     index_storage_dir = get_index_storage_dir()
     store = PersistentIndexStore(index_storage_dir)
-    embedder = TextEmbedder()
+    embedder = TextEmbedder(retrieval_defaults.EMBEDDING_MODEL)
 
     if not source_paths:
         store.clear()
