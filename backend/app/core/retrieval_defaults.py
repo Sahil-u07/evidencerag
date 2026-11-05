@@ -1,0 +1,6 @@
+CHUNKING = "words"
+CHUNK_SIZE = 50
+CHUNK_OVERLAP = 10
+CANDIDATE_K = 20
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
