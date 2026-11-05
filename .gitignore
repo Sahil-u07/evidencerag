@@ -32,3 +32,4 @@ qdrant_storage/
 # Logs
 *.log
 data/index/
+data/evaluation/v2/.cache/

@@ -25,6 +25,22 @@ def recall_at_k(
     return len(retrieved & relevant) / len(relevant)
 
 
+def capped_recall_at_k(
+    retrieved_ids: Sequence[str],
+    relevant_ids: Collection[str],
+    k: int,
+) -> float:
+    """Recall@K divided by min(k, relevant), so a perfect ranking scores 1.0."""
+    _validate_k(k)
+
+    relevant = set(relevant_ids)
+
+    if not relevant:
+        return 0.0
+
+    return len(set(retrieved_ids[:k]) & relevant) / min(k, len(relevant))
+
+
 def reciprocal_rank(
     retrieved_ids: Sequence[str],
     relevant_ids: Collection[str],
