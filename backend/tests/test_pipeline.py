@@ -180,3 +180,29 @@ def test_empty_index_abstains_through_real_components():
     assert result.verification.supported is False
     assert "No evidence was retrieved" in result.verification.reason
     assert result.answer.answer == ABSTENTION_MESSAGE
+
+
+def test_attach_citation_keeps_bullets_on_separate_lines():
+    pipeline = RAGPipeline(retriever=FakeRetriever(), generator=FakeGenerator(""), verifier=EvidenceVerifier())
+    evidence = [
+        SimpleNamespace(result=SimpleNamespace(chunk=SimpleNamespace(text=text)))
+        for text in (
+            "TCP uses a three way handshake to open connections.",
+            "UDP is connectionless and unreliable.",
+        )
+    ]
+
+    cited = pipeline._attach_citation(
+        "## Overview\n- TCP uses a three way handshake\n\n- UDP is connectionless and unreliable",
+        evidence,
+    )
+
+    assert cited == (
+        "## Overview\n"
+        "- TCP uses a three way handshake [Evidence 1]\n"
+        "- UDP is connectionless and unreliable [Evidence 2]"
+    )
+    assert pipeline.verifier._extract_claims(cited) == [
+        ("TCP uses a three way handshake", [1]),
+        ("UDP is connectionless and unreliable", [2]),
+    ]
