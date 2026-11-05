@@ -222,7 +222,7 @@
     "answer": "Support for Nested JWTs is optional for implementations. [Evidence 1] When a JWT is nested, its cty header parameter must be present with the value JWT. [Evidence 2]",
     "evidence": [
       "Support for Nested JWTs is OPTIONAL.",
-      "In the case that nested signing or encryption is employed, this Header Parameter MUST be present; in this case, the value MUST be \"JWT\", to indicate that a Nested JWT is carried in this JWT."
+      "The \"cty\" (content type) Header Parameter defined by [JWS] and [JWE] is used by this specification to convey structural information about the JWT.  In the normal case in which nested signing or encryption operations are not employed, the use of this Header Parameter is NOT RECOMMENDED.  In the case that nested signing or encryption is employed, this Header Parameter MUST be present; in this case, the value MUST be \"JWT\", to indicate that a Nested JWT is carried in this JWT."
     ]
   },
   {
@@ -382,7 +382,7 @@
     "split": "test",
     "category": "wrong_number",
     "supported": false,
-    "answer": "A sender of qvalue must not generate more than four digits after the decimal point. [Evidence 1]",
+    "answer": "A sender of qvalue must not generate more than two digits after the decimal point. [Evidence 1]",
     "evidence": [
       "A sender of qvalue MUST NOT generate more than three digits after the decimal point."
     ]
@@ -392,7 +392,7 @@
     "split": "dev",
     "category": "wrong_number",
     "supported": false,
-    "answer": "The full encoded TLSInnerPlaintext must not exceed 2^15 + 1 octets. [Evidence 1]",
+    "answer": "The full encoded TLSInnerPlaintext must not exceed 2^13 + 1 octets. [Evidence 1]",
     "evidence": [
       "The presence of padding does not change the overall record size limitations: the full encoded TLSInnerPlaintext MUST NOT exceed 2^14 + 1 octets."
     ]
@@ -412,7 +412,7 @@
     "split": "dev",
     "category": "wrong_number",
     "supported": false,
-    "answer": "Messages carried by UDP are restricted to 1024 bytes, not counting the IP or UDP headers. [Evidence 1]",
+    "answer": "Messages carried by UDP are restricted to 256 bytes, not counting the IP or UDP headers. [Evidence 1]",
     "evidence": [
       "Messages carried by UDP are restricted to 512 bytes (not counting the IP or UDP headers).  Longer messages are truncated and the TC bit is set in the header."
     ]

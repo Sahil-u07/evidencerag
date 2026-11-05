@@ -636,7 +636,7 @@
     "source": "rfc6749.txt",
     "query": "How does the state parameter help a client defend against CSRF?",
     "evidence": [
-      "with the required binding value contained in the \"state\" parameter"
+      "by matching the binding value to the user-agent's authenticated state"
     ]
   },
   {
@@ -738,8 +738,8 @@
     "source": "rfc1035.txt",
     "query": "What are the maximum lengths of a single DNS label and of a full domain name?",
     "evidence": [
-      "labels 63 octets or less",
-      "names 255 octets or less"
+      "labels are restricted to 63 octets or less",
+      "is restricted to 255 octets or less"
     ]
   },
   {
