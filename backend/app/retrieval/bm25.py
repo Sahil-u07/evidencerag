@@ -6,9 +6,22 @@ from app.ingestion.models import DocumentChunk
 from app.retrieval.dense import SearchResult
 
 
+STOPWORDS = frozenset(
+    "a an and are as at be by can do does for from how in is it its of on or "
+    "that the this to was were what when which why with".split()
+)
+
+
+def _stem(token: str) -> str:
+    if token.isalpha() and len(token) > 4:
+        return re.sub(r"(ing|ed|es|s)$", "", token)
+    return token
+
+
 def tokenize(text: str) -> list[str]:
     """Convert text into normalized tokens for lexical retrieval."""
-    return re.findall(r"\b\w+\b", text.lower())
+    tokens = re.findall(r"\b\w+\b", text.lower())
+    return [_stem(token) for token in tokens if token not in STOPWORDS]
 
 
 class BM25Retriever:
