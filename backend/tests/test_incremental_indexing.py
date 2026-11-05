@@ -360,3 +360,21 @@ def test_production_uses_the_retrieval_defaults(monkeypatch, tmp_path):
 
     defaults = main.retrieval_defaults
     assert calls == [(defaults.CHUNKING, defaults.CHUNK_SIZE, defaults.CHUNK_OVERLAP)]
+
+
+def test_candidate_count_scales_with_top_k(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "mine.txt").write_text("one two three. four five six.", encoding="utf-8")
+    retriever = main.build_retriever()
+    requested = []
+    real = retriever.hybrid_retriever.search
+
+    def spy(query, top_k, candidate_k):
+        requested.append(candidate_k)
+        return real(query, top_k=top_k, candidate_k=candidate_k)
+
+    monkeypatch.setattr(retriever.hybrid_retriever, "search", spy)
+    retriever.search("one", top_k=5)
+    retriever.search("one", top_k=20)
+
+    assert requested == [main.retrieval_defaults.CANDIDATE_K, 80]

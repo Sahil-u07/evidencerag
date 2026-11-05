@@ -168,7 +168,6 @@ def build_runtime_retriever(
     return RerankedHybridRetriever(
         hybrid_retriever=hybrid_retriever,
         reranker=reranker,
-        candidate_multiplier=1,
         minimum_candidates=retrieval_defaults.CANDIDATE_K,
     )
 
