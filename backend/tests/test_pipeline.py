@@ -203,6 +203,6 @@ def test_attach_citation_keeps_bullets_on_separate_lines():
         "- UDP is connectionless and unreliable [Evidence 2]"
     )
     assert pipeline.verifier._extract_claims(cited) == [
-        ("- TCP uses a three way handshake", [1]),
-        ("- UDP is connectionless and unreliable", [2]),
+        ("TCP uses a three way handshake", [1]),
+        ("UDP is connectionless and unreliable", [2]),
     ]

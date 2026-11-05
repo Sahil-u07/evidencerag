@@ -499,3 +499,41 @@ def test_exact_quote_inside_a_negated_sentence_is_not_accepted():
     )
 
     assert result.supported is False
+
+
+@pytest.mark.parametrize(
+    ("claim", "evidence"),
+    [
+        ("The value must be set", "The value must be settled by the server only after handshake."),
+        ("The port is open", "The port is opened only when the firewall allows it."),
+        ("Yes", "The eyes of the server."),
+        ("Packets are dropped", "Packets are dropped only if the queue is full."),
+    ],
+)
+def test_short_or_partial_word_quote_is_not_accepted_without_nli(claim, evidence):
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(f"{claim}. [Evidence 1]", [make_evidence(evidence)])
+
+    assert result.supported is False
+
+
+def test_short_true_quote_is_still_accepted_by_nli():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "Packets are dropped. [Evidence 1]",
+        [make_evidence("Packets are dropped only if the queue is full.")],
+    )
+
+    assert result.supported is True
+
+
+def test_quote_must_match_whole_words():
+    verifier = EvidenceVerifier()
+    claim = "The secure server rejects every unsigned request"
+
+    assert verifier._is_verbatim_quote("The secure server rejects every unsigned requests.", claim) is False
+    assert verifier._is_verbatim_quote("Note: the secure server rejects every unsigned request.", claim) is True

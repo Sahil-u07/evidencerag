@@ -263,10 +263,14 @@ class EvidenceVerifier:
         return self._agrees_on_negation(evidence_text, claim)
 
     def _is_verbatim_quote(self, evidence_text: str, claim: str) -> bool:
-        def normalize(text: str) -> str:
-            return " ".join(text.split()).casefold()
+        def words(text: str) -> str:
+            return " " + " ".join(re.findall(r"[a-z0-9]+", text.casefold())) + " "
 
-        return normalize(claim) in normalize(evidence_text) and self._agrees_on_negation(evidence_text, claim)
+        # Short quotes are left to NLI: they are often true only in context.
+        if len(self._meaningful_tokens(claim)) < 5:
+            return False
+
+        return words(claim) in words(evidence_text) and self._agrees_on_negation(evidence_text, claim)
 
     def _agrees_on_negation(self, evidence_text: str, claim: str) -> bool:
         claim_tokens = self._meaningful_tokens(claim)
@@ -499,6 +503,7 @@ class EvidenceVerifier:
         for sentence in split_sentences(answer):
             citation_ids = sorted({int(item) for item in self.CITATION_PATTERN.findall(sentence)})
             claim = self.CITATION_PATTERN.sub("", sentence).strip(" .,:;!?\n\t")
+            claim = re.sub(r"^[-*•]\s+", "", claim)
 
             # Replies like "Yes." state no fact of their own.
             if len(self._meaningful_tokens(claim)) < 2 and not citation_ids:
