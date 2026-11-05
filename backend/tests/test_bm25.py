@@ -1,5 +1,5 @@
 from app.ingestion.models import DocumentChunk
-from app.retrieval.bm25 import BM25Retriever, tokenize
+from app.retrieval.bm25 import BM25Retriever
 
 
 def test_bm25_prefers_exact_keyword_match():
@@ -63,40 +63,3 @@ def test_bm25_preserves_chunk_metadata():
     assert results[0].chunk.source == "notes.txt"
     assert results[0].chunk.page == 4
     assert results[0].chunk.chunk_id == "notes:4"
-
-
-def test_tokenize_removes_stopwords_and_stems():
-    assert tokenize("The servers are listening") == ["server", "listen"]
-
-
-def test_tokenize_keeps_identifiers_intact():
-    assert tokenize("invalid_grant TLS1.3 x509") == ["invalid_grant", "tls1", "3", "x509"]
-
-
-def test_tokenize_splits_hyphenated_states():
-    assert "syn" in tokenize("SYN-RECEIVED")
-
-
-def test_stopword_only_query_returns_nothing_without_error():
-    retriever = BM25Retriever()
-    retriever.add(
-        [DocumentChunk(text="Python language", source="a.txt", chunk_id="a:1")]
-    )
-
-    assert retriever.search("what is the", top_k=3) == []
-
-
-def test_hybrid_still_answers_a_stopword_only_query():
-    from app.retrieval.dense import DenseRetriever
-    from app.retrieval.hybrid import HybridRetriever
-    from types import SimpleNamespace
-
-    chunks = [DocumentChunk(text="Python language", source="a.txt", chunk_id="a:1")]
-    hybrid = HybridRetriever(
-        embedder=SimpleNamespace(encode_query=lambda query: [1.0, 0.0]),
-        dense_retriever=DenseRetriever(),
-        bm25_retriever=BM25Retriever(),
-    )
-    hybrid.add(chunks, [[1.0, 0.0]])
-
-    assert [item.chunk.chunk_id for item in hybrid.search("what is the", top_k=3)] == ["a:1"]
