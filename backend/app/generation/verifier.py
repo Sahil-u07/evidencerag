@@ -178,43 +178,18 @@ class EvidenceVerifier:
         if self._is_verbatim_quote(evidence_text, claim):
             return True, True
 
-        results = self._nli_results(evidence_text, claim)
-        whole_label, whole_confidence = results[0]
+        label, confidence = self._cached_nli(evidence_text, claim)
 
-        if (
-            whole_label == "entailment"
-            and whole_confidence >= self.entailment_threshold
-        ):
-            return True, False
-
-        focused_label, focused_confidence = results[-1]
-
-        if (
-            len(results) > 1
-            and focused_label == "entailment"
-            and focused_confidence >= self.entailment_threshold
-            and self._agrees_on_negation(evidence_text, claim)
-        ):
+        if label == "entailment" and confidence >= self.entailment_threshold:
             return True, False
 
         # The fallback covers NLI misses, so it must not overrule a contradiction.
-        if focused_label != "contradiction" and self._has_strong_lexical_support(
+        if label != "contradiction" and self._has_strong_lexical_support(
             evidence_text, claim
         ):
             return True, True
 
         return False, False
-
-    def _nli_results(self, evidence_text: str, claim: str) -> list[tuple[str, float]]:
-        """NLI on the whole passage, then on the sentence nearest the claim."""
-
-        premises = [evidence_text]
-        window = self._focused_window(evidence_text, claim)
-
-        if window != evidence_text:
-            premises.append(window)
-
-        return [self._cached_nli(premise, claim) for premise in premises]
 
     def _cached_nli(self, premise: str, hypothesis: str) -> tuple[str, float]:
         key = (premise, hypothesis)
@@ -227,22 +202,6 @@ class EvidenceVerifier:
 
         return self._nli_cache[key]
 
-    def _focused_window(self, evidence_text: str, claim: str) -> str:
-        """The sentence sharing most words with the claim, plus its neighbours."""
-
-        sentences = split_sentences(evidence_text)
-        claim_tokens = self._meaningful_tokens(claim)
-        best = max(
-            range(len(sentences)),
-            key=lambda i: len(self._meaningful_tokens(sentences[i]) & claim_tokens),
-            default=None,
-        )
-
-        if best is None:
-            return evidence_text
-
-        return " ".join(sentences[max(best - 1, 0) : best + 2])
-
     def best_entailing_passage(self, claim: str, texts: list[str]) -> int | None:
         """Index of the passage that entails the claim most strongly, if any does."""
 
@@ -253,9 +212,10 @@ class EvidenceVerifier:
             if not self._numbers(claim) <= self._numbers(text):
                 continue
 
-            for label, confidence in self._nli_results(text, claim):
-                if label == "entailment" and confidence >= best_confidence:
-                    best_index, best_confidence = index, confidence
+            label, confidence = self._cached_nli(text, claim)
+
+            if label == "entailment" and confidence >= best_confidence:
+                best_index, best_confidence = index, confidence
 
         return best_index
 
