@@ -337,12 +337,18 @@ def test_old_index_format_is_rebuilt(monkeypatch, tmp_path):
     index_path = tmp_path / "index" / "index.json"
     payload = json.loads(index_path.read_text(encoding="utf-8"))
     payload["version"] = 2
+    payload["chunks"][0]["text"] = "stale sentinel text"
     index_path.write_text(json.dumps(payload), encoding="utf-8")
 
-    main.build_retriever()
+    retriever = main.build_retriever()
 
     rebuilt = json.loads(index_path.read_text(encoding="utf-8"))
     assert rebuilt["version"] == main.PersistentIndexStore.VERSION
+    assert "stale sentinel text" not in index_path.read_text(encoding="utf-8")
+    assert all(
+        "stale sentinel text" not in chunk.text
+        for chunk in retriever.hybrid_retriever.dense_retriever.chunks
+    )
 
 
 def test_production_uses_the_retrieval_defaults(monkeypatch, tmp_path):
