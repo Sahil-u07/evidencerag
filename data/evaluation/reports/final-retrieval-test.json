@@ -1,0 +1,5011 @@
+{
+  "git_commit": "59f741f0501ea27b372956939e222dc24ff6f490",
+  "git_dirty": false,
+  "run_count": 1,
+  "set": "test",
+  "final": true,
+  "config": {
+    "chunking": "words",
+    "chunk_size": 50,
+    "chunk_overlap": 10,
+    "candidate_k": 20,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  },
+  "chunk_count": 4706,
+  "question_count": 40,
+  "systems": {
+    "dense": {
+      "summary": {
+        "overall": {
+          "hit_at_1": {
+            "mean": 0.325,
+            "ci95": [
+              0.175,
+              0.475
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.275,
+            "ci95": [
+              0.15,
+              0.4125
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.325,
+            "ci95": [
+              0.175,
+              0.475
+            ]
+          },
+          "hit_at_3": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.45,
+            "ci95": [
+              0.3,
+              0.6
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.45,
+            "ci95": [
+              0.3,
+              0.6
+            ]
+          },
+          "hit_at_5": {
+            "mean": 0.5,
+            "ci95": [
+              0.35,
+              0.65
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "mrr": {
+            "mean": 0.4008333333333333,
+            "ci95": [
+              0.2625,
+              0.5425
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.4062503349954187,
+            "ci95": [
+              0.27373069613942136,
+              0.5421879187442734
+            ]
+          }
+        },
+        "by_type": {
+          "identifier": {
+            "hit_at_1": {
+              "mean": 0.4166666666666667,
+              "ci95": [
+                0.16666666666666666,
+                0.6666666666666666
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.4166666666666667,
+              "ci95": [
+                0.16666666666666666,
+                0.6666666666666666
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.4166666666666667,
+              "ci95": [
+                0.16666666666666666,
+                0.6666666666666666
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "mrr": {
+              "mean": 0.5694444444444444,
+              "ci95": [
+                0.3333333333333333,
+                0.7916666666666666
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.6160657717261977,
+              "ci95": [
+                0.38591081279762146,
+                0.8243991050595311
+              ]
+            }
+          },
+          "multi_fact": {
+            "hit_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.25,
+              "ci95": [
+                0.0625,
+                0.4375
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.625,
+              "ci95": [
+                0.25,
+                0.875
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.625,
+              "ci95": [
+                0.25,
+                0.875
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "mrr": {
+              "mean": 0.5625,
+              "ci95": [
+                0.25,
+                0.875
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.4799301972870469,
+              "ci95": [
+                0.2016433990956823,
+                0.7481820941219349
+              ]
+            }
+          },
+          "paraphrase": {
+            "hit_at_1": {
+              "mean": 0.2,
+              "ci95": [
+                0.05,
+                0.4
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.2,
+              "ci95": [
+                0.05,
+                0.4
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.2,
+              "ci95": [
+                0.05,
+                0.4
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.3,
+              "ci95": [
+                0.1,
+                0.5
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.3,
+              "ci95": [
+                0.1,
+                0.5
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.3,
+              "ci95": [
+                0.1,
+                0.5
+              ]
+            },
+            "mrr": {
+              "mean": 0.235,
+              "ci95": [
+                0.075,
+                0.42000000000000004
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.25088912804029995,
+              "ci95": [
+                0.08868528072345416,
+                0.43245784391988
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 11.554150027222931,
+          "p95": 15.722459997050459
+        }
+      },
+      "per_query": [
+        {
+          "id": "v2-003",
+          "type": "paraphrase",
+          "latency_ms": 18.828599946573377,
+          "retrieved": [
+            "rfc9293.pdf:p26:1",
+            "rfc9293.pdf:p44:4",
+            "rfc9293.pdf:p39:3",
+            "rfc9293.pdf:p24:4",
+            "rfc9110.txt:247"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-004",
+          "type": "paraphrase",
+          "latency_ms": 14.33429995086044,
+          "retrieved": [
+            "rfc9293.pdf:p23:14",
+            "rfc9293.pdf:p23:15",
+            "rfc9293.pdf:p47:6",
+            "rfc9293.pdf:p26:2",
+            "rfc9293.pdf:p22:10"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-006",
+          "type": "paraphrase",
+          "latency_ms": 15.63969999551773,
+          "retrieved": [
+            "rfc9293.pdf:p26:6",
+            "rfc9293.pdf:p48:12",
+            "rfc9293.pdf:p15:5",
+            "rfc9293.pdf:p20:8",
+            "rfc9293.pdf:p31:1"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-008",
+          "type": "paraphrase",
+          "latency_ms": 15.33920003566891,
+          "retrieved": [
+            "rfc9293.pdf:p45:10",
+            "rfc9293.pdf:p51:5",
+            "rfc9293.pdf:p10:4",
+            "rfc9293.pdf:p45:9",
+            "rfc9293.pdf:p51:7"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-009",
+          "type": "paraphrase",
+          "latency_ms": 17.2949000261724,
+          "retrieved": [
+            "rfc9293.pdf:p41:1",
+            "rfc9293.pdf:p40:7",
+            "rfc9293.pdf:p40:5",
+            "rfc9293.pdf:p40:6",
+            "rfc9293.pdf:p41:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-012",
+          "type": "identifier",
+          "latency_ms": 13.260899926535785,
+          "retrieved": [
+            "rfc9293.pdf:p36:4",
+            "rfc9293.pdf:p36:3",
+            "rfc9293.pdf:p36:5",
+            "rfc9293.pdf:p73:7",
+            "rfc9293.pdf:p67:1"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-013",
+          "type": "identifier",
+          "latency_ms": 11.66159997228533,
+          "retrieved": [
+            "rfc9293.pdf:p30:6",
+            "rfc9293.pdf:p22:8",
+            "rfc9293.pdf:p59:3",
+            "rfc9293.pdf:p59:2",
+            "rfc9293.pdf:p47:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-014",
+          "type": "identifier",
+          "latency_ms": 11.99809997342527,
+          "retrieved": [
+            "rfc9293.pdf:p41:11",
+            "rfc9293.pdf:p34:1",
+            "rfc9293.pdf:p33:12",
+            "rfc9293.pdf:p33:7",
+            "rfc9293.pdf:p36:5"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-017",
+          "type": "multi_fact",
+          "latency_ms": 13.000800041481853,
+          "retrieved": [
+            "rfc9293.pdf:p45:1",
+            "rfc9293.pdf:p47:6",
+            "rfc9293.pdf:p24:12",
+            "rfc9293.pdf:p82:4",
+            "rfc9293.pdf:p22:10"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-018",
+          "type": "multi_fact",
+          "latency_ms": 13.542099972255528,
+          "retrieved": [
+            "rfc9293.pdf:p38:10",
+            "rfc9293.pdf:p38:9",
+            "rfc9293.pdf:p12:5",
+            "rfc9293.pdf:p12:6",
+            "rfc9293.pdf:p36:1"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584
+        },
+        {
+          "id": "v2-022",
+          "type": "paraphrase",
+          "latency_ms": 11.086400016210973,
+          "retrieved": [
+            "rfc9110.txt:321",
+            "rfc9110.txt:111",
+            "rfc9110.txt:883",
+            "rfc9110.txt:631",
+            "rfc9110.txt:416"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-023",
+          "type": "paraphrase",
+          "latency_ms": 10.370700038038194,
+          "retrieved": [
+            "rfc9110.txt:414",
+            "rfc9110.txt:647",
+            "rfc9110.txt:413",
+            "rfc9110.txt:215",
+            "rfc9110.txt:1291"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-025",
+          "type": "paraphrase",
+          "latency_ms": 11.57859992235899,
+          "retrieved": [
+            "rfc9110.txt:684",
+            "rfc9110.txt:145",
+            "rfc9110.txt:574",
+            "rfc9110.txt:725",
+            "rfc9110.txt:1471"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-027",
+          "type": "paraphrase",
+          "latency_ms": 13.420900097116828,
+          "retrieved": [
+            "rfc9110.txt:419",
+            "rfc9110.txt:197",
+            "rfc9110.txt:169",
+            "rfc9110.txt:416",
+            "rfc9110.txt:736"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.2,
+          "ndcg_at_5": 0.38685280723454163
+        },
+        {
+          "id": "v2-030",
+          "type": "paraphrase",
+          "latency_ms": 10.928899981081486,
+          "retrieved": [
+            "rfc9110.txt:105",
+            "rfc9110.txt:199",
+            "rfc9110.txt:120",
+            "rfc6749.txt:340",
+            "rfc9110.txt:92"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-031",
+          "type": "identifier",
+          "latency_ms": 9.11480002105236,
+          "retrieved": [
+            "rfc9110.txt:651",
+            "rfc9110.txt:819",
+            "rfc9110.txt:817",
+            "rfc9110.txt:652",
+            "rfc9110.txt:818"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-032",
+          "type": "identifier",
+          "latency_ms": 9.996599983423948,
+          "retrieved": [
+            "rfc9110.txt:995",
+            "rfc9110.txt:1003",
+            "rfc9110.txt:1005",
+            "rfc9110.txt:989",
+            "rfc9110.txt:1037"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-036",
+          "type": "identifier",
+          "latency_ms": 10.570000042207539,
+          "retrieved": [
+            "rfc9110.txt:1276",
+            "rfc9110.txt:907",
+            "rfc9110.txt:1385",
+            "rfc9110.txt:863",
+            "rfc9110.txt:1386"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-039",
+          "type": "multi_fact",
+          "latency_ms": 9.498400031588972,
+          "retrieved": [
+            "rfc9110.txt:1168",
+            "rfc9110.txt:1171",
+            "rfc9110.txt:1179",
+            "rfc9110.txt:548",
+            "rfc9110.txt:1128"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-040",
+          "type": "multi_fact",
+          "latency_ms": 11.176800006069243,
+          "retrieved": [
+            "rfc9110.txt:1297",
+            "rfc9110.txt:1282",
+            "rfc9110.txt:1296",
+            "rfc9110.txt:1299",
+            "rfc9110.txt:1283"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6934264036172708
+        },
+        {
+          "id": "v2-041",
+          "type": "paraphrase",
+          "latency_ms": 12.592499959282577,
+          "retrieved": [
+            "rfc8446.txt:962",
+            "rfc8446.txt:578",
+            "rfc8446.txt:973",
+            "rfc8446.txt:348",
+            "rfc8446.txt:154"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-045",
+          "type": "paraphrase",
+          "latency_ms": 12.038800050504506,
+          "retrieved": [
+            "rfc8446.txt:562",
+            "rfc8446.txt:543",
+            "rfc8446.txt:521",
+            "rfc8446.txt:548",
+            "rfc8446.txt:560"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-046",
+          "type": "paraphrase",
+          "latency_ms": 11.798199964687228,
+          "retrieved": [
+            "rfc8446.txt:578",
+            "rfc8446.txt:566",
+            "rfc8446.txt:493",
+            "rfc9110.txt:215",
+            "rfc8446.txt:580"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-048",
+          "type": "paraphrase",
+          "latency_ms": 11.387399979867041,
+          "retrieved": [
+            "rfc8446.txt:390",
+            "rfc8446.txt:468",
+            "rfc8446.txt:60",
+            "rfc8446.txt:27",
+            "rfc8446.txt:767"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-050",
+          "type": "identifier",
+          "latency_ms": 10.98330004606396,
+          "retrieved": [
+            "rfc8446.txt:691",
+            "rfc8446.txt:829",
+            "rfc8446.txt:830",
+            "rfc8446.txt:442",
+            "rfc8446.txt:831"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-052",
+          "type": "identifier",
+          "latency_ms": 13.653700007125735,
+          "retrieved": [
+            "rfc8446.txt:874",
+            "rfc8446.txt:237",
+            "rfc8446.txt:868",
+            "rfc8446.txt:158",
+            "rfc8446.txt:863"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-053",
+          "type": "multi_fact",
+          "latency_ms": 14.311200007796288,
+          "retrieved": [
+            "rfc8446.txt:168",
+            "rfc8446.txt:148",
+            "rfc8446.txt:231",
+            "rfc8446.txt:797",
+            "rfc8446.txt:389"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-055",
+          "type": "paraphrase",
+          "latency_ms": 12.581099988892674,
+          "retrieved": [
+            "rfc6749.txt:25",
+            "rfc6749.txt:368",
+            "rfc6749.txt:159",
+            "rfc6749.txt:26",
+            "rfc9110.txt:1511"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-059",
+          "type": "paraphrase",
+          "latency_ms": 10.966500034555793,
+          "retrieved": [
+            "rfc6749.txt:215",
+            "rfc6749.txt:56",
+            "rfc6749.txt:347",
+            "rfc6749.txt:349",
+            "rfc6749.txt:105"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-060",
+          "type": "paraphrase",
+          "latency_ms": 9.751900099217892,
+          "retrieved": [
+            "rfc9110.txt:1280",
+            "rfc6749.txt:26",
+            "rfc6749.txt:347",
+            "rfc6749.txt:272",
+            "rfc9110.txt:1511"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-062",
+          "type": "identifier",
+          "latency_ms": 11.584899970330298,
+          "retrieved": [
+            "rfc6749.txt:291",
+            "rfc6749.txt:290",
+            "rfc6749.txt:292",
+            "rfc6749.txt:207",
+            "rfc6749.txt:178"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-063",
+          "type": "identifier",
+          "latency_ms": 10.809300001710653,
+          "retrieved": [
+            "rfc6749.txt:401",
+            "rfc6749.txt:402",
+            "rfc6749.txt:398",
+            "rfc6749.txt:227",
+            "rfc6749.txt:396"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-065",
+          "type": "multi_fact",
+          "latency_ms": 11.558199999853969,
+          "retrieved": [
+            "rfc6749.txt:187",
+            "rfc6749.txt:188",
+            "rfc6749.txt:282",
+            "rfc6749.txt:347",
+            "rfc6749.txt:169"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-067",
+          "type": "paraphrase",
+          "latency_ms": 11.452600010670722,
+          "retrieved": [
+            "rfc1035.txt:187",
+            "rfc1035.txt:216",
+            "rfc1035.txt:68",
+            "rfc1035.txt:210",
+            "rfc1035.txt:21"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-068",
+          "type": "paraphrase",
+          "latency_ms": 11.550100054591894,
+          "retrieved": [
+            "rfc1035.txt:220",
+            "rfc1035.txt:20",
+            "rfc1035.txt:343",
+            "rfc1035.txt:321",
+            "rfc1035.txt:30"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-071",
+          "type": "identifier",
+          "latency_ms": 11.056000017561018,
+          "retrieved": [
+            "rfc1035.txt:127",
+            "rfc1035.txt:280",
+            "rfc1035.txt:129",
+            "rfc1035.txt:84",
+            "rfc1035.txt:279"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_5": 0.5
+        },
+        {
+          "id": "v2-073",
+          "type": "multi_fact",
+          "latency_ms": 10.14930009841919,
+          "retrieved": [
+            "rfc1035.txt:78",
+            "rfc1035.txt:76",
+            "rfc1035.txt:74",
+            "rfc1035.txt:77",
+            "rfc1035.txt:192"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584
+        },
+        {
+          "id": "v2-076",
+          "type": "paraphrase",
+          "latency_ms": 11.499100015498698,
+          "retrieved": [
+            "rfc7519.pdf:p15:6",
+            "rfc7519.pdf:p11:5",
+            "rfc7519.pdf:p3:16",
+            "rfc7519.pdf:p3:13",
+            "rfc7519.pdf:p3:15"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-077",
+          "type": "identifier",
+          "latency_ms": 10.761099983938038,
+          "retrieved": [
+            "rfc7519.pdf:p10:6",
+            "rfc7519.pdf:p10:7",
+            "rfc7519.pdf:p3:8",
+            "rfc7519.pdf:p10:5",
+            "rfc7519.pdf:p8:6"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-079",
+          "type": "multi_fact",
+          "latency_ms": 10.377900092862546,
+          "retrieved": [
+            "rfc7519.pdf:p10:2",
+            "rfc7519.pdf:p8:6",
+            "rfc7519.pdf:p9:9",
+            "rfc7519.pdf:p26:6",
+            "rfc7519.pdf:p10:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        }
+      ]
+    },
+    "bm25": {
+      "summary": {
+        "overall": {
+          "hit_at_1": {
+            "mean": 0.325,
+            "ci95": [
+              0.175,
+              0.475
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.275,
+            "ci95": [
+              0.15,
+              0.4125
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.325,
+            "ci95": [
+              0.175,
+              0.475
+            ]
+          },
+          "hit_at_3": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.45,
+            "ci95": [
+              0.3,
+              0.6
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.45,
+            "ci95": [
+              0.3,
+              0.6
+            ]
+          },
+          "hit_at_5": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.45,
+            "ci95": [
+              0.3,
+              0.6
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.45,
+            "ci95": [
+              0.3,
+              0.6
+            ]
+          },
+          "mrr": {
+            "mean": 0.39166666666666666,
+            "ci95": [
+              0.25416666666666665,
+              0.5333333333333334
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.38956439361363754,
+            "ci95": [
+              0.25498407142742757,
+              0.5264198037721994
+            ]
+          }
+        },
+        "by_type": {
+          "identifier": {
+            "hit_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.25,
+                0.75
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.25,
+                0.75
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.25,
+                0.75
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.9166666666666666,
+              "ci95": [
+                0.75,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.9166666666666666,
+              "ci95": [
+                0.75,
+                1.0
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.9166666666666666,
+              "ci95": [
+                0.75,
+                1.0
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.9166666666666666,
+              "ci95": [
+                0.75,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.9166666666666666,
+              "ci95": [
+                0.75,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.9166666666666666,
+              "ci95": [
+                0.75,
+                1.0
+              ]
+            },
+            "mrr": {
+              "mean": 0.6805555555555556,
+              "ci95": [
+                0.486111111111111,
+                0.8611111111111112
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.7285945138540939,
+              "ci95": [
+                0.5510170343898059,
+                0.8843503677231391
+              ]
+            }
+          },
+          "multi_fact": {
+            "hit_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.25,
+              "ci95": [
+                0.0625,
+                0.4375
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.625,
+              "ci95": [
+                0.25,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.625,
+              "ci95": [
+                0.25,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "mrr": {
+              "mean": 0.5625,
+              "ci95": [
+                0.25,
+                0.875
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.4799301972870469,
+              "ci95": [
+                0.2016433990956823,
+                0.7584224203653688
+              ]
+            }
+          },
+          "paraphrase": {
+            "hit_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "mrr": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 13.28635000390932,
+          "p95": 24.566245015012097
+        }
+      },
+      "per_query": [
+        {
+          "id": "v2-003",
+          "type": "paraphrase",
+          "latency_ms": 23.894999991171062,
+          "retrieved": [
+            "rfc9293.pdf:p33:6",
+            "rfc8446.txt:43",
+            "rfc9110.txt:39",
+            "rfc9110.txt:215",
+            "rfc9293.pdf:p15:3"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-004",
+          "type": "paraphrase",
+          "latency_ms": 26.214399957098067,
+          "retrieved": [
+            "rfc9293.pdf:p23:15",
+            "rfc9293.pdf:p31:4",
+            "rfc9293.pdf:p24:6",
+            "rfc9293.pdf:p48:13",
+            "rfc9293.pdf:p32:1"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-006",
+          "type": "paraphrase",
+          "latency_ms": 26.784899993799627,
+          "retrieved": [
+            "rfc9293.pdf:p26:6",
+            "rfc1035.txt:240",
+            "rfc9110.txt:1296",
+            "rfc9110.txt:215",
+            "rfc9293.pdf:p12:2"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-008",
+          "type": "paraphrase",
+          "latency_ms": 14.880100032314658,
+          "retrieved": [
+            "rfc9293.pdf:p51:11",
+            "rfc9293.pdf:p34:3",
+            "rfc9293.pdf:p51:5",
+            "rfc9293.pdf:p51:6",
+            "rfc9293.pdf:p34:4"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-009",
+          "type": "paraphrase",
+          "latency_ms": 18.29019992146641,
+          "retrieved": [
+            "rfc9293.pdf:p41:1",
+            "rfc7519.pdf:p13:3",
+            "rfc7519.pdf:p14:4",
+            "rfc9293.pdf:p27:5",
+            "rfc9293.pdf:p36:3"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-012",
+          "type": "identifier",
+          "latency_ms": 5.994000006467104,
+          "retrieved": [
+            "rfc9293.pdf:p36:3",
+            "rfc9293.pdf:p14:3",
+            "rfc9293.pdf:p13:4",
+            "rfc9293.pdf:p67:1",
+            "rfc9293.pdf:p36:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8503449055347546
+        },
+        {
+          "id": "v2-013",
+          "type": "identifier",
+          "latency_ms": 13.15520005300641,
+          "retrieved": [
+            "rfc9293.pdf:p30:6",
+            "rfc9293.pdf:p68:5",
+            "rfc9293.pdf:p57:3",
+            "rfc9293.pdf:p30:7",
+            "rfc9293.pdf:p17:1"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-014",
+          "type": "identifier",
+          "latency_ms": 8.521299925632775,
+          "retrieved": [
+            "rfc9293.pdf:p43:4",
+            "rfc9293.pdf:p33:8",
+            "rfc9293.pdf:p33:7",
+            "rfc9293.pdf:p33:12",
+            "rfc9293.pdf:p41:11"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-017",
+          "type": "multi_fact",
+          "latency_ms": 18.095400067977607,
+          "retrieved": [
+            "rfc9293.pdf:p36:5",
+            "rfc9293.pdf:p73:3",
+            "rfc9293.pdf:p38:1",
+            "rfc9293.pdf:p88:1",
+            "rfc8446.txt:561"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-018",
+          "type": "multi_fact",
+          "latency_ms": 11.589700006879866,
+          "retrieved": [
+            "rfc9293.pdf:p38:10",
+            "rfc9293.pdf:p37:8",
+            "rfc9293.pdf:p36:1",
+            "rfc9293.pdf:p36:2",
+            "rfc9293.pdf:p40:1"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584
+        },
+        {
+          "id": "v2-022",
+          "type": "paraphrase",
+          "latency_ms": 11.750300065614283,
+          "retrieved": [
+            "rfc9110.txt:645",
+            "rfc1035.txt:260",
+            "rfc1035.txt:351",
+            "rfc9110.txt:1424",
+            "rfc9293.pdf:p48:5"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-023",
+          "type": "paraphrase",
+          "latency_ms": 13.953499961644411,
+          "retrieved": [
+            "rfc1035.txt:177",
+            "rfc8446.txt:659",
+            "rfc9110.txt:837",
+            "rfc9110.txt:647",
+            "rfc9110.txt:413"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-025",
+          "type": "paraphrase",
+          "latency_ms": 17.121300101280212,
+          "retrieved": [
+            "rfc9110.txt:1101",
+            "rfc9110.txt:472",
+            "rfc1035.txt:228",
+            "rfc6749.txt:253",
+            "rfc9110.txt:567"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-027",
+          "type": "paraphrase",
+          "latency_ms": 20.716099999845028,
+          "retrieved": [
+            "rfc9110.txt:1430",
+            "rfc9293.pdf:p44:9",
+            "rfc9110.txt:206",
+            "rfc9110.txt:197",
+            "rfc9110.txt:393"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-030",
+          "type": "paraphrase",
+          "latency_ms": 24.479500018060207,
+          "retrieved": [
+            "rfc9110.txt:1255",
+            "rfc9110.txt:645",
+            "rfc9110.txt:1484",
+            "rfc9110.txt:442",
+            "rfc9110.txt:698"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-031",
+          "type": "identifier",
+          "latency_ms": 8.040799992159009,
+          "retrieved": [
+            "rfc9110.txt:819",
+            "rfc9110.txt:653",
+            "rfc9110.txt:651",
+            "rfc9110.txt:1305",
+            "rfc9110.txt:820"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-032",
+          "type": "identifier",
+          "latency_ms": 9.942100034095347,
+          "retrieved": [
+            "rfc9110.txt:1007",
+            "rfc9110.txt:1064",
+            "rfc9110.txt:1065",
+            "rfc9110.txt:1002",
+            "rfc9110.txt:1001"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-036",
+          "type": "identifier",
+          "latency_ms": 8.221799973398447,
+          "retrieved": [
+            "rfc6749.txt:291",
+            "rfc6749.txt:292",
+            "rfc9110.txt:1275",
+            "rfc6749.txt:286",
+            "rfc9110.txt:853"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_5": 0.5
+        },
+        {
+          "id": "v2-039",
+          "type": "multi_fact",
+          "latency_ms": 12.543900054879487,
+          "retrieved": [
+            "rfc9110.txt:1356",
+            "rfc9110.txt:690",
+            "rfc9110.txt:693",
+            "rfc9110.txt:1128",
+            "rfc9110.txt:1179"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.38685280723454163
+        },
+        {
+          "id": "v2-040",
+          "type": "multi_fact",
+          "latency_ms": 14.170899987220764,
+          "retrieved": [
+            "rfc9110.txt:1282",
+            "rfc9110.txt:1297",
+            "rfc9110.txt:1296",
+            "rfc9110.txt:1139",
+            "rfc9110.txt:1273"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "id": "v2-041",
+          "type": "paraphrase",
+          "latency_ms": 11.229900061152875,
+          "retrieved": [
+            "rfc9110.txt:959",
+            "rfc8446.txt:320",
+            "rfc8446.txt:878",
+            "rfc9110.txt:1335",
+            "rfc9110.txt:472"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-045",
+          "type": "paraphrase",
+          "latency_ms": 14.096700004301965,
+          "retrieved": [
+            "rfc8446.txt:562",
+            "rfc8446.txt:112",
+            "rfc8446.txt:32",
+            "rfc8446.txt:33",
+            "rfc8446.txt:80"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-046",
+          "type": "paraphrase",
+          "latency_ms": 13.659499934874475,
+          "retrieved": [
+            "rfc9110.txt:137",
+            "rfc9293.pdf:p30:10",
+            "rfc9110.txt:136",
+            "rfc9293.pdf:p47:3",
+            "rfc9293.pdf:p26:6"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-048",
+          "type": "paraphrase",
+          "latency_ms": 18.01050000358373,
+          "retrieved": [
+            "rfc8446.txt:59",
+            "rfc8446.txt:380",
+            "rfc8446.txt:468",
+            "rfc8446.txt:687",
+            "rfc8446.txt:276"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-050",
+          "type": "identifier",
+          "latency_ms": 12.135800090618432,
+          "retrieved": [
+            "rfc8446.txt:691",
+            "rfc8446.txt:829",
+            "rfc8446.txt:690",
+            "rfc8446.txt:202",
+            "rfc8446.txt:827"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-052",
+          "type": "identifier",
+          "latency_ms": 10.573899955488741,
+          "retrieved": [
+            "rfc8446.txt:236",
+            "rfc8446.txt:891",
+            "rfc8446.txt:237",
+            "rfc8446.txt:863",
+            "rfc8446.txt:874"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_5": 0.5
+        },
+        {
+          "id": "v2-053",
+          "type": "multi_fact",
+          "latency_ms": 13.170099933631718,
+          "retrieved": [
+            "rfc8446.txt:327",
+            "rfc8446.txt:92",
+            "rfc8446.txt:330",
+            "rfc8446.txt:326",
+            "rfc8446.txt:93"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "id": "v2-055",
+          "type": "paraphrase",
+          "latency_ms": 11.988600017502904,
+          "retrieved": [
+            "rfc6749.txt:60",
+            "rfc9293.pdf:p78:1",
+            "rfc9110.txt:1037",
+            "rfc9110.txt:1455",
+            "rfc9293.pdf:p77:8"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-059",
+          "type": "paraphrase",
+          "latency_ms": 13.402600074186921,
+          "retrieved": [
+            "rfc9110.txt:1310",
+            "rfc6749.txt:30",
+            "rfc9110.txt:660",
+            "rfc8446.txt:204",
+            "rfc9293.pdf:p38:8"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-060",
+          "type": "paraphrase",
+          "latency_ms": 8.804599987342954,
+          "retrieved": [
+            "rfc9110.txt:1279",
+            "rfc6749.txt:41",
+            "rfc6749.txt:103",
+            "rfc6749.txt:346",
+            "rfc6749.txt:212"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-062",
+          "type": "identifier",
+          "latency_ms": 13.776200008578598,
+          "retrieved": [
+            "rfc6749.txt:355",
+            "rfc6749.txt:291",
+            "rfc6749.txt:373",
+            "rfc6749.txt:310",
+            "rfc6749.txt:311"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-063",
+          "type": "identifier",
+          "latency_ms": 9.03210008982569,
+          "retrieved": [
+            "rfc9110.txt:699",
+            "rfc6749.txt:402",
+            "rfc6749.txt:396",
+            "rfc6749.txt:398",
+            "rfc9110.txt:101"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-065",
+          "type": "multi_fact",
+          "latency_ms": 14.57460003439337,
+          "retrieved": [
+            "rfc6749.txt:187",
+            "rfc6749.txt:188",
+            "rfc6749.txt:372",
+            "rfc6749.txt:373",
+            "rfc9110.txt:594"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-067",
+          "type": "paraphrase",
+          "latency_ms": 11.720499955117702,
+          "retrieved": [
+            "rfc1035.txt:216",
+            "rfc1035.txt:215",
+            "rfc1035.txt:117",
+            "rfc1035.txt:32",
+            "rfc8446.txt:514"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-068",
+          "type": "paraphrase",
+          "latency_ms": 14.918799977749586,
+          "retrieved": [
+            "rfc9110.txt:1250",
+            "rfc1035.txt:321",
+            "rfc1035.txt:44",
+            "rfc9293.pdf:p19:1",
+            "rfc1035.txt:344"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-071",
+          "type": "identifier",
+          "latency_ms": 10.575100081041455,
+          "retrieved": [
+            "rfc1035.txt:129",
+            "rfc1035.txt:280",
+            "rfc1035.txt:128",
+            "rfc1035.txt:127",
+            "rfc8446.txt:551"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-073",
+          "type": "multi_fact",
+          "latency_ms": 12.699599959887564,
+          "retrieved": [
+            "rfc1035.txt:358",
+            "rfc1035.txt:76",
+            "rfc1035.txt:77",
+            "rfc1035.txt:95",
+            "rfc1035.txt:192"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-076",
+          "type": "paraphrase",
+          "latency_ms": 12.267100042663515,
+          "retrieved": [
+            "rfc7519.pdf:p15:6",
+            "rfc9110.txt:234",
+            "rfc1035.txt:56",
+            "rfc8446.txt:708",
+            "rfc9110.txt:1361"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-077",
+          "type": "identifier",
+          "latency_ms": 15.779300010763109,
+          "retrieved": [
+            "rfc7519.pdf:p10:7",
+            "rfc7519.pdf:p10:6",
+            "rfc7519.pdf:p10:5",
+            "rfc7519.pdf:p3:8",
+            "rfc7519.pdf:p10:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-079",
+          "type": "multi_fact",
+          "latency_ms": 17.879100050777197,
+          "retrieved": [
+            "rfc7519.pdf:p12:2",
+            "rfc7519.pdf:p15:5",
+            "rfc7519.pdf:p6:7",
+            "rfc7519.pdf:p6:8",
+            "rfc7519.pdf:p12:1"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        }
+      ]
+    },
+    "hybrid": {
+      "summary": {
+        "overall": {
+          "hit_at_1": {
+            "mean": 0.375,
+            "ci95": [
+              0.225,
+              0.525
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.325,
+            "ci95": [
+              0.1875,
+              0.4625
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.375,
+            "ci95": [
+              0.225,
+              0.525
+            ]
+          },
+          "hit_at_3": {
+            "mean": 0.425,
+            "ci95": [
+              0.275,
+              0.575
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.4125,
+            "ci95": [
+              0.2625,
+              0.5625
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.4125,
+            "ci95": [
+              0.2625,
+              0.5625
+            ]
+          },
+          "hit_at_5": {
+            "mean": 0.5,
+            "ci95": [
+              0.35,
+              0.65
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "mrr": {
+            "mean": 0.41208333333333336,
+            "ci95": [
+              0.26749999999999996,
+              0.5608437499999999
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.41595614006776305,
+            "ci95": [
+              0.27517901285132623,
+              0.5583980382172379
+            ]
+          }
+        },
+        "by_type": {
+          "identifier": {
+            "hit_at_1": {
+              "mean": 0.6666666666666666,
+              "ci95": [
+                0.4166666666666667,
+                0.9166666666666666
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.6666666666666666,
+              "ci95": [
+                0.4166666666666667,
+                0.9166666666666666
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.6666666666666666,
+              "ci95": [
+                0.4166666666666667,
+                0.9166666666666666
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.8333333333333334,
+              "ci95": [
+                0.5833333333333334,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.8333333333333334,
+              "ci95": [
+                0.5833333333333334,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.8333333333333334,
+              "ci95": [
+                0.5833333333333334,
+                1.0
+              ]
+            },
+            "mrr": {
+              "mean": 0.7291666666666666,
+              "ci95": [
+                0.4791666666666667,
+                0.9375
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.7551338593037376,
+              "ci95": [
+                0.5243358061850149,
+                0.9525563798394495
+              ]
+            }
+          },
+          "multi_fact": {
+            "hit_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.25,
+              "ci95": [
+                0.0625,
+                0.4375
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.5,
+              "ci95": [
+                0.125,
+                0.875
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.4375,
+              "ci95": [
+                0.125,
+                0.75
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.4375,
+              "ci95": [
+                0.125,
+                0.75
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.625,
+              "ci95": [
+                0.25,
+                0.875
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.5,
+              "ci95": [
+                0.1875,
+                0.8125
+              ]
+            },
+            "mrr": {
+              "mean": 0.525,
+              "ci95": [
+                0.175,
+                0.875
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.4612233104788912,
+              "ci95": [
+                0.1742645268358475,
+                0.7582169954784115
+              ]
+            }
+          },
+          "paraphrase": {
+            "hit_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.2,
+              "ci95": [
+                0.05,
+                0.4
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.2,
+              "ci95": [
+                0.05,
+                0.4
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.2,
+              "ci95": [
+                0.05,
+                0.4
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "mrr": {
+              "mean": 0.17666666666666667,
+              "ci95": [
+                0.043333333333333335,
+                0.3467499999999988
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.19434264036172708,
+              "ci95": [
+                0.05,
+                0.3693426403617271
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 35.81759997177869,
+          "p95": 47.39880008855828
+        }
+      },
+      "per_query": [
+        {
+          "id": "v2-003",
+          "type": "paraphrase",
+          "latency_ms": 26.131099904887378,
+          "retrieved": [
+            "rfc9110.txt:110",
+            "rfc9293.pdf:p51:9",
+            "rfc9293.pdf:p26:1",
+            "rfc9293.pdf:p33:6",
+            "rfc8446.txt:43"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.3333333333333333,
+          "ndcg_at_5": 0.5
+        },
+        {
+          "id": "v2-004",
+          "type": "paraphrase",
+          "latency_ms": 33.757600001990795,
+          "retrieved": [
+            "rfc9293.pdf:p23:15",
+            "rfc9293.pdf:p31:4",
+            "rfc9293.pdf:p41:4",
+            "rfc9293.pdf:p38:2",
+            "rfc9293.pdf:p32:1"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-006",
+          "type": "paraphrase",
+          "latency_ms": 69.01889992877841,
+          "retrieved": [
+            "rfc9293.pdf:p26:6",
+            "rfc9293.pdf:p32:1",
+            "rfc1035.txt:240",
+            "rfc9293.pdf:p48:12",
+            "rfc9110.txt:1296"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-008",
+          "type": "paraphrase",
+          "latency_ms": 36.935599986463785,
+          "retrieved": [
+            "rfc9293.pdf:p51:5",
+            "rfc9293.pdf:p51:11",
+            "rfc9293.pdf:p45:9",
+            "rfc9293.pdf:p9:7",
+            "rfc9293.pdf:p10:4"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-009",
+          "type": "paraphrase",
+          "latency_ms": 36.47880000062287,
+          "retrieved": [
+            "rfc9293.pdf:p41:1",
+            "rfc9293.pdf:p41:4",
+            "rfc9293.pdf:p40:5",
+            "rfc9293.pdf:p27:5",
+            "rfc9293.pdf:p40:7"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-012",
+          "type": "identifier",
+          "latency_ms": 17.4855999648571,
+          "retrieved": [
+            "rfc9293.pdf:p36:3",
+            "rfc9293.pdf:p36:4",
+            "rfc9293.pdf:p67:1",
+            "rfc9293.pdf:p73:7",
+            "rfc9293.pdf:p14:3"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-013",
+          "type": "identifier",
+          "latency_ms": 27.778099989518523,
+          "retrieved": [
+            "rfc9293.pdf:p30:6",
+            "rfc9293.pdf:p57:3",
+            "rfc9293.pdf:p30:7",
+            "rfc9293.pdf:p17:1",
+            "rfc9293.pdf:p30:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-014",
+          "type": "identifier",
+          "latency_ms": 19.64139996562153,
+          "retrieved": [
+            "rfc9293.pdf:p41:11",
+            "rfc9293.pdf:p33:12",
+            "rfc9293.pdf:p33:7",
+            "rfc9293.pdf:p34:1",
+            "rfc9293.pdf:p33:11"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-017",
+          "type": "multi_fact",
+          "latency_ms": 39.02809997089207,
+          "retrieved": [
+            "rfc9293.pdf:p38:1",
+            "rfc9293.pdf:p36:5",
+            "rfc9293.pdf:p45:1",
+            "rfc9293.pdf:p47:6",
+            "rfc9293.pdf:p73:3"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-018",
+          "type": "multi_fact",
+          "latency_ms": 35.77229997608811,
+          "retrieved": [
+            "rfc9293.pdf:p38:10",
+            "rfc9293.pdf:p36:1",
+            "rfc9293.pdf:p38:9",
+            "rfc9293.pdf:p12:5",
+            "rfc9293.pdf:p37:8"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584
+        },
+        {
+          "id": "v2-022",
+          "type": "paraphrase",
+          "latency_ms": 37.6651999540627,
+          "retrieved": [
+            "rfc9110.txt:631",
+            "rfc9110.txt:321",
+            "rfc9110.txt:645",
+            "rfc1035.txt:260",
+            "rfc9110.txt:111"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-023",
+          "type": "paraphrase",
+          "latency_ms": 46.260900096967816,
+          "retrieved": [
+            "rfc9110.txt:647",
+            "rfc9110.txt:413",
+            "rfc9110.txt:652",
+            "rfc9110.txt:819",
+            "rfc9110.txt:818"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-025",
+          "type": "paraphrase",
+          "latency_ms": 42.53370000515133,
+          "retrieved": [
+            "rfc9110.txt:684",
+            "rfc9110.txt:1003",
+            "rfc9110.txt:1101",
+            "rfc9110.txt:145",
+            "rfc9110.txt:472"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-027",
+          "type": "paraphrase",
+          "latency_ms": 43.16800006199628,
+          "retrieved": [
+            "rfc9110.txt:197",
+            "rfc9110.txt:416",
+            "rfc9110.txt:200",
+            "rfc9110.txt:199",
+            "rfc9110.txt:443"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-030",
+          "type": "paraphrase",
+          "latency_ms": 45.656199916265905,
+          "retrieved": [
+            "rfc9110.txt:105",
+            "rfc9110.txt:1255",
+            "rfc9110.txt:199",
+            "rfc9110.txt:645",
+            "rfc9110.txt:120"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-031",
+          "type": "identifier",
+          "latency_ms": 29.02879996690899,
+          "retrieved": [
+            "rfc9110.txt:819",
+            "rfc9110.txt:651",
+            "rfc9110.txt:653",
+            "rfc9110.txt:817",
+            "rfc9110.txt:818"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-032",
+          "type": "identifier",
+          "latency_ms": 31.038600020110607,
+          "retrieved": [
+            "rfc9110.txt:1064",
+            "rfc9110.txt:1005",
+            "rfc9110.txt:989",
+            "rfc9110.txt:1002",
+            "rfc9110.txt:1033"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-036",
+          "type": "identifier",
+          "latency_ms": 22.526599932461977,
+          "retrieved": [
+            "rfc9110.txt:1276",
+            "rfc9110.txt:863",
+            "rfc6749.txt:291",
+            "rfc9110.txt:1277",
+            "rfc9110.txt:248"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-039",
+          "type": "multi_fact",
+          "latency_ms": 39.69759994652122,
+          "retrieved": [
+            "rfc9110.txt:1179",
+            "rfc9110.txt:1128",
+            "rfc9110.txt:693",
+            "rfc9110.txt:1356",
+            "rfc9110.txt:1273"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-040",
+          "type": "multi_fact",
+          "latency_ms": 35.69669998250902,
+          "retrieved": [
+            "rfc9110.txt:1282",
+            "rfc9110.txt:1297",
+            "rfc9110.txt:1296",
+            "rfc9110.txt:1283",
+            "rfc9110.txt:1148"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "id": "v2-041",
+          "type": "paraphrase",
+          "latency_ms": 24.204000015743077,
+          "retrieved": [
+            "rfc8446.txt:154",
+            "rfc8446.txt:700",
+            "rfc8446.txt:880",
+            "rfc8446.txt:962",
+            "rfc9110.txt:959"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-045",
+          "type": "paraphrase",
+          "latency_ms": 26.302099926397204,
+          "retrieved": [
+            "rfc8446.txt:562",
+            "rfc8446.txt:543",
+            "rfc8446.txt:752",
+            "rfc8446.txt:560",
+            "rfc8446.txt:557"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-046",
+          "type": "paraphrase",
+          "latency_ms": 29.8366000643,
+          "retrieved": [
+            "rfc8446.txt:578",
+            "rfc8446.txt:579",
+            "rfc8446.txt:580",
+            "rfc9110.txt:137",
+            "rfc8446.txt:566"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-048",
+          "type": "paraphrase",
+          "latency_ms": 26.80059999693185,
+          "retrieved": [
+            "rfc8446.txt:468",
+            "rfc8446.txt:96",
+            "rfc8446.txt:380",
+            "rfc8446.txt:390",
+            "rfc8446.txt:921"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-050",
+          "type": "identifier",
+          "latency_ms": 30.436100088991225,
+          "retrieved": [
+            "rfc8446.txt:691",
+            "rfc8446.txt:829",
+            "rfc8446.txt:690",
+            "rfc8446.txt:692",
+            "rfc8446.txt:832"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-052",
+          "type": "identifier",
+          "latency_ms": 31.050599995069206,
+          "retrieved": [
+            "rfc8446.txt:237",
+            "rfc8446.txt:874",
+            "rfc8446.txt:236",
+            "rfc8446.txt:863",
+            "rfc8446.txt:158"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-053",
+          "type": "multi_fact",
+          "latency_ms": 35.05179996136576,
+          "retrieved": [
+            "rfc8446.txt:327",
+            "rfc8446.txt:389",
+            "rfc8446.txt:330",
+            "rfc8446.txt:66",
+            "rfc8446.txt:92"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "id": "v2-055",
+          "type": "paraphrase",
+          "latency_ms": 32.84910006914288,
+          "retrieved": [
+            "rfc9110.txt:1512",
+            "rfc6749.txt:158",
+            "rfc6749.txt:25",
+            "rfc6749.txt:60",
+            "rfc6749.txt:368"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.2,
+          "ndcg_at_5": 0.38685280723454163
+        },
+        {
+          "id": "v2-059",
+          "type": "paraphrase",
+          "latency_ms": 42.56460000760853,
+          "retrieved": [
+            "rfc6749.txt:85",
+            "rfc6749.txt:215",
+            "rfc9110.txt:1310",
+            "rfc6749.txt:30",
+            "rfc6749.txt:56"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-060",
+          "type": "paraphrase",
+          "latency_ms": 43.36980008520186,
+          "retrieved": [
+            "rfc6749.txt:40",
+            "rfc6749.txt:41",
+            "rfc6749.txt:376",
+            "rfc6749.txt:218",
+            "rfc6749.txt:379"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-062",
+          "type": "identifier",
+          "latency_ms": 73.13089992385358,
+          "retrieved": [
+            "rfc6749.txt:291",
+            "rfc6749.txt:355",
+            "rfc6749.txt:204",
+            "rfc6749.txt:290",
+            "rfc6749.txt:292"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-063",
+          "type": "identifier",
+          "latency_ms": 30.38309991825372,
+          "retrieved": [
+            "rfc6749.txt:402",
+            "rfc6749.txt:398",
+            "rfc6749.txt:396",
+            "rfc6749.txt:401",
+            "rfc6749.txt:201"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.25,
+          "ndcg_at_5": 0.43067655807339306
+        },
+        {
+          "id": "v2-065",
+          "type": "multi_fact",
+          "latency_ms": 35.862899967469275,
+          "retrieved": [
+            "rfc6749.txt:187",
+            "rfc6749.txt:188",
+            "rfc6749.txt:282",
+            "rfc6749.txt:372",
+            "rfc6749.txt:169"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-067",
+          "type": "paraphrase",
+          "latency_ms": 37.18710003886372,
+          "retrieved": [
+            "rfc1035.txt:216",
+            "rfc1035.txt:117",
+            "rfc9110.txt:1431",
+            "rfc1035.txt:46",
+            "rfc1035.txt:32"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-068",
+          "type": "paraphrase",
+          "latency_ms": 45.56790005881339,
+          "retrieved": [
+            "rfc1035.txt:321",
+            "rfc1035.txt:344",
+            "rfc1035.txt:343",
+            "rfc1035.txt:328",
+            "rfc1035.txt:320"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-071",
+          "type": "identifier",
+          "latency_ms": 36.70970001257956,
+          "retrieved": [
+            "rfc1035.txt:129",
+            "rfc1035.txt:280",
+            "rfc1035.txt:127",
+            "rfc1035.txt:128",
+            "rfc1035.txt:281"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-073",
+          "type": "multi_fact",
+          "latency_ms": 39.22080004122108,
+          "retrieved": [
+            "rfc1035.txt:76",
+            "rfc1035.txt:77",
+            "rfc1035.txt:192",
+            "rfc1035.txt:95",
+            "rfc1035.txt:78"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 0.2,
+          "ndcg_at_5": 0.23719771276929622
+        },
+        {
+          "id": "v2-076",
+          "type": "paraphrase",
+          "latency_ms": 37.389300065115094,
+          "retrieved": [
+            "rfc7519.pdf:p15:6",
+            "rfc7519.pdf:p11:5",
+            "rfc7519.pdf:p15:5",
+            "rfc7519.pdf:p12:2",
+            "rfc7519.pdf:p14:4"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-077",
+          "type": "identifier",
+          "latency_ms": 31.02340002078563,
+          "retrieved": [
+            "rfc7519.pdf:p10:6",
+            "rfc7519.pdf:p10:7",
+            "rfc7519.pdf:p10:5",
+            "rfc7519.pdf:p3:8",
+            "rfc7519.pdf:p10:4"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-079",
+          "type": "multi_fact",
+          "latency_ms": 40.64929997548461,
+          "retrieved": [
+            "rfc7519.pdf:p12:2",
+            "rfc7519.pdf:p15:5",
+            "rfc7519.pdf:p6:2",
+            "rfc7519.pdf:p5:2",
+            "rfc7519.pdf:p21:6"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        }
+      ]
+    },
+    "reranked_hybrid": {
+      "summary": {
+        "overall": {
+          "hit_at_1": {
+            "mean": 0.35,
+            "ci95": [
+              0.2,
+              0.5
+            ]
+          },
+          "recall_at_1": {
+            "mean": 0.275,
+            "ci95": [
+              0.15,
+              0.4
+            ]
+          },
+          "capped_recall_at_1": {
+            "mean": 0.35,
+            "ci95": [
+              0.2,
+              0.5
+            ]
+          },
+          "hit_at_3": {
+            "mean": 0.5,
+            "ci95": [
+              0.35,
+              0.65
+            ]
+          },
+          "recall_at_3": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "capped_recall_at_3": {
+            "mean": 0.475,
+            "ci95": [
+              0.325,
+              0.625
+            ]
+          },
+          "hit_at_5": {
+            "mean": 0.6,
+            "ci95": [
+              0.45,
+              0.75
+            ]
+          },
+          "recall_at_5": {
+            "mean": 0.575,
+            "ci95": [
+              0.425,
+              0.725
+            ]
+          },
+          "capped_recall_at_5": {
+            "mean": 0.575,
+            "ci95": [
+              0.425,
+              0.725
+            ]
+          },
+          "mrr": {
+            "mean": 0.44875,
+            "ci95": [
+              0.31625000000000003,
+              0.5862499999999999
+            ]
+          },
+          "ndcg_at_5": {
+            "mean": 0.4675264157766685,
+            "ci95": [
+              0.3376194365531793,
+              0.5991765125644225
+            ]
+          }
+        },
+        "by_type": {
+          "identifier": {
+            "hit_at_1": {
+              "mean": 0.4166666666666667,
+              "ci95": [
+                0.16666666666666666,
+                0.6666666666666666
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.4166666666666667,
+              "ci95": [
+                0.16666666666666666,
+                0.6666666666666666
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.4166666666666667,
+              "ci95": [
+                0.16666666666666666,
+                0.6666666666666666
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.8333333333333334,
+              "ci95": [
+                0.5833333333333334,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.8333333333333334,
+              "ci95": [
+                0.5833333333333334,
+                1.0
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.8333333333333334,
+              "ci95": [
+                0.5833333333333334,
+                1.0
+              ]
+            },
+            "mrr": {
+              "mean": 0.6041666666666666,
+              "ci95": [
+                0.3958333333333333,
+                0.8125
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.6622930282326336,
+              "ci95": [
+                0.4481827414054164,
+                0.8462207306547741
+              ]
+            }
+          },
+          "multi_fact": {
+            "hit_at_1": {
+              "mean": 0.75,
+              "ci95": [
+                0.375,
+                1.0
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.375,
+              "ci95": [
+                0.1875,
+                0.5
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.75,
+              "ci95": [
+                0.375,
+                1.0
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.75,
+              "ci95": [
+                0.375,
+                1.0
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.625,
+              "ci95": [
+                0.3125,
+                0.875
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.625,
+              "ci95": [
+                0.3125,
+                0.875
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.875,
+              "ci95": [
+                0.625,
+                1.0
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                0.9375
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.75,
+              "ci95": [
+                0.5,
+                0.9375
+              ]
+            },
+            "mrr": {
+              "mean": 0.78125,
+              "ci95": [
+                0.5,
+                1.0
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.7092689274780357,
+              "ci95": [
+                0.4439208418952919,
+                0.9362953135129385
+              ]
+            }
+          },
+          "paraphrase": {
+            "hit_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "recall_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "capped_recall_at_1": {
+              "mean": 0.15,
+              "ci95": [
+                0.0,
+                0.3
+              ]
+            },
+            "hit_at_3": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "recall_at_3": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "capped_recall_at_3": {
+              "mean": 0.25,
+              "ci95": [
+                0.1,
+                0.45
+              ]
+            },
+            "hit_at_5": {
+              "mean": 0.35,
+              "ci95": [
+                0.15,
+                0.55
+              ]
+            },
+            "recall_at_5": {
+              "mean": 0.35,
+              "ci95": [
+                0.15,
+                0.55
+              ]
+            },
+            "capped_recall_at_5": {
+              "mean": 0.35,
+              "ci95": [
+                0.15,
+                0.55
+              ]
+            },
+            "mrr": {
+              "mean": 0.2225,
+              "ci95": [
+                0.075,
+                0.3875
+              ]
+            },
+            "ndcg_at_5": {
+              "mean": 0.2539694436225425,
+              "ci95": [
+                0.1,
+                0.42550327152621215
+              ]
+            }
+          }
+        },
+        "latency_ms": {
+          "median": 482.79964993707836,
+          "p95": 838.1350300391205
+        }
+      },
+      "per_query": [
+        {
+          "id": "v2-003",
+          "type": "paraphrase",
+          "latency_ms": 318.06149997282773,
+          "retrieved": [
+            "rfc9110.txt:215",
+            "rfc9293.pdf:p26:1",
+            "rfc9293.pdf:p44:4",
+            "rfc9110.txt:108",
+            "rfc9110.txt:110"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-004",
+          "type": "paraphrase",
+          "latency_ms": 589.4933000672609,
+          "retrieved": [
+            "rfc9293.pdf:p26:2",
+            "rfc9293.pdf:p23:15",
+            "rfc9293.pdf:p31:4",
+            "rfc9293.pdf:p41:4",
+            "rfc9293.pdf:p23:14"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-006",
+          "type": "paraphrase",
+          "latency_ms": 473.1259999098256,
+          "retrieved": [
+            "rfc9293.pdf:p26:6",
+            "rfc9293.pdf:p31:1",
+            "rfc9110.txt:215",
+            "rfc9293.pdf:p12:2",
+            "rfc9293.pdf:p38:2"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-008",
+          "type": "paraphrase",
+          "latency_ms": 359.3362000538036,
+          "retrieved": [
+            "rfc9293.pdf:p51:5",
+            "rfc9293.pdf:p51:11",
+            "rfc9293.pdf:p52:1",
+            "rfc9293.pdf:p9:6",
+            "rfc9293.pdf:p22:4"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.25,
+          "ndcg_at_5": 0.43067655807339306
+        },
+        {
+          "id": "v2-009",
+          "type": "paraphrase",
+          "latency_ms": 563.0367000121623,
+          "retrieved": [
+            "rfc9293.pdf:p41:1",
+            "rfc9293.pdf:p40:7",
+            "rfc9293.pdf:p40:6",
+            "rfc9293.pdf:p40:5",
+            "rfc9293.pdf:p27:5"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-012",
+          "type": "identifier",
+          "latency_ms": 621.2808999698609,
+          "retrieved": [
+            "rfc9293.pdf:p67:1",
+            "rfc9293.pdf:p36:4",
+            "rfc9293.pdf:p36:5",
+            "rfc9293.pdf:p67:4",
+            "rfc9293.pdf:p36:3"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6240505200038379
+        },
+        {
+          "id": "v2-013",
+          "type": "identifier",
+          "latency_ms": 649.6646000305191,
+          "retrieved": [
+            "rfc9293.pdf:p30:6",
+            "rfc9293.pdf:p30:9",
+            "rfc9293.pdf:p30:4",
+            "rfc9293.pdf:p44:4",
+            "rfc9293.pdf:p47:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-014",
+          "type": "identifier",
+          "latency_ms": 449.6040999656543,
+          "retrieved": [
+            "rfc9293.pdf:p33:8",
+            "rfc9293.pdf:p33:7",
+            "rfc9293.pdf:p41:11",
+            "rfc9293.pdf:p43:3",
+            "rfc9293.pdf:p43:4"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-017",
+          "type": "multi_fact",
+          "latency_ms": 575.1772999064997,
+          "retrieved": [
+            "rfc9293.pdf:p38:4",
+            "rfc9293.pdf:p38:5",
+            "rfc9293.pdf:p43:6",
+            "rfc9293.pdf:p47:6",
+            "rfc9293.pdf:p15:7"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-018",
+          "type": "multi_fact",
+          "latency_ms": 444.45700000505894,
+          "retrieved": [
+            "rfc9293.pdf:p38:10",
+            "rfc9293.pdf:p38:9",
+            "rfc9293.pdf:p37:8",
+            "rfc9293.pdf:p38:8",
+            "rfc9293.pdf:p93:3"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.8772153153380493
+        },
+        {
+          "id": "v2-022",
+          "type": "paraphrase",
+          "latency_ms": 420.1240000547841,
+          "retrieved": [
+            "rfc9110.txt:645",
+            "rfc9110.txt:638",
+            "rfc9110.txt:111",
+            "rfc9110.txt:622",
+            "rfc9110.txt:1056"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-023",
+          "type": "paraphrase",
+          "latency_ms": 853.9417000720277,
+          "retrieved": [
+            "rfc9110.txt:647",
+            "rfc9110.txt:1291",
+            "rfc9110.txt:215",
+            "rfc9110.txt:412",
+            "rfc9110.txt:652"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-025",
+          "type": "paraphrase",
+          "latency_ms": 837.3031000373885,
+          "retrieved": [
+            "rfc9110.txt:684",
+            "rfc9110.txt:1003",
+            "rfc9110.txt:725",
+            "rfc9110.txt:472",
+            "rfc9110.txt:145"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-027",
+          "type": "paraphrase",
+          "latency_ms": 509.51669993810356,
+          "retrieved": [
+            "rfc9110.txt:416",
+            "rfc9110.txt:419",
+            "rfc9110.txt:200",
+            "rfc9110.txt:169",
+            "rfc9110.txt:729"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-030",
+          "type": "paraphrase",
+          "latency_ms": 454.62019997648895,
+          "retrieved": [
+            "rfc9110.txt:105",
+            "rfc9110.txt:106",
+            "rfc9110.txt:104",
+            "rfc9110.txt:199",
+            "rfc9110.txt:442"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-031",
+          "type": "identifier",
+          "latency_ms": 413.21349993813783,
+          "retrieved": [
+            "rfc9110.txt:819",
+            "rfc9110.txt:820",
+            "rfc9110.txt:817",
+            "rfc9110.txt:1305",
+            "rfc9110.txt:818"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-032",
+          "type": "identifier",
+          "latency_ms": 424.8920999234542,
+          "retrieved": [
+            "rfc9110.txt:1007",
+            "rfc9110.txt:989",
+            "rfc9110.txt:1062",
+            "rfc9110.txt:1002",
+            "rfc9110.txt:1023"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-036",
+          "type": "identifier",
+          "latency_ms": 411.32489999290556,
+          "retrieved": [
+            "rfc6749.txt:291",
+            "rfc6749.txt:292",
+            "rfc9110.txt:853",
+            "rfc9110.txt:842",
+            "rfc9110.txt:1276"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-039",
+          "type": "multi_fact",
+          "latency_ms": 422.4142999155447,
+          "retrieved": [
+            "rfc9110.txt:1179",
+            "rfc9110.txt:1168",
+            "rfc9110.txt:1128",
+            "rfc9110.txt:690",
+            "rfc9110.txt:693"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 0.25,
+          "ndcg_at_5": 0.2640681225725909
+        },
+        {
+          "id": "v2-040",
+          "type": "multi_fact",
+          "latency_ms": 492.4732999643311,
+          "retrieved": [
+            "rfc9110.txt:1282",
+            "rfc9110.txt:1297",
+            "rfc9110.txt:1296",
+            "rfc9110.txt:1283",
+            "rfc9110.txt:1299"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.9197207891481876
+        },
+        {
+          "id": "v2-041",
+          "type": "paraphrase",
+          "latency_ms": 438.2768999785185,
+          "retrieved": [
+            "rfc8446.txt:320",
+            "rfc8446.txt:578",
+            "rfc8446.txt:879",
+            "rfc8446.txt:154",
+            "rfc8446.txt:973"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-045",
+          "type": "paraphrase",
+          "latency_ms": 816.2131001008675,
+          "retrieved": [
+            "rfc8446.txt:562",
+            "rfc8446.txt:543",
+            "rfc8446.txt:547",
+            "rfc8446.txt:548",
+            "rfc8446.txt:563"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-046",
+          "type": "paraphrase",
+          "latency_ms": 455.2735999459401,
+          "retrieved": [
+            "rfc9110.txt:137",
+            "rfc8446.txt:579",
+            "rfc8446.txt:580",
+            "rfc8446.txt:578",
+            "rfc8446.txt:566"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-048",
+          "type": "paraphrase",
+          "latency_ms": 582.4253000319004,
+          "retrieved": [
+            "rfc8446.txt:468",
+            "rfc8446.txt:380",
+            "rfc8446.txt:605",
+            "rfc8446.txt:390",
+            "rfc8446.txt:59"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-050",
+          "type": "identifier",
+          "latency_ms": 1292.2328999266028,
+          "retrieved": [
+            "rfc8446.txt:691",
+            "rfc8446.txt:692",
+            "rfc8446.txt:831",
+            "rfc8446.txt:690",
+            "rfc8446.txt:830"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-052",
+          "type": "identifier",
+          "latency_ms": 820.6634999951348,
+          "retrieved": [
+            "rfc8446.txt:874",
+            "rfc8446.txt:237",
+            "rfc8446.txt:236",
+            "rfc8446.txt:158",
+            "rfc8446.txt:891"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-053",
+          "type": "multi_fact",
+          "latency_ms": 622.1471999306232,
+          "retrieved": [
+            "rfc8446.txt:327",
+            "rfc8446.txt:330",
+            "rfc8446.txt:92",
+            "rfc8446.txt:66",
+            "rfc8446.txt:231"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-055",
+          "type": "paraphrase",
+          "latency_ms": 502.0938999950886,
+          "retrieved": [
+            "rfc6749.txt:60",
+            "rfc6749.txt:368",
+            "rfc6749.txt:158",
+            "rfc6749.txt:25",
+            "rfc6749.txt:26"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-059",
+          "type": "paraphrase",
+          "latency_ms": 663.7912000296637,
+          "retrieved": [
+            "rfc6749.txt:30",
+            "rfc6749.txt:394",
+            "rfc6749.txt:347",
+            "rfc6749.txt:26",
+            "rfc6749.txt:348"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-060",
+          "type": "paraphrase",
+          "latency_ms": 630.0583999836817,
+          "retrieved": [
+            "rfc6749.txt:376",
+            "rfc6749.txt:347",
+            "rfc6749.txt:41",
+            "rfc6749.txt:26",
+            "rfc6749.txt:40"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-062",
+          "type": "identifier",
+          "latency_ms": 422.46039991732687,
+          "retrieved": [
+            "rfc6749.txt:273",
+            "rfc6749.txt:241",
+            "rfc6749.txt:355",
+            "rfc6749.txt:291",
+            "rfc6749.txt:192"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.25,
+          "ndcg_at_5": 0.43067655807339306
+        },
+        {
+          "id": "v2-063",
+          "type": "identifier",
+          "latency_ms": 405.1354000112042,
+          "retrieved": [
+            "rfc6749.txt:398",
+            "rfc6749.txt:401",
+            "rfc6749.txt:402",
+            "rfc6749.txt:399",
+            "rfc6749.txt:403"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-065",
+          "type": "multi_fact",
+          "latency_ms": 394.9903999455273,
+          "retrieved": [
+            "rfc6749.txt:187",
+            "rfc6749.txt:188",
+            "rfc6749.txt:282",
+            "rfc6749.txt:347",
+            "rfc6749.txt:128"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-067",
+          "type": "paraphrase",
+          "latency_ms": 685.4771999642253,
+          "retrieved": [
+            "rfc9110.txt:1431",
+            "rfc1035.txt:216",
+            "rfc1035.txt:215",
+            "rfc1035.txt:210",
+            "rfc1035.txt:32"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-068",
+          "type": "paraphrase",
+          "latency_ms": 642.4613000126556,
+          "retrieved": [
+            "rfc1035.txt:328",
+            "rfc1035.txt:344",
+            "rfc1035.txt:20",
+            "rfc1035.txt:30",
+            "rfc1035.txt:321"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "capped_recall_at_5": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_5": 0.0
+        },
+        {
+          "id": "v2-071",
+          "type": "identifier",
+          "latency_ms": 469.1860000602901,
+          "retrieved": [
+            "rfc1035.txt:129",
+            "rfc1035.txt:127",
+            "rfc1035.txt:280",
+            "rfc1035.txt:281",
+            "rfc1035.txt:279"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 1.0,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        },
+        {
+          "id": "v2-073",
+          "type": "multi_fact",
+          "latency_ms": 712.2610999504104,
+          "retrieved": [
+            "rfc1035.txt:78",
+            "rfc1035.txt:77",
+            "rfc1035.txt:76",
+            "rfc1035.txt:95",
+            "rfc1035.txt:192"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 0.5,
+          "capped_recall_at_3": 0.5,
+          "hit_at_5": 1.0,
+          "recall_at_5": 0.5,
+          "capped_recall_at_5": 0.5,
+          "mrr": 1.0,
+          "ndcg_at_5": 0.6131471927654584
+        },
+        {
+          "id": "v2-076",
+          "type": "paraphrase",
+          "latency_ms": 386.75860001239926,
+          "retrieved": [
+            "rfc7519.pdf:p11:5",
+            "rfc7519.pdf:p15:6",
+            "rfc7519.pdf:p9:2",
+            "rfc7519.pdf:p15:5",
+            "rfc7519.pdf:p8:6"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "recall_at_3": 0.0,
+          "capped_recall_at_3": 0.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.2,
+          "ndcg_at_5": 0.38685280723454163
+        },
+        {
+          "id": "v2-077",
+          "type": "identifier",
+          "latency_ms": 334.6030000830069,
+          "retrieved": [
+            "rfc7519.pdf:p10:6",
+            "rfc7519.pdf:p10:7",
+            "rfc7519.pdf:p10:5",
+            "rfc7519.pdf:p10:4",
+            "rfc7519.pdf:p10:8"
+          ],
+          "hit_at_1": 0.0,
+          "recall_at_1": 0.0,
+          "capped_recall_at_1": 0.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 0.5,
+          "ndcg_at_5": 0.6309297535714575
+        },
+        {
+          "id": "v2-079",
+          "type": "multi_fact",
+          "latency_ms": 373.71399998664856,
+          "retrieved": [
+            "rfc7519.pdf:p10:2",
+            "rfc7519.pdf:p9:9",
+            "rfc7519.pdf:p10:4",
+            "rfc7519.pdf:p1:2",
+            "rfc7519.pdf:p26:6"
+          ],
+          "hit_at_1": 1.0,
+          "recall_at_1": 0.5,
+          "capped_recall_at_1": 1.0,
+          "hit_at_3": 1.0,
+          "recall_at_3": 1.0,
+          "capped_recall_at_3": 1.0,
+          "hit_at_5": 1.0,
+          "recall_at_5": 1.0,
+          "capped_recall_at_5": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_5": 1.0
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,715 @@
+{
+  "git_commit": "59f741f0501ea27b372956939e222dc24ff6f490",
+  "git_dirty": false,
+  "run_count": 1,
+  "set": "dev",
+  "final": false,
+  "config": {
+    "chunking": "words",
+    "chunk_size": 50,
+    "chunk_overlap": 10,
+    "candidate_k": 20,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  },
+  "model": "qwen2.5:3b",
+  "question_count": 40,
+  "summary": {
+    "overall": {
+      "questions": 40,
+      "verified_rate": {
+        "mean": 0.45,
+        "ci95": [
+          0.3,
+          0.6
+        ]
+      },
+      "abstention_rate": {
+        "mean": 0.55,
+        "ci95": [
+          0.4,
+          0.7
+        ]
+      },
+      "useful_rate": {
+        "mean": 0.375,
+        "ci95": [
+          0.225,
+          0.525
+        ]
+      },
+      "verified_given_hit": {
+        "mean": 0.6296296296296297,
+        "ci95": [
+          0.4444444444444444,
+          0.8148148148148148
+        ]
+      },
+      "mean_coverage": {
+        "mean": 0.3293799603174603,
+        "ci95": [
+          0.20587611607142856,
+          0.4630332341269841
+        ]
+      },
+      "generation_ms": {
+        "median": 4643.175649980549,
+        "p95": 7708.458844933192
+      },
+      "errors": 0
+    },
+    "by_type": {
+      "identifier": {
+        "questions": 12,
+        "verified_rate": {
+          "mean": 0.75,
+          "ci95": [
+            0.5,
+            1.0
+          ]
+        },
+        "abstention_rate": {
+          "mean": 0.25,
+          "ci95": [
+            0.0,
+            0.5
+          ]
+        },
+        "useful_rate": {
+          "mean": 0.75,
+          "ci95": [
+            0.5,
+            1.0
+          ]
+        },
+        "verified_given_hit": {
+          "mean": 0.8181818181818182,
+          "ci95": [
+            0.5454545454545454,
+            1.0
+          ]
+        },
+        "mean_coverage": {
+          "mean": 0.669345238095238,
+          "ci95": [
+            0.4166666666666667,
+            0.8880952380952382
+          ]
+        },
+        "generation_ms": {
+          "median": 4693.204699957278,
+          "p95": 6866.092385043156
+        },
+        "errors": 0
+      },
+      "multi_fact": {
+        "questions": 8,
+        "verified_rate": {
+          "mean": 0.75,
+          "ci95": [
+            0.375,
+            1.0
+          ]
+        },
+        "abstention_rate": {
+          "mean": 0.25,
+          "ci95": [
+            0.0,
+            0.625
+          ]
+        },
+        "useful_rate": {
+          "mean": 0.5,
+          "ci95": [
+            0.125,
+            0.875
+          ]
+        },
+        "verified_given_hit": {
+          "mean": 0.75,
+          "ci95": [
+            0.375,
+            1.0
+          ]
+        },
+        "mean_coverage": {
+          "mean": 0.4137152777777778,
+          "ci95": [
+            0.21663194444444445,
+            0.5899305555555555
+          ]
+        },
+        "generation_ms": {
+          "median": 5728.932649944909,
+          "p95": 8248.088420048589
+        },
+        "errors": 0
+      },
+      "paraphrase": {
+        "questions": 20,
+        "verified_rate": {
+          "mean": 0.15,
+          "ci95": [
+            0.0,
+            0.3
+          ]
+        },
+        "abstention_rate": {
+          "mean": 0.85,
+          "ci95": [
+            0.7,
+            1.0
+          ]
+        },
+        "useful_rate": {
+          "mean": 0.1,
+          "ci95": [
+            0.0,
+            0.25
+          ]
+        },
+        "verified_given_hit": {
+          "mean": 0.25,
+          "ci95": [
+            0.0,
+            0.625
+          ]
+        },
+        "mean_coverage": {
+          "mean": 0.09166666666666667,
+          "ci95": [
+            0.0,
+            0.23333333333333334
+          ]
+        },
+        "generation_ms": {
+          "median": 4053.5489500616677,
+          "p95": 6002.767739986302
+        },
+        "errors": 0
+      }
+    }
+  },
+  "per_query": [
+    {
+      "id": "v2-001",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4732.505099964328,
+      "total_ms": 5586.75909996964
+    },
+    {
+      "id": "v2-002",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4825.7561000064015,
+      "total_ms": 5463.289299979806
+    },
+    {
+      "id": "v2-005",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "An IPv4 sender should assume a default send MSS of 536. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.8333333333333334,
+      "useful": true,
+      "generation_ms": 3383.7667000479996,
+      "total_ms": 3930.921299965121
+    },
+    {
+      "id": "v2-007",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3280.6678999913856,
+      "total_ms": 3588.409800082445
+    },
+    {
+      "id": "v2-010",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4836.099499952979,
+      "total_ms": 5230.688300100155
+    },
+    {
+      "id": "v2-011",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "A RST takes a connection from SYN-RECEIVED back to LISTEN if the RST bit is set and the connection was initiated with a passive OPEN (i.e., came from the LISTEN state). [Evidence 2]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.5,
+      "useful": true,
+      "generation_ms": 5118.447900051251,
+      "total_ms": 5646.137900068425
+    },
+    {
+      "id": "v2-015",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3010.3965000016615,
+      "total_ms": 3448.25120002497
+    },
+    {
+      "id": "v2-016",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 7386.261100065894,
+      "total_ms": 7874.886899953708
+    },
+    {
+      "id": "v2-019",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "If the TCP peer is in a non-synchronized state (SYN-SENT or SYN-RECEIVED), it returns to LISTEN on receiving an acceptable reset. [Evidence 2]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.5,
+      "useful": true,
+      "generation_ms": 7908.746300032362,
+      "total_ms": 8693.563800072297
+    },
+    {
+      "id": "v2-020",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "A TCP connection sits in the TIME-WAIT state for a time 2xMSL (Maximum Segment Lifetime). [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.4,
+      "useful": false,
+      "generation_ms": 3831.5295999636874,
+      "total_ms": 4747.832999913953
+    },
+    {
+      "id": "v2-021",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3961.4547000965104,
+      "total_ms": 4357.9738000407815
+    },
+    {
+      "id": "v2-024",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3661.1663000658154,
+      "total_ms": 4101.095300051384
+    },
+    {
+      "id": "v2-026",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3467.640000046231,
+      "total_ms": 3822.0020999433473
+    },
+    {
+      "id": "v2-028",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3269.747900078073,
+      "total_ms": 3863.874900038354
+    },
+    {
+      "id": "v2-029",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3793.1933000218123,
+      "total_ms": 4251.940799993463
+    },
+    {
+      "id": "v2-033",
+      "type": "identifier",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4748.377199983224,
+      "total_ms": 5140.2745000086725
+    },
+    {
+      "id": "v2-034",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "A proxy MUST NOT generate a 421 response. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 1.0,
+      "useful": true,
+      "generation_ms": 3068.6625000089407,
+      "total_ms": 3334.39560001716
+    },
+    {
+      "id": "v2-035",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "An intermediary must NOT forward the request and instead MUST respond as the final recipient if the Max-Forwards value is zero (0). [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.875,
+      "useful": true,
+      "generation_ms": 5419.83110003639,
+      "total_ms": 6502.913000062108
+    },
+    {
+      "id": "v2-037",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 5661.715200054459,
+      "total_ms": 6218.90480001457
+    },
+    {
+      "id": "v2-038",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "A qvalue can take values in the range 0 through 1, with 0.001 being the least preferred and 1 being the most preferred. [Evidence 2] A sender of qvalue MUST NOT generate more than three digits after the decimal point. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.6666666666666666,
+      "useful": true,
+      "generation_ms": 5721.335099893622,
+      "total_ms": 6268.745300010778
+    },
+    {
+      "id": "v2-042",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "Forward secrecy after key change: If the traffic key update mechanism described in Section 4.6.3 has been used and the previous generation key is deleted, an attacker who compromises the endpoint should not be able to decrypt traffic encrypted with the old key. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 5803.270400036126,
+      "total_ms": 6457.798100076616
+    },
+    {
+      "id": "v2-043",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 5990.229199989699,
+      "total_ms": 6655.681599979289
+    },
+    {
+      "id": "v2-044",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4145.643200026825,
+      "total_ms": 4637.175399926491
+    },
+    {
+      "id": "v2-047",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3310.298199998215,
+      "total_ms": 3992.902399972081
+    },
+    {
+      "id": "v2-049",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "A client must abort the handshake with an \"unexpected_message\" alert if it receives a second HelloRetryRequest on the same connection. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 1.0,
+      "useful": true,
+      "generation_ms": 4049.734100000933,
+      "total_ms": 4571.047900011763
+    },
+    {
+      "id": "v2-051",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "ticket_age_add is a securely generated, random 32-bit value used to obscure the age of the ticket that the client includes in the \"pre_shared_key\" extension. [Evidence 1] The client-side ticket age is added to this value modulo 2^32 to obtain the \"obfuscated_ticket_age\". [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 1.0,
+      "useful": true,
+      "generation_ms": 6440.499800024554,
+      "total_ms": 7180.422500008717
+    },
+    {
+      "id": "v2-054",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "Servers MAY treat a ticket as valid for a shorter period of time than what is stated in the ticket. [Evidence 1] Clients MUST NOT cache tickets for longer than 7 days. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.7222222222222222,
+      "useful": true,
+      "generation_ms": 4530.546399997547,
+      "total_ms": 5089.72749998793
+    },
+    {
+      "id": "v2-056",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "The authorization code generated by the authorization server should expire shortly after it is issued, with a maximum lifetime of 10 minutes recommended. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 1.0,
+      "useful": true,
+      "generation_ms": 4170.734500046819,
+      "total_ms": 4705.60420001857
+    },
+    {
+      "id": "v2-057",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3276.9253000151366,
+      "total_ms": 3726.886700023897
+    },
+    {
+      "id": "v2-058",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 3551.898599951528,
+      "total_ms": 4110.532199963927
+    },
+    {
+      "id": "v2-061",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "The provided authorization grant (e.g., authorization code, resource owner credentials) or refresh token is invalid, expired, revoked, does not match the redirection URI used in the authorization [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 1.0,
+      "useful": true,
+      "generation_ms": 4638.032199931331,
+      "total_ms": 5106.251399964094
+    },
+    {
+      "id": "v2-064",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "grant_type MUST be set to \"refresh_token\". [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.8,
+      "useful": true,
+      "generation_ms": 4337.715999921784,
+      "total_ms": 4863.019699929282
+    },
+    {
+      "id": "v2-066",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 5736.530199996196,
+      "total_ms": 6326.318299979903
+    },
+    {
+      "id": "v2-069",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 6240.999999921769,
+      "total_ms": 6796.24449997209
+    },
+    {
+      "id": "v2-070",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": false,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4772.641299990937,
+      "total_ms": 5113.320500007831
+    },
+    {
+      "id": "v2-072",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "Setting the RD bit in a DNS query directs the name server to pursue the query recursively. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.8571428571428571,
+      "useful": true,
+      "generation_ms": 4977.3673000745475,
+      "total_ms": 5465.375500032678
+    },
+    {
+      "id": "v2-074",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "DNS messages using UDP are limited to 512 bytes, with messages longer than this being truncated and the TC bit set in the header. [Evidence 1] TCP messages have a maximum size defined by MMS_S, which can be larger depending on the presence of TCP options. [Evidence 3]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.3333333333333333,
+      "useful": false,
+      "generation_ms": 8430.811100057326,
+      "total_ms": 9955.222700024024
+    },
+    {
+      "id": "v2-075",
+      "type": "paraphrase",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "I don't have enough evidence in the indexed documents to answer this question.",
+      "supported": false,
+      "abstained": true,
+      "coverage": 0.0,
+      "useful": false,
+      "generation_ms": 4648.319100029767,
+      "total_ms": 5513.875199947506
+    },
+    {
+      "id": "v2-078",
+      "type": "identifier",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "The cty header parameter must be present in a JWT when nested signing or encryption is employed, and its value MUST be \"JWT\". [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 1.0,
+      "useful": true,
+      "generation_ms": 4216.112199937925,
+      "total_ms": 5237.917099962942
+    },
+    {
+      "id": "v2-080",
+      "type": "multi_fact",
+      "retrieval_hit_at_3": true,
+      "error": null,
+      "answer": "JWTs with the Elliptic Curve Digital Signature Algorithm (ECDSA) using the P-256 curve and the SHA-256 hash algorithm (\"ES256\") MUST be implemented by conforming JWT implementations. [Evidence 1] Support for HMAC SHA-256 (\"HS256\") and \"none\" MUST also be implemented. [Evidence 1]",
+      "supported": true,
+      "abstained": false,
+      "coverage": 0.6875,
+      "useful": true,
+      "generation_ms": 7697.917399927974,
+      "total_ms": 8499.375900020823
+    }
+  ]
+}
