@@ -1,18 +1,24 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    openai_api_key: str
-    openai_model: str = "gpt-5.6-luna"
-    max_context_chunks: int = 5
+    ollama_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.2:1b"
     max_upload_size_mb: int = 10
     index_storage_dir: str = "data/index"
+    upload_dir: str = "data/uploads"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=Path(__file__).resolve().parents[3] / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @property
+    def generate_url(self) -> str:
+        return f"{self.ollama_url.rstrip('/')}/api/generate"
 
 
 settings = Settings()

@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from app.generation.pipeline import (
     ABSTENTION_MESSAGE,
     RAGPipeline,
@@ -206,3 +208,8 @@ def test_attach_citation_keeps_bullets_on_separate_lines():
         ("TCP uses a three way handshake", [1]),
         ("UDP is connectionless and unreliable", [2]),
     ]
+
+
+def test_pipeline_requires_a_generator():
+    with pytest.raises(TypeError):
+        RAGPipeline(retriever=FakeRetriever())
