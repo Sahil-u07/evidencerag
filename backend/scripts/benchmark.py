@@ -11,9 +11,12 @@ from types import SimpleNamespace
 import numpy as np
 
 from app.core import retrieval_defaults as defaults
+from app.core.config import settings
 from app.evaluation.evidence import (
+    answer_coverage,
     bootstrap_ci,
     relevant_chunk_count,
+    relevant_facts,
     score_question,
     validate_cases,
     validate_questions,
@@ -24,6 +27,7 @@ from app.evaluation.metrics import (
     recall_at_k,
     reciprocal_rank,
 )
+from app.generation.streaming import ABSTENTION_MESSAGE, stream_generate
 from app.ingestion.chunker import build_chunks
 from app.ingestion.loader import load_document
 from app.reranking.cross_encoder import CrossEncoderReranker
@@ -320,6 +324,130 @@ def run_verification(split: str, verifier=None) -> dict:
     }
 
 
+USEFUL_COVERAGE = 0.5
+
+
+def _wrap_chunk(chunk) -> SimpleNamespace:
+    return SimpleNamespace(result=SimpleNamespace(chunk=chunk), score=1.0)
+
+
+def _generate(query: str, evidence: list) -> tuple[str, bool]:
+    tokens = list(stream_generate(query=query, evidence=evidence))
+    return "".join(t.text for t in tokens).strip(), any(t.truncated for t in tokens)
+
+
+def run_answers(
+    split: str, search, pipeline, generate=_generate, questions: list | None = None
+) -> dict:
+    if questions is None:
+        every_question = json.loads(QUESTIONS_PATH.read_text(encoding="utf-8"))
+        questions = [item for item in every_question if item["split"] == split]
+
+    per_query = []
+    for item in questions:
+        started = time.perf_counter()
+        evidence = [_wrap_chunk(chunk) for chunk in search(item["query"])]
+        hit = any(
+            relevant_facts(e.result.chunk.text, item["evidence"]) for e in evidence[:3]
+        )
+        row = {
+            "id": item["id"],
+            "type": item["type"],
+            "retrieval_hit_at_3": hit,
+            "error": None,
+        }
+        generation_ms = 0.0
+        try:
+            began = time.perf_counter()
+            raw, truncated = generate(item["query"], evidence)
+            generation_ms = (time.perf_counter() - began) * 1000
+            checked = pipeline.check_answer(raw, evidence, truncated)
+            answer = checked.final_answer
+            supported = bool(checked.verification.supported)
+            abstained = answer == ABSTENTION_MESSAGE
+        except Exception as exc:
+            # A failed question counts as not answered; the run continues.
+            row["error"] = f"{type(exc).__name__}: {exc}"
+            answer, supported, abstained = "", False, False
+
+        coverage = answer_coverage(answer, item["evidence"], abstained)
+        per_query.append(
+            {
+                **row,
+                "answer": answer,
+                "supported": supported,
+                "abstained": abstained,
+                "coverage": coverage,
+                "useful": supported and coverage >= USEFUL_COVERAGE,
+                "generation_ms": generation_ms,
+                "total_ms": (time.perf_counter() - started) * 1000,
+            }
+        )
+        if len(per_query) == 3 and all(r["error"] for r in per_query):
+            raise SystemExit(f"The first 3 questions all failed: {row['error']}")
+
+    return {
+        "question_count": len(per_query),
+        "summary": summarize_answers(per_query),
+        "per_query": per_query,
+    }
+
+
+def summarize_answers(per_query: list[dict]) -> dict:
+    def stat(values: list[float]) -> dict | None:
+        if not values:
+            return None
+        return {"mean": mean(values), "ci95": bootstrap_ci(values)}
+
+    def aggregate(rows: list[dict]) -> dict:
+        timed = [row["generation_ms"] for row in rows if not row["error"]] or [0.0]
+        return {
+            "questions": len(rows),
+            "verified_rate": stat([float(r["supported"]) for r in rows]),
+            "abstention_rate": stat([float(r["abstained"]) for r in rows]),
+            "useful_rate": stat([float(r["useful"]) for r in rows]),
+            "verified_given_hit": stat(
+                [float(r["supported"]) for r in rows if r["retrieval_hit_at_3"]]
+            ),
+            "mean_coverage": stat([r["coverage"] for r in rows]),
+            "generation_ms": {
+                "median": median(timed),
+                "p95": float(np.percentile(timed, 95)),
+            },
+            "errors": sum(1 for r in rows if r["error"]),
+        }
+
+    return {
+        "overall": aggregate(per_query),
+        "by_type": {
+            name: aggregate([r for r in per_query if r["type"] == name])
+            for name in sorted({r["type"] for r in per_query})
+        },
+    }
+
+
+def print_answers(result: dict) -> None:
+    for scope, summary in [("overall", result["summary"]["overall"])] + list(
+        result["summary"]["by_type"].items()
+    ):
+        cells = "  ".join(
+            f"{key}={summary[key]['mean']:.3f}" if summary[key] else f"{key}=-"
+            for key in (
+                "verified_rate",
+                "abstention_rate",
+                "useful_rate",
+                "verified_given_hit",
+                "mean_coverage",
+            )
+        )
+        gen = summary["generation_ms"]
+        print(
+            f"{scope:<12}n={summary['questions']}  {cells}  "
+            f"gen median={gen['median']:.0f}ms p95={gen['p95']:.0f}ms  "
+            f"errors={summary['errors']}"
+        )
+
+
 def _git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, text=True, check=False
@@ -407,7 +535,13 @@ def main(argv: list[str] | None = None) -> None:
         "--set", dest="set_name", choices=["dev", "test"], required=True
     )
 
-    for command in (retrieval, verification):
+    answers = commands.add_parser("answers")
+    answers.add_argument(
+        "--set", dest="set_name", choices=["dev", "test"], required=True
+    )
+    answers.add_argument("--model")
+
+    for command in (retrieval, verification, answers):
         command.add_argument("--final", action="store_true")
         command.add_argument("--label", default="run")
 
@@ -432,9 +566,27 @@ def main(argv: list[str] | None = None) -> None:
     if args.final and overrides:
         parser.error("--final runs the committed defaults, so it takes no overrides")
 
+    if args.final and getattr(args, "model", None):
+        parser.error(
+            "--final runs the configured default model, so it takes no --model"
+        )
+
     config = RetrievalConfig(**overrides)
 
-    if args.kind == "verification":
+    if args.kind == "answers":
+        from app.generation.pipeline import RAGPipeline
+
+        if args.model:
+            settings.ollama_model = args.model
+        search = build_systems(chunk_corpus(v2_corpus_paths(), config), config)[
+            "reranked_hybrid"
+        ]
+        result = {
+            "model": settings.ollama_model,
+            **run_answers(args.set_name, search, RAGPipeline(None, None)),
+        }
+        print_answers(result)
+    elif args.kind == "verification":
         result = run_verification(args.set_name)
         print(
             json.dumps(
