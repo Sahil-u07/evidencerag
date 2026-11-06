@@ -250,16 +250,33 @@ def run_verification(split: str, verifier=None) -> dict:
             }
         )
 
-    def rate(rows: list[dict]) -> float:
-        return sum(row["predicted"] != row["expected"] for row in rows) / len(rows) if rows else 0.0
+    def errors(rows: list[dict]) -> list[float]:
+        return [float(row["predicted"] != row["expected"]) for row in rows]
 
+    def rate(rows: list[dict]) -> float:
+        return mean(errors(rows)) if rows else 0.0
+
+    def interval(values: list[float]) -> tuple[float, float] | None:
+        return bootstrap_ci(values) if values else None
+
+    unsupported = [row for row in per_case if not row["expected"]]
+    supported = [row for row in per_case if row["expected"]]
     categories = sorted({row["category"] for row in per_case})
 
     return {
+        "nli_model": verifier.model_name,
+        "entailment_threshold": verifier.entailment_threshold,
         "case_count": len(per_case),
+        "supported_cases": len(supported),
+        "unsupported_cases": len(unsupported),
+        "false_accepts": int(sum(errors(unsupported))),
+        "false_rejects": int(sum(errors(supported))),
         "accuracy": 1.0 - rate(per_case),
-        "false_accept_rate": rate([row for row in per_case if not row["expected"]]),
-        "false_reject_rate": rate([row for row in per_case if row["expected"]]),
+        "accuracy_ci95": interval([1.0 - value for value in errors(per_case)]),
+        "false_accept_rate": rate(unsupported),
+        "false_accept_rate_ci95": interval(errors(unsupported)),
+        "false_reject_rate": rate(supported),
+        "false_reject_rate_ci95": interval(errors(supported)),
         "by_category": {
             name: {"accuracy": 1.0 - rate([row for row in per_case if row["category"] == name])}
             for name in categories
@@ -274,7 +291,14 @@ def _git(*args: str) -> str:
     ).stdout.strip()
 
 
-def write_report(label: str, kind: str, set_name: str, config: RetrievalConfig, result: dict) -> Path:
+def write_report(
+    label: str,
+    kind: str,
+    set_name: str,
+    config: RetrievalConfig,
+    result: dict,
+    final: bool = False,
+) -> Path:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     path = REPORTS_DIR / f"{label}-{kind}-{set_name}.json"
     run_count = 1
@@ -287,7 +311,10 @@ def write_report(label: str, kind: str, set_name: str, config: RetrievalConfig, 
         # Reports written earlier in the same run should not mark the code as dirty.
         "git_dirty": bool(_git("status", "--porcelain", "--", ".", ":(exclude)data/evaluation/reports")),
         "run_count": run_count,
-        "config": asdict(config),
+        "set": set_name,
+        "final": final,
+        # Verification does not use the retrieval settings.
+        **({} if kind == "verification" else {"config": asdict(config)}),
         **result,
     }
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -295,7 +322,16 @@ def write_report(label: str, kind: str, set_name: str, config: RetrievalConfig, 
 
 
 def print_retrieval(result: dict) -> None:
-    header = ["hit_at_1", "hit_at_5", "recall_at_5", "capped_recall_at_5", "mrr", "ndcg_at_5"]
+    header = [
+        "hit_at_1",
+        "hit_at_3",
+        "hit_at_5",
+        "recall_at_5",
+        "capped_recall_at_3",
+        "capped_recall_at_5",
+        "mrr",
+        "ndcg_at_5",
+    ]
     print("chunks:", result["chunk_count"], "questions:", result["question_count"])
     print(f"{'system':<18}" + "".join(f"{name:>20}" for name in header) + f"{'median ms':>12}")
 
@@ -361,7 +397,7 @@ def main(argv: list[str] | None = None) -> None:
         result = run_v2(args.set_name, config)
         print_retrieval(result)
 
-    print("report:", write_report(args.label, args.kind, args.set_name, config, result))
+    print("report:", write_report(args.label, args.kind, args.set_name, config, result, args.final))
 
 
 if __name__ == "__main__":
