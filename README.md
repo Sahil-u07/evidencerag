@@ -259,7 +259,7 @@ Reranked Hybrid, dev nDCG@5 and median latency:
 | Sentence chunking, 120 words | 0.570 | 1,827 ms | `sent120-retrieval-dev.json` | Rejected |
 | Sentence chunking, 200 words | 0.572 | 3,076 ms | `sent200-retrieval-dev.json` | Rejected, and over the 3 s limit |
 | 10 reranker candidates | 0.598 | 551 ms | `cand10-retrieval-dev.json` | Rejected |
-| 40 reranker candidates | 0.609 | 2,199 ms | `cand40-retrieval-dev.json` | Rejected |
+| 40 reranker candidates | 0.608 | 2,199 ms | `cand40-retrieval-dev.json` | Rejected |
 | `BAAI/bge-small-en-v1.5` embeddings | 0.574 | 557 ms | `bge-retrieval-dev.json` | Rejected |
 | BGE embeddings with the query prefix | 0.617 | 414 ms | `bge-prefix-retrieval-dev.json` | Rejected. This run was made with uncommitted code, so the report says `git_dirty` true |
 | `cross-encoder/ms-marco-MiniLM-L-12-v2` reranker | 0.592 | 799 ms | `l12-retrieval-dev.json` | Rejected |
