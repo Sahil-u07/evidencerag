@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 import json
+import re
 from typing import Iterator
 
 import requests
+
+from app.core.text import split_sentences
 
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
@@ -14,9 +17,24 @@ ABSTENTION_MESSAGE = (
 )
 
 
+# The model reads this many passages, so only these can back its sentences.
+GENERATION_CONTEXT_K = 3
+
+
 @dataclass
 class StreamToken:
     text: str
+    # Set on a final empty token when Ollama stopped at the token limit.
+    truncated: bool = False
+
+
+def trim_unfinished_sentence(text: str) -> str:
+    sentences = split_sentences(text)
+
+    if len(sentences) > 1 and not re.search(r"[.!?]$", sentences[-1]):
+        return text[: text.rfind(sentences[-1])].strip()
+
+    return text
 
 
 def build_context(
@@ -33,7 +51,7 @@ def build_context(
     sections = []
 
     for index, reranked_result in enumerate(
-        evidence[:3],
+        evidence[:GENERATION_CONTEXT_K],
         start=1,
     ):
         chunk = reranked_result.result.chunk
@@ -160,6 +178,9 @@ def stream_generate(
                 )
 
             if data.get("done"):
+                if data.get("done_reason") == "length":
+                    yield StreamToken(text="", truncated=True)
+
                 break
 
     finally:

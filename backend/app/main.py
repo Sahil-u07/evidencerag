@@ -16,7 +16,11 @@ from app.core import retrieval_defaults
 from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
-from app.generation.streaming import stream_generate
+from app.generation.streaming import (
+    GENERATION_CONTEXT_K,
+    stream_generate,
+    trim_unfinished_sentence,
+)
 from app.ingestion.chunker import build_chunks
 from app.ingestion.loader import load_document
 from app.retrieval.bm25 import BM25Retriever
@@ -655,11 +659,17 @@ def stream_query_events(
         generation_start = time.perf_counter()
 
         answer_parts: list[str] = []
+        truncated = False
 
         for token in stream_generate(
             query=query,
             evidence=evidence,
         ):
+            truncated = truncated or token.truncated
+
+            if not token.text:
+                continue
+
             answer_parts.append(token.text)
 
             yield sse_event(
@@ -689,6 +699,12 @@ def stream_query_events(
             answer_parts
         ).strip()
 
+        if truncated:
+            raw_answer = trim_unfinished_sentence(raw_answer)
+
+        # Only the passages the model saw can back its sentences.
+        context_evidence = evidence[:GENERATION_CONTEXT_K]
+
         if state.pipeline is None:
             raise RuntimeError(
                 "RAG pipeline is not ready."
@@ -702,7 +718,7 @@ def stream_query_events(
         cited_answer = (
             state.pipeline._attach_citation(
                 raw_answer,
-                evidence,
+                context_evidence,
             )
         )
 
@@ -720,7 +736,7 @@ def stream_query_events(
             state.pipeline.verifier
             .verify_grounding(
                 answer=cited_answer,
-                evidence=evidence,
+                evidence=context_evidence,
             )
         )
 
