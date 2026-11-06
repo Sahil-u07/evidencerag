@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from app import indexing
 import app.main as main
 from app.core.config import settings
+from app.generation import streaming
 
 
 class FakeRetriever:
@@ -100,7 +101,7 @@ def client(monkeypatch, tmp_path, fake_retriever):
     def ollama_down(url, timeout):
         raise requests.ConnectionError("no network in tests")
 
-    monkeypatch.setattr(main.requests, "get", ollama_down)
+    monkeypatch.setattr(streaming.requests, "get", ollama_down)
 
     with TestClient(main.app) as test_client:
         yield test_client
@@ -467,7 +468,7 @@ def fake_tags(models):
 
 
 def test_health_reports_the_settings(client, monkeypatch):
-    monkeypatch.setattr(main.requests, "get", fake_tags([settings.ollama_model]))
+    monkeypatch.setattr(streaming.requests, "get", fake_tags([settings.ollama_model]))
 
     assert client.get("/health").json() == {
         "status": "ok",
@@ -483,7 +484,7 @@ def test_health_generator_unavailable_when_ollama_is_down(client, monkeypatch):
     def down(url, timeout):
         raise requests.ConnectionError("refused")
 
-    monkeypatch.setattr(main.requests, "get", down)
+    monkeypatch.setattr(streaming.requests, "get", down)
 
     response = client.get("/health")
 
@@ -492,14 +493,14 @@ def test_health_generator_unavailable_when_ollama_is_down(client, monkeypatch):
 
 
 def test_health_generator_unavailable_when_the_model_is_missing(client, monkeypatch):
-    monkeypatch.setattr(main.requests, "get", fake_tags(["other:7b"]))
+    monkeypatch.setattr(streaming.requests, "get", fake_tags(["other:7b"]))
 
     assert client.get("/health").json()["generator_available"] is False
 
 
 def test_health_accepts_an_untagged_model_name(client, monkeypatch):
     monkeypatch.setattr(settings, "ollama_model", "tiny")
-    monkeypatch.setattr(main.requests, "get", fake_tags(["tiny:latest"]))
+    monkeypatch.setattr(streaming.requests, "get", fake_tags(["tiny:latest"]))
 
     assert client.get("/health").json()["generator_available"] is True
 

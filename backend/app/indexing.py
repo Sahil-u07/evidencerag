@@ -15,6 +15,7 @@ from app.retrieval.dense import DenseRetriever
 from app.retrieval.embedder import TextEmbedder
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.persistent_store import PersistentIndexStore
+from app.schemas import DocumentItem
 
 
 logger = logging.getLogger("evidencerag.indexing")
@@ -43,6 +44,48 @@ def collect_source_paths() -> list[Path]:
         for path in sorted(UPLOAD_DIR.iterdir(), key=str)
         if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
     ]
+
+
+def list_uploaded_documents() -> list[DocumentItem]:
+    UPLOAD_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    documents = []
+
+    for path in sorted(
+        UPLOAD_DIR.iterdir()
+    ):
+        if not path.is_file():
+            continue
+
+        if (
+            path.suffix.lower()
+            not in SUPPORTED_EXTENSIONS
+        ):
+            continue
+
+        documents.append(
+            DocumentItem(
+                filename=path.name,
+                extension=path.suffix.lower(),
+                size_bytes=path.stat().st_size,
+            )
+        )
+
+    return documents
+
+
+def has_indexable_text(path: Path) -> bool:
+    return bool(
+        build_chunks(
+            load_document(path),
+            retrieval_defaults.CHUNKING,
+            retrieval_defaults.CHUNK_SIZE,
+            retrieval_defaults.CHUNK_OVERLAP,
+        )
+    )
 
 
 def build_runtime_retriever(

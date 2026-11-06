@@ -7,30 +7,26 @@ import time
 from typing import Any, Iterator
 from uuid import uuid4
 
-import requests
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from app import indexing
-from app.core import retrieval_defaults
 from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
-from app.generation.streaming import stream_generate
-from app.ingestion.chunker import build_chunks
-from app.ingestion.loader import UnreadableDocumentError, load_document
+from app.generation.streaming import describe_error, generator_available, stream_generate
+from app.ingestion.loader import UnreadableDocumentError
 from app.schemas import (
     AskRequest,
     AskResponse,
-    DocumentItem,
     DocumentListResponse,
-    EvidenceItem,
     MetricsResponse,
     SearchRequest,
     SearchResponse,
     VerificationResponse,
+    serialize_evidence,
 )
 
 
@@ -67,7 +63,7 @@ def rebuild_pipeline() -> None:
 
 def index_upload(path: Path) -> None:
     try:
-        documents = load_document(path)
+        has_text = indexing.has_indexable_text(path)
     except UnreadableDocumentError as exc:
         raise HTTPException(
             status_code=400,
@@ -75,12 +71,7 @@ def index_upload(path: Path) -> None:
         ) from exc
 
     # Check before indexing so a scanned PDF or blank file is refused, not stored.
-    if not build_chunks(
-        documents,
-        retrieval_defaults.CHUNKING,
-        retrieval_defaults.CHUNK_SIZE,
-        retrieval_defaults.CHUNK_OVERLAP,
-    ):
+    if not has_text:
         raise HTTPException(
             status_code=400,
             detail="No text could be extracted from this file.",
@@ -89,62 +80,12 @@ def index_upload(path: Path) -> None:
     rebuild_pipeline()
 
 
-def serialize_evidence(
-    evidence: list[Any],
-) -> list[EvidenceItem]:
-    items = []
-
-    for index, reranked_result in enumerate(
-        evidence,
-        start=1,
-    ):
-        chunk = reranked_result.result.chunk
-
-        items.append(
-            EvidenceItem(
-                evidence_id=index,
-                source=chunk.source,
-                chunk_id=chunk.chunk_id,
-                page=chunk.page,
-                score=float(
-                    reranked_result.score
-                ),
-                text=chunk.text,
-            )
+def require_supported_extension(filename: str) -> None:
+    if Path(filename).suffix.lower() not in indexing.SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type. Supported types: PDF, TXT, MD.",
         )
-
-    return items
-
-
-def list_uploaded_documents() -> list[DocumentItem]:
-    indexing.UPLOAD_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    documents = []
-
-    for path in sorted(
-        indexing.UPLOAD_DIR.iterdir()
-    ):
-        if not path.is_file():
-            continue
-
-        if (
-            path.suffix.lower()
-            not in indexing.SUPPORTED_EXTENSIONS
-        ):
-            continue
-
-        documents.append(
-            DocumentItem(
-                filename=path.name,
-                extension=path.suffix.lower(),
-                size_bytes=path.stat().st_size,
-            )
-        )
-
-    return documents
 
 
 def sse_event(
@@ -155,33 +96,6 @@ def sse_event(
         f"event: {event_type}\n"
         f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
     )
-
-
-def describe_error(exc: Exception) -> str:
-    # ConnectTimeout is both of these, and it means Ollama could not be reached.
-    if isinstance(exc, requests.ConnectionError):
-        return (
-            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. "
-            "Start Ollama and try again."
-        )
-
-    if isinstance(exc, requests.Timeout):
-        return (
-            "Ollama did not respond in time. "
-            "It may still be loading the model; try again."
-        )
-
-    if (
-        isinstance(exc, requests.HTTPError)
-        and exc.response is not None
-        and exc.response.status_code == 404
-    ):
-        return (
-            f"The model {settings.ollama_model} is not available "
-            f"in Ollama. Run: ollama pull {settings.ollama_model}"
-        )
-
-    return "Something went wrong while answering. Check the backend log."
 
 
 def stream_query_events(
@@ -477,27 +391,6 @@ def root() -> dict[str, str]:
     }
 
 
-def generator_available() -> bool:
-    model = settings.ollama_model
-
-    if ":" not in model:
-        model += ":latest"
-
-    try:
-        response = requests.get(
-            f"{settings.ollama_url.rstrip('/')}/api/tags",
-            timeout=2,
-        )
-        response.raise_for_status()
-
-        return model in {
-            item["name"] for item in response.json()["models"]
-        }
-
-    except (requests.RequestException, ValueError, KeyError, TypeError):
-        return False
-
-
 @app.get("/health")
 def health() -> dict[str, str | bool | int]:
     return {
@@ -565,14 +458,16 @@ def stream_query(
 def ask_question(
     request: AskRequest,
 ) -> AskResponse:
-    if state.pipeline is None:
+    pipeline = state.pipeline
+
+    if pipeline is None:
         raise HTTPException(
             status_code=503,
             detail="RAG pipeline is not ready.",
         )
 
     try:
-        result = state.pipeline.ask(
+        result = pipeline.ask(
             request.query,
             top_k=request.top_k,
         )
@@ -630,7 +525,7 @@ def ask_question(
 )
 def list_documents() -> DocumentListResponse:
     return DocumentListResponse(
-        documents=list_uploaded_documents(),
+        documents=indexing.list_uploaded_documents(),
     )
 
 
@@ -648,20 +543,7 @@ def delete_document(
             detail="Invalid filename.",
         )
 
-    extension = (
-        Path(safe_filename)
-        .suffix
-        .lower()
-    )
-
-    if extension not in indexing.SUPPORTED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Unsupported file type. "
-                "Supported types: PDF, TXT, MD."
-            ),
-        )
+    require_supported_extension(safe_filename)
 
     destination = (
         indexing.UPLOAD_DIR / safe_filename
@@ -727,20 +609,7 @@ async def upload_document(
         file.filename
     ).name
 
-    extension = (
-        Path(original_name)
-        .suffix
-        .lower()
-    )
-
-    if extension not in indexing.SUPPORTED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Unsupported file type. "
-                "Supported types: PDF, TXT, MD."
-            ),
-        )
+    require_supported_extension(original_name)
 
     max_upload_size = (
         settings.max_upload_size_mb

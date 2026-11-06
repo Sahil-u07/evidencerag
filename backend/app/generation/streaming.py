@@ -181,3 +181,51 @@ def stream_generate(
 
     finally:
         response.close()
+
+
+def describe_error(exc: Exception) -> str:
+    # ConnectTimeout is both of these, and it means Ollama could not be reached.
+    if isinstance(exc, requests.ConnectionError):
+        return (
+            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. "
+            "Start Ollama and try again."
+        )
+
+    if isinstance(exc, requests.Timeout):
+        return (
+            "Ollama did not respond in time. "
+            "It may still be loading the model; try again."
+        )
+
+    if (
+        isinstance(exc, requests.HTTPError)
+        and exc.response is not None
+        and exc.response.status_code == 404
+    ):
+        return (
+            f"The model {settings.ollama_model} is not available "
+            f"in Ollama. Run: ollama pull {settings.ollama_model}"
+        )
+
+    return "Something went wrong while answering. Check the backend log."
+
+
+def generator_available() -> bool:
+    model = settings.ollama_model
+
+    if ":" not in model:
+        model += ":latest"
+
+    try:
+        response = requests.get(
+            f"{settings.ollama_url.rstrip('/')}/api/tags",
+            timeout=2,
+        )
+        response.raise_for_status()
+
+        return model in {
+            item["name"] for item in response.json()["models"]
+        }
+
+    except (requests.RequestException, ValueError, KeyError, TypeError):
+        return False

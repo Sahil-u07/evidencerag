@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -57,3 +59,30 @@ class DocumentItem(BaseModel):
 
 class DocumentListResponse(BaseModel):
     documents: list[DocumentItem]
+
+
+def serialize_evidence(
+    evidence: list[Any],
+) -> list[EvidenceItem]:
+    items = []
+
+    for index, reranked_result in enumerate(
+        evidence,
+        start=1,
+    ):
+        chunk = reranked_result.result.chunk
+
+        items.append(
+            EvidenceItem(
+                evidence_id=index,
+                source=chunk.source,
+                chunk_id=chunk.chunk_id,
+                page=chunk.page,
+                score=float(
+                    reranked_result.score
+                ),
+                text=chunk.text,
+            )
+        )
+
+    return items
