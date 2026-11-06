@@ -71,7 +71,7 @@ class RAGPipeline:
         return cls.CITATION_PATTERN.sub(replace, answer)
 
     def attach_citation(self, answer: str, evidence: list) -> str:
-        if not answer.strip() or not evidence:
+        if not answer.strip() or not evidence or answer.strip() == ABSTENTION_MESSAGE:
             return answer
 
         answer = self._normalize_citations(answer)
@@ -93,30 +93,35 @@ class RAGPipeline:
         if self.CITATION_PATTERN.search(sentence):
             return self._normalize_citations(sentence)
 
-        claim_tokens = self._tokens(sentence)
+        # Replies like "Yes." state no fact, so they need no citation.
+        claim = self.verifier.claim_of(sentence)
 
-        if not claim_tokens:
+        if claim is None:
             return sentence
 
+        texts = [item.result.chunk.text for item in evidence]
+        best_index = self.verifier.best_entailing_passage(claim, texts)
+
+        if best_index is None:
+            best_index = self._best_overlap(sentence, texts)
+
+        if best_index is None:
+            return sentence
+
+        return f"{sentence} [Evidence {best_index + 1}]"
+
+    def _best_overlap(self, sentence: str, texts: list[str]) -> int | None:
+        claim_tokens = self._tokens(sentence)
         best_index = None
         best_score = 0.0
 
-        for index, reranked_result in enumerate(evidence, start=1):
-            evidence_tokens = self._tokens(reranked_result.result.chunk.text)
-
-            if not evidence_tokens:
-                continue
-
-            score = len(claim_tokens & evidence_tokens) / len(claim_tokens)
+        for index, text in enumerate(texts):
+            score = len(claim_tokens & self._tokens(text)) / max(len(claim_tokens), 1)
 
             if score > best_score:
-                best_score = score
-                best_index = index
+                best_score, best_index = score, index
 
-        if best_index is not None and best_score >= 0.50:
-            return f"{sentence} [Evidence {best_index}]"
-
-        return sentence
+        return best_index
 
     def check_answer(
         self, raw_answer: str, evidence: list, truncated: bool = False
