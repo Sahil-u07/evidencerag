@@ -18,15 +18,9 @@ class DenseRetriever:
         self.chunks: list[DocumentChunk] = []
         self.embeddings: np.ndarray | None = None
 
-    def add(
-        self,
-        chunks: list[DocumentChunk],
-        embeddings: list[list[float]],
-    ) -> None:
+    def add(self, chunks: list[DocumentChunk], embeddings: list[list[float]]) -> None:
         if len(chunks) != len(embeddings):
-            raise ValueError(
-                "Number of chunks must match number of embeddings"
-            )
+            raise ValueError("Number of chunks must match number of embeddings")
 
         if not chunks:
             return
@@ -41,14 +35,10 @@ class DenseRetriever:
         if self.embeddings is None:
             self.embeddings = matrix
         else:
-            self.embeddings = np.vstack(
-                [self.embeddings, matrix]
-            )
+            self.embeddings = np.vstack([self.embeddings, matrix])
 
     def search(
-        self,
-        query_embedding: list[float],
-        top_k: int = 5,
+        self, query_embedding: list[float], top_k: int = 5
     ) -> list[SearchResult]:
         if self.embeddings is None or not self.chunks:
             return []
@@ -56,15 +46,10 @@ class DenseRetriever:
         if top_k <= 0:
             raise ValueError("top_k must be greater than 0")
 
-        query = np.asarray(
-            query_embedding,
-            dtype=np.float32,
-        )
+        query = np.asarray(query_embedding, dtype=np.float32)
 
         if query.ndim != 1:
-            raise ValueError(
-                "Query embedding must be a 1D vector"
-            )
+            raise ValueError("Query embedding must be a 1D vector")
 
         scores = self.embeddings @ query
 
@@ -73,9 +58,6 @@ class DenseRetriever:
         top_indices = np.argsort(scores)[::-1][:top_k]
 
         return [
-            SearchResult(
-                chunk=self.chunks[index],
-                score=float(scores[index]),
-            )
+            SearchResult(chunk=self.chunks[index], score=float(scores[index]))
             for index in top_indices
         ]

@@ -3,26 +3,37 @@ import json
 import pytest
 
 from app.core.config import settings
+from app.generation import streaming
 from app.generation.ollama_generator import OllamaGenerator
+from app.generation.streaming import ABSTENTION_MESSAGE, GENERATION_CONTEXT_K
 
 
 class FakeResponse:
-    def __init__(self, payload):
-        self.payload = payload
+    def __init__(self, tokens, done_reason="stop"):
+        self.lines = [
+            json.dumps({"response": token, "done": False}) for token in tokens
+        ]
+        self.lines.append(
+            json.dumps({"response": "", "done": True, "done_reason": done_reason})
+        )
 
     def raise_for_status(self):
         pass
 
-    def json(self):
-        return json.loads(self.payload)
+    def iter_lines(self, decode_unicode=True):
+        return iter(self.lines)
+
+    def close(self):
+        pass
 
 
-def make_evidence():
+def make_evidence(text="RRF combines ranked retrieval results."):
     class Chunk:
-        text = "RRF combines ranked retrieval results."
         page = 5
         source = "retrieval.md"
         chunk_id = "chunk-1"
+
+    Chunk.text = text
 
     class Result:
         chunk = Chunk()
@@ -33,153 +44,66 @@ def make_evidence():
     return Evidence()
 
 
-def make_ollama_response(answer):
-    return FakeResponse(
-        json.dumps(
-            {
-                "response": json.dumps(
-                    {
-                        "answer": answer,
-                    }
-                )
-            }
-        )
-    )
-
-
-def test_ollama_generator_uses_reranked_evidence(monkeypatch):
+def test_generate_joins_the_stream_into_one_answer(monkeypatch):
     captured = {}
 
     def fake_post(*args, **kwargs):
         captured["payload"] = kwargs["json"]
+        return FakeResponse(["RRF combines ", "ranked results. "])
 
-        return make_ollama_response(
-            "RRF combines ranked retrieval results."
-        )
+    monkeypatch.setattr(streaming.requests, "post", fake_post)
 
-    monkeypatch.setattr(
-        "app.generation.ollama_generator.requests.post",
-        fake_post,
-    )
+    result = OllamaGenerator().generate("What is RRF?", [make_evidence()])
 
-    generator = OllamaGenerator()
-
-    result = generator.generate(
-        "What is RRF?",
-        [make_evidence()],
-    )
-
-    assert result.answer == "RRF combines ranked retrieval results."
-    assert "[Evidence 1]" not in result.answer
+    assert result.answer == "RRF combines ranked results."
+    assert result.truncated is False
     assert "What is RRF?" in captured["payload"]["prompt"]
+    assert "RRF combines ranked retrieval results." in captured["payload"]["prompt"]
+    assert captured["payload"]["stream"] is True
+    assert "format" not in captured["payload"]
+
+
+def test_generate_shows_the_model_only_the_top_passages(monkeypatch):
+    captured = {}
+
+    def fake_post(*args, **kwargs):
+        captured["prompt"] = kwargs["json"]["prompt"]
+        return FakeResponse(["Answer."])
+
+    monkeypatch.setattr(streaming.requests, "post", fake_post)
+    evidence = [
+        make_evidence(f"Passage number {number}.")
+        for number in range(GENERATION_CONTEXT_K + 1)
+    ]
+
+    OllamaGenerator().generate("What is RRF?", evidence)
+
+    assert f"Passage number {GENERATION_CONTEXT_K - 1}." in captured["prompt"]
+    assert f"Passage number {GENERATION_CONTEXT_K}." not in captured["prompt"]
+
+
+def test_generate_reports_a_length_cutoff(monkeypatch):
+    monkeypatch.setattr(
+        streaming.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(["Cut of"], "length"),
+    )
+
     assert (
-        "RRF combines ranked retrieval results."
-        in captured["payload"]["prompt"]
+        OllamaGenerator().generate("What is RRF?", [make_evidence()]).truncated is True
     )
-    assert captured["payload"]["format"] == "json"
-    assert captured["payload"]["stream"] is False
-    assert captured["payload"]["options"]["temperature"] == 0.1
 
 
-def test_ollama_generator_rejects_empty_query():
-    generator = OllamaGenerator()
-
+def test_generate_rejects_empty_query():
     with pytest.raises(ValueError):
-        generator.generate("", [make_evidence()])
+        OllamaGenerator().generate("", [make_evidence()])
 
 
-def test_ollama_generator_handles_no_evidence():
-    generator = OllamaGenerator()
-
-    result = generator.generate(
-        "What is RRF?",
-        [],
-    )
-
-    assert "enough evidence" in result.answer.lower()
+def test_generate_abstains_with_no_evidence():
+    assert OllamaGenerator().generate("What is RRF?", []).answer == ABSTENTION_MESSAGE
 
 
-def test_ollama_generator_rejects_invalid_json(monkeypatch):
-    def fake_post(*args, **kwargs):
-        return FakeResponse(
-            json.dumps(
-                {
-                    "response": "not valid json",
-                }
-            )
-        )
-
-    monkeypatch.setattr(
-        "app.generation.ollama_generator.requests.post",
-        fake_post,
-    )
-
-    generator = OllamaGenerator()
-
-    with pytest.raises(RuntimeError):
-        generator.generate(
-            "What is RRF?",
-            [make_evidence()],
-        )
-
-
-def test_ollama_generator_returns_plain_grounded_answer(monkeypatch):
-    def fake_post(*args, **kwargs):
-        return make_ollama_response(
-            "RRF combines ranked retrieval results."
-        )
-
-    monkeypatch.setattr(
-        "app.generation.ollama_generator.requests.post",
-        fake_post,
-    )
-
-    generator = OllamaGenerator()
-
-    result = generator.generate(
-        "What is RRF?",
-        [make_evidence()],
-    )
-
-    assert result.answer == "RRF combines ranked retrieval results."
-
-
-def test_ollama_generator_does_not_delegate_citations(monkeypatch):
-    def fake_post(*args, **kwargs):
-        return FakeResponse(
-            json.dumps(
-                {
-                    "response": json.dumps(
-                        {
-                            "answer": (
-                                "RRF combines ranked retrieval results."
-                            ),
-                            "citations": [1],
-                        }
-                    )
-                }
-            )
-        )
-
-    monkeypatch.setattr(
-        "app.generation.ollama_generator.requests.post",
-        fake_post,
-    )
-
-    generator = OllamaGenerator()
-
-    result = generator.generate(
-        "What is RRF?",
-        [make_evidence()],
-    )
-
-    assert result.answer == (
-        "RRF combines ranked retrieval results."
-    )
-    assert "[Evidence 1]" not in result.answer
-
-
-def test_ollama_generator_uses_the_configured_endpoint(monkeypatch):
+def test_generate_uses_the_configured_endpoint(monkeypatch):
     monkeypatch.setattr(settings, "ollama_url", "http://ollama.test:1234")
     monkeypatch.setattr(settings, "ollama_model", "tiny:1b")
     captured = {}
@@ -187,10 +111,13 @@ def test_ollama_generator_uses_the_configured_endpoint(monkeypatch):
     def fake_post(url, **kwargs):
         captured["url"] = url
         captured["model"] = kwargs["json"]["model"]
-        return make_ollama_response("RRF combines ranked retrieval results.")
+        return FakeResponse(["Answer."])
 
-    monkeypatch.setattr("app.generation.ollama_generator.requests.post", fake_post)
+    monkeypatch.setattr(streaming.requests, "post", fake_post)
 
     OllamaGenerator().generate("What is RRF?", [make_evidence()])
 
-    assert captured == {"url": "http://ollama.test:1234/api/generate", "model": "tiny:1b"}
+    assert captured == {
+        "url": "http://ollama.test:1234/api/generate",
+        "model": "tiny:1b",
+    }

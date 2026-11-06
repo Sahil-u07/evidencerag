@@ -11,7 +11,13 @@ REPO_ROOT = BACKEND.parent
 
 
 def test_defaults(monkeypatch):
-    for name in ("OLLAMA_URL", "OLLAMA_MODEL", "MAX_UPLOAD_SIZE_MB", "INDEX_STORAGE_DIR", "UPLOAD_DIR"):
+    for name in (
+        "OLLAMA_URL",
+        "OLLAMA_MODEL",
+        "MAX_UPLOAD_SIZE_MB",
+        "INDEX_STORAGE_DIR",
+        "UPLOAD_DIR",
+    ):
         monkeypatch.delenv(name, raising=False)
 
     settings = Settings(_env_file=None)
@@ -29,14 +35,25 @@ def test_env_file_is_the_repo_root_one():
 
 def test_env_example_lists_every_setting_with_its_default():
     lines = (REPO_ROOT / ".env.example").read_text(encoding="utf-8").splitlines()
-    example = dict(line.split("=", 1) for line in lines if line.strip() and not line.startswith("#"))
-    defaults = {name.upper(): str(field.default) for name, field in Settings.model_fields.items()}
+    example = dict(
+        line.split("=", 1)
+        for line in lines
+        if line.strip() and not line.startswith("#")
+    )
+    defaults = {
+        name.upper(): str(field.default)
+        for name, field in Settings.model_fields.items()
+    }
 
     assert example == defaults
 
 
 def test_app_imports_with_no_env_file_and_no_keys(tmp_path):
-    env = {key: value for key, value in os.environ.items() if not key.startswith(("OPENAI_", "OLLAMA_"))}
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith(("OPENAI_", "OLLAMA_"))
+    }
     env["PYTHONPATH"] = str(BACKEND)
 
     result = subprocess.run(

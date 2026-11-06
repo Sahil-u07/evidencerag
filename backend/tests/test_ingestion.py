@@ -3,37 +3,23 @@ from pathlib import Path
 import pytest
 
 from app.ingestion.chunker import build_chunks, chunk_by_sentences, chunk_documents
-from app.ingestion.loader import load_document
+from app.ingestion.loader import UnreadableDocumentError, load_document
 from app.ingestion.models import DocumentChunk
 
 
 def test_chunk_documents_preserves_source():
-    document = DocumentChunk(
-        text="one two three four five six",
-        source="example.txt",
-    )
+    document = DocumentChunk(text="one two three four five six", source="example.txt")
 
-    chunks = chunk_documents(
-        [document],
-        chunk_size=3,
-        overlap=1,
-    )
+    chunks = chunk_documents([document], chunk_size=3, overlap=1)
 
     assert len(chunks) == 3
     assert all(chunk.source == "example.txt" for chunk in chunks)
 
 
 def test_chunk_ids_are_unique():
-    document = DocumentChunk(
-        text="one two three four five six",
-        source="example.txt",
-    )
+    document = DocumentChunk(text="one two three four five six", source="example.txt")
 
-    chunks = chunk_documents(
-        [document],
-        chunk_size=3,
-        overlap=1,
-    )
+    chunks = chunk_documents([document], chunk_size=3, overlap=1)
 
     ids = [chunk.chunk_id for chunk in chunks]
 
@@ -142,3 +128,40 @@ def test_overlap_at_or_above_max_cannot_loop_forever():
 def test_build_chunks_rejects_unknown_method():
     with pytest.raises(ValueError, match="Unknown chunking"):
         build_chunks([], "paragraphs", 100, 0)
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("plain caf\u00e9".encode("utf-8"), "plain caf\u00e9"),
+        (b"\xef\xbb\xbfwith a mark", "\ufeffwith a mark"),
+        ("Le caf\u00e9".encode("latin-1"), "Le caf\u00e9"),
+        (b"it\x92s", "it\u2019s"),
+        (b"caf\xe9 \x81", "caf\u00e9 \ufffd"),
+        (b"one\r\ntwo", "one\ntwo"),
+    ],
+)
+def test_text_files_decode_whatever_the_encoding(tmp_path, raw, expected):
+    path = tmp_path / "note.txt"
+    path.write_bytes(raw)
+
+    assert load_document(path)[0].text == expected
+
+
+def test_corrupt_pdf_raises_a_clear_error(tmp_path):
+    path = tmp_path / "broken.pdf"
+    path.write_bytes(b"this is not a pdf")
+
+    with pytest.raises(UnreadableDocumentError):
+        load_document(path)
+
+
+def test_benchmark_corpus_text_is_what_a_plain_utf8_read_gives():
+    corpus = (
+        Path(__file__).resolve().parents[2] / "data" / "evaluation" / "v2" / "corpus"
+    )
+    paths = sorted(corpus.glob("*.txt"))
+
+    assert paths
+    for path in paths:
+        assert load_document(path)[0].text == path.read_text(encoding="utf-8")

@@ -7,29 +7,19 @@ from app.generation.verifier import EvidenceVerifier
 
 def make_evidence(text):
     chunk = SimpleNamespace(
-        text=text,
-        source="information_retrieval.md",
-        page=None,
-        chunk_id="ir:1",
+        text=text, source="information_retrieval.md", page=None, chunk_id="ir:1"
     )
 
-    search_result = SimpleNamespace(
-        chunk=chunk,
-        score=0.95,
-    )
+    search_result = SimpleNamespace(chunk=chunk, score=0.95)
 
-    return SimpleNamespace(
-        result=search_result,
-        score=0.95,
-    )
+    return SimpleNamespace(result=search_result, score=0.95)
 
 
 def test_supported_answer_with_citation():
     verifier = EvidenceVerifier()
 
     result = verifier.verify_citations(
-        "RRF combines ranked lists. [Evidence 1]",
-        evidence_count=3,
+        "RRF combines ranked lists. [Evidence 1]", evidence_count=3
     )
 
     assert result.supported is True
@@ -52,10 +42,7 @@ def test_supported_answer_with_multiple_citations():
 def test_answer_without_citation_is_unsupported():
     verifier = EvidenceVerifier()
 
-    result = verifier.verify_citations(
-        "RRF combines ranked lists.",
-        evidence_count=3,
-    )
+    result = verifier.verify_citations("RRF combines ranked lists.", evidence_count=3)
 
     assert result.supported is False
     assert result.cited_evidence == []
@@ -65,8 +52,7 @@ def test_no_evidence_is_unsupported():
     verifier = EvidenceVerifier()
 
     result = verifier.verify_citations(
-        "RRF combines ranked lists. [Evidence 1]",
-        evidence_count=0,
+        "RRF combines ranked lists. [Evidence 1]", evidence_count=0
     )
 
     assert result.supported is False
@@ -75,10 +61,7 @@ def test_no_evidence_is_unsupported():
 def test_empty_answer_is_unsupported():
     verifier = EvidenceVerifier()
 
-    result = verifier.verify_citations(
-        "",
-        evidence_count=3,
-    )
+    result = verifier.verify_citations("", evidence_count=3)
 
     assert result.supported is False
 
@@ -87,8 +70,7 @@ def test_invalid_citation_reference_is_unsupported():
     verifier = EvidenceVerifier()
 
     result = verifier.verify_citations(
-        "RRF combines ranked lists. [Evidence 7]",
-        evidence_count=3,
+        "RRF combines ranked lists. [Evidence 7]", evidence_count=3
     )
 
     assert result.supported is False
@@ -99,8 +81,7 @@ def test_citation_normalization_is_case_insensitive():
     verifier = EvidenceVerifier()
 
     result = verifier.verify_citations(
-        "RRF combines ranked lists. [evidence 1]",
-        evidence_count=3,
+        "RRF combines ranked lists. [evidence 1]", evidence_count=3
     )
 
     assert result.supported is True
@@ -118,8 +99,7 @@ def test_grounding_accepts_supported_claim():
     ]
 
     result = verifier.verify_grounding(
-        "RRF combines ranked retrieval results. [Evidence 1]",
-        evidence,
+        "RRF combines ranked retrieval results. [Evidence 1]", evidence
     )
 
     assert result.supported is True
@@ -138,8 +118,7 @@ def test_grounding_rejects_claim_with_no_supported_terms():
     ]
 
     result = verifier.verify_grounding(
-        "Quantum computers use superconducting qubits. [Evidence 1]",
-        evidence,
+        "Quantum computers use superconducting qubits. [Evidence 1]", evidence
     )
 
     assert result.supported is False
@@ -158,8 +137,7 @@ def test_grounding_rejects_unrelated_claim():
     ]
 
     result = verifier.verify_grounding(
-        "Neural networks require labeled image datasets. [Evidence 1]",
-        evidence,
+        "Neural networks require labeled image datasets. [Evidence 1]", evidence
     )
 
     assert result.supported is False
@@ -200,9 +178,7 @@ def test_grounding_uses_strong_lexical_fallback_when_nli_is_neutral():
         )
     ]
 
-    verifier._predict_nli = (
-        lambda premise, hypothesis: ("neutral", 0.99)
-    )
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
 
     result = verifier.verify_grounding(
         "BM25 is a probabilistic lexical ranking function that "
@@ -228,14 +204,10 @@ def test_grounding_rejects_weak_lexical_overlap():
         )
     ]
 
-    verifier._predict_nli = (
-        lambda premise, hypothesis: ("neutral", 0.99)
-    )
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
 
     result = verifier.verify_grounding(
-        "BM25 supports image segmentation in medical imaging. "
-        "[Evidence 1]",
-        evidence,
+        "BM25 supports image segmentation in medical imaging. [Evidence 1]", evidence
     )
 
     assert result.supported is False
@@ -246,24 +218,16 @@ def test_grounding_supports_multiple_cited_evidence_blocks():
     verifier = EvidenceVerifier()
 
     evidence = [
-        make_evidence(
-            "BM25 is a lexical retrieval method based on term frequency."
-        ),
+        make_evidence("BM25 is a lexical retrieval method based on term frequency."),
         make_evidence(
             "BM25 also accounts for document length when calculating relevance."
         ),
     ]
 
-    verifier._predict_nli = (
-        lambda premise, hypothesis: (
-            "entailment",
-            0.95,
-        )
-    )
+    verifier._predict_nli = lambda premise, hypothesis: ("entailment", 0.95)
 
     result = verifier.verify_grounding(
-        "BM25 uses term frequency and document length. "
-        "[Evidence 1] [Evidence 2]",
+        "BM25 uses term frequency and document length. [Evidence 1] [Evidence 2]",
         evidence,
     )
 
@@ -282,17 +246,10 @@ def test_grounding_extracts_citation_attached_to_previous_sentence():
         )
     ]
 
-    verifier._predict_nli = (
-        lambda premise, hypothesis: (
-            "entailment",
-            0.95,
-        )
-    )
+    verifier._predict_nli = lambda premise, hypothesis: ("entailment", 0.95)
 
     result = verifier.verify_grounding(
-        "BM25 is a probabilistic lexical ranking function. "
-        "[Evidence 1]",
-        evidence,
+        "BM25 is a probabilistic lexical ranking function. [Evidence 1]", evidence
     )
 
     assert result.supported is True
@@ -431,7 +388,11 @@ def test_lexical_fallback_rejects_wrong_number(claim):
 
     result = verifier.verify_grounding(
         f"{claim} [Evidence 1]",
-        [make_evidence("A deadlock requires four conditions: mutual exclusion, hold and wait, no preemption, circular wait.")],
+        [
+            make_evidence(
+                "A deadlock requires four conditions: mutual exclusion, hold and wait, no preemption, circular wait."
+            )
+        ],
     )
 
     assert result.supported is False
@@ -443,7 +404,11 @@ def test_lexical_fallback_treats_digit_and_word_numbers_as_equal():
 
     result = verifier.verify_grounding(
         "A deadlock requires 4 conditions: mutual exclusion, hold and wait, no preemption, circular wait. [Evidence 1]",
-        [make_evidence("A deadlock requires four conditions: mutual exclusion, hold and wait, no preemption, circular wait.")],
+        [
+            make_evidence(
+                "A deadlock requires four conditions: mutual exclusion, hold and wait, no preemption, circular wait."
+            )
+        ],
     )
 
     assert result.supported is True
@@ -467,7 +432,11 @@ def test_claim_with_a_number_missing_from_the_evidence_is_never_accepted():
 
     result = verifier.verify_grounding(
         "The full encoded TLSInnerPlaintext must not exceed 2^13 + 1 octets. [Evidence 1]",
-        [make_evidence("The full encoded TLSInnerPlaintext MUST NOT exceed 2^14 + 1 octets.")],
+        [
+            make_evidence(
+                "The full encoded TLSInnerPlaintext MUST NOT exceed 2^14 + 1 octets."
+            )
+        ],
     )
 
     assert result.supported is False
@@ -479,10 +448,12 @@ def test_exact_quote_is_accepted_even_when_nli_says_contradiction():
 
     result = verifier.verify_grounding(
         "A tunnel ceases to exist when both ends of the relayed connection are closed. [Evidence 1]",
-        [make_evidence(
-            "A tunnel is a blind relay.  A tunnel ceases to exist when both ends "
-            "of the relayed connection are CLOSED."
-        )],
+        [
+            make_evidence(
+                "A tunnel is a blind relay.  A tunnel ceases to exist when both ends "
+                "of the relayed connection are CLOSED."
+            )
+        ],
     )
 
     assert result.supported is True
@@ -495,7 +466,11 @@ def test_exact_quote_inside_a_negated_sentence_is_not_accepted():
 
     result = verifier.verify_grounding(
         "The authentication header is required for every request. [Evidence 1]",
-        [make_evidence("It is not true that the authentication header is required for every request.")],
+        [
+            make_evidence(
+                "It is not true that the authentication header is required for every request."
+            )
+        ],
     )
 
     assert result.supported is False
@@ -504,7 +479,10 @@ def test_exact_quote_inside_a_negated_sentence_is_not_accepted():
 @pytest.mark.parametrize(
     ("claim", "evidence"),
     [
-        ("The value must be set", "The value must be settled by the server only after handshake."),
+        (
+            "The value must be set",
+            "The value must be settled by the server only after handshake.",
+        ),
         ("The port is open", "The port is opened only when the firewall allows it."),
         ("Yes", "The eyes of the server."),
         ("Packets are dropped", "Packets are dropped only if the queue is full."),
@@ -514,7 +492,9 @@ def test_short_or_partial_word_quote_is_not_accepted_without_nli(claim, evidence
     verifier = EvidenceVerifier()
     verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
 
-    result = verifier.verify_grounding(f"{claim}. [Evidence 1]", [make_evidence(evidence)])
+    result = verifier.verify_grounding(
+        f"{claim}. [Evidence 1]", [make_evidence(evidence)]
+    )
 
     assert result.supported is False
 
@@ -535,8 +515,18 @@ def test_quote_must_match_whole_words():
     verifier = EvidenceVerifier()
     claim = "The secure server rejects every unsigned request"
 
-    assert verifier._is_verbatim_quote("The secure server rejects every unsigned requests.", claim) is False
-    assert verifier._is_verbatim_quote("Note: the secure server rejects every unsigned request.", claim) is True
+    assert (
+        verifier._is_verbatim_quote(
+            "The secure server rejects every unsigned requests.", claim
+        )
+        is False
+    )
+    assert (
+        verifier._is_verbatim_quote(
+            "Note: the secure server rejects every unsigned request.", claim
+        )
+        is True
+    )
 
 
 def test_numbered_list_answer_is_not_blocked_by_the_list_number():
@@ -578,7 +568,9 @@ def test_dropped_condition_is_not_accepted_without_nli(claim, evidence):
 
     assert verifier._is_verbatim_quote(evidence, claim) is False
 
-    result = verifier.verify_grounding(f"{claim}. [Evidence 1]", [make_evidence(evidence)])
+    result = verifier.verify_grounding(
+        f"{claim}. [Evidence 1]", [make_evidence(evidence)]
+    )
 
     assert result.supported is False
 
@@ -621,3 +613,20 @@ def test_reason_names_an_uncited_sentence():
     )
 
     assert "uncited" in result.reason
+
+
+def test_nli_labels_come_from_the_model_config():
+    verifier = EvidenceVerifier()
+    verifier._nli_model = SimpleNamespace(
+        predict=lambda pairs, apply_softmax: [[0.1, 0.8, 0.1]],
+        model=SimpleNamespace(
+            config=SimpleNamespace(
+                id2label={0: "NEUTRAL", 1: "ENTAILMENT", 2: "CONTRADICTION"}
+            )
+        ),
+    )
+
+    label, confidence = verifier._predict_nli("premise", "hypothesis")
+
+    assert label == "entailment"
+    assert confidence == 0.8

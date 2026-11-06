@@ -1,20 +1,9 @@
-from app.reranking.cross_encoder import (
-    CrossEncoderReranker,
-    RerankedResult,
-)
+from app.reranking.cross_encoder import CrossEncoderReranker, RerankedResult
 from app.retrieval.hybrid import HybridRetriever
 
 
 class RerankedHybridRetriever:
-    """
-    Hybrid retrieval followed by cross-encoder reranking.
-
-    Stage 1:
-        Dense + BM25 + RRF
-
-    Stage 2:
-        Cross-encoder reranking
-    """
+    """Hybrid retrieval followed by cross-encoder reranking."""
 
     def __init__(
         self,
@@ -24,14 +13,10 @@ class RerankedHybridRetriever:
         minimum_candidates: int = 20,
     ) -> None:
         if candidate_multiplier <= 0:
-            raise ValueError(
-                "candidate_multiplier must be greater than 0"
-            )
+            raise ValueError("candidate_multiplier must be greater than 0")
 
         if minimum_candidates <= 0:
-            raise ValueError(
-                "minimum_candidates must be greater than 0"
-            )
+            raise ValueError("minimum_candidates must be greater than 0")
 
         self.hybrid_retriever = hybrid_retriever
         self.reranker = reranker
@@ -39,10 +24,7 @@ class RerankedHybridRetriever:
         self.minimum_candidates = minimum_candidates
 
     def search(
-        self,
-        query: str,
-        top_k: int = 5,
-        candidate_k: int | None = None,
+        self, query: str, top_k: int = 5, candidate_k: int | None = None
     ) -> list[RerankedResult]:
         if not query.strip():
             raise ValueError("Query cannot be empty")
@@ -52,23 +34,14 @@ class RerankedHybridRetriever:
 
         if candidate_k is None:
             candidate_k = max(
-                top_k * self.candidate_multiplier,
-                self.minimum_candidates,
+                top_k * self.candidate_multiplier, self.minimum_candidates
             )
 
         if candidate_k < top_k:
-            raise ValueError(
-                "candidate_k must be greater than or equal to top_k"
-            )
+            raise ValueError("candidate_k must be greater than or equal to top_k")
 
         candidates = self.hybrid_retriever.search(
-            query,
-            top_k=candidate_k,
-            candidate_k=candidate_k,
+            query, top_k=candidate_k, candidate_k=candidate_k
         )
 
-        return self.reranker.rerank(
-            query,
-            candidates,
-            top_k=top_k,
-        )
+        return self.reranker.rerank(query, candidates, top_k=top_k)
