@@ -2,8 +2,10 @@ import json
 from types import SimpleNamespace
 
 import pytest
+import requests
 
 import app.main as main
+from app.core.config import settings
 from app.generation import streaming
 from app.generation.pipeline import RAGPipeline
 from app.generation.streaming import StreamToken, stream_generate, trim_unfinished_sentence
@@ -111,3 +113,81 @@ def test_stream_reports_a_length_cutoff(monkeypatch, done_reason, truncated):
 
     assert [token.text for token in tokens if token.text] == ["Hello"]
     assert any(token.truncated for token in tokens) is truncated
+
+
+def test_stream_uses_the_configured_endpoint(monkeypatch):
+    monkeypatch.setattr(streaming.settings, "ollama_url", "http://ollama.test:1234")
+    monkeypatch.setattr(streaming.settings, "ollama_model", "tiny:1b")
+    captured = {}
+
+    def fake_post(url, **kwargs):
+        captured["url"] = url
+        captured["model"] = kwargs["json"]["model"]
+        return FakeResponse("stop")
+
+    monkeypatch.setattr(streaming.requests, "post", fake_post)
+
+    list(stream_generate("question", [make_evidence("text", 1)]))
+
+    assert captured == {"url": "http://ollama.test:1234/api/generate", "model": "tiny:1b"}
+
+
+def test_verification_event_has_the_fields_the_frontend_reads(monkeypatch):
+    events, _ = run_stream(monkeypatch, [make_evidence("text", 1)], [StreamToken("Some answer.")])
+
+    verification = dict(events)["verification"]
+
+    assert verification == {
+        "supported": False,
+        "cited_evidence": [],
+        "unsupported_claims": [],
+        "reason": "x",
+    }
+
+
+def run_failing_stream(monkeypatch, error):
+    def fail(query, evidence):
+        raise error
+
+    monkeypatch.setattr(main.state, "retriever", SimpleNamespace(search=lambda query, top_k: []))
+    monkeypatch.setattr(main, "stream_generate", fail)
+
+    events = []
+    for raw in main.stream_query_events("question", top_k=5):
+        name, data = raw.strip().split("\n", 1)
+        events.append((name.removeprefix("event: "), json.loads(data.removeprefix("data: "))))
+
+    return events
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (
+            requests.ConnectionError("HTTPConnectionPool(host='localhost') refused"),
+            f"Could not reach Ollama at {settings.ollama_url}. Start Ollama and try again.",
+        ),
+        (
+            requests.Timeout("read timed out"),
+            f"Could not reach Ollama at {settings.ollama_url}. Start Ollama and try again.",
+        ),
+        (
+            requests.HTTPError("404 for url http://x/api/generate", response=SimpleNamespace(status_code=404)),
+            f"The model {settings.ollama_model} is not available in Ollama. "
+            f"Run: ollama pull {settings.ollama_model}",
+        ),
+        (
+            requests.HTTPError("500 for url http://x/api/generate", response=SimpleNamespace(status_code=500)),
+            "Something went wrong while answering. Check the backend log.",
+        ),
+        (
+            RuntimeError("secret internal detail"),
+            "Something went wrong while answering. Check the backend log.",
+        ),
+    ],
+)
+def test_stream_errors_are_plain_and_do_not_leak(monkeypatch, caplog, error, message):
+    events = run_failing_stream(monkeypatch, error)
+
+    assert events[-1] == ("error", {"message": message})
+    assert any(record.exc_info for record in caplog.records)

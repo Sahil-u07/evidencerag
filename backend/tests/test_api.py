@@ -1,9 +1,11 @@
 from types import SimpleNamespace
 
 import pytest
+import requests
 from fastapi.testclient import TestClient
 
 import app.main as main
+from app.core.config import settings
 
 
 class FakeRetriever:
@@ -442,3 +444,84 @@ def test_upload_rejects_a_file_with_no_text(client, tmp_path):
     assert response.status_code == 400
     assert "No text could be extracted" in response.json()["detail"]
     assert list(tmp_path.iterdir()) == []
+
+
+def fake_tags(models):
+    def get(url, timeout):
+        assert url == f"{settings.ollama_url}/api/tags"
+        assert timeout == 2
+        return SimpleNamespace(
+            raise_for_status=lambda: None,
+            json=lambda: {"models": [{"name": name} for name in models]},
+        )
+
+    return get
+
+
+def test_health_reports_the_settings(client, monkeypatch):
+    monkeypatch.setattr(main.requests, "get", fake_tags([settings.ollama_model]))
+
+    assert client.get("/health").json() == {
+        "status": "ok",
+        "ready": True,
+        "generator": "ollama",
+        "model": settings.ollama_model,
+        "generator_available": True,
+        "max_upload_mb": settings.max_upload_size_mb,
+    }
+
+
+def test_health_generator_unavailable_when_ollama_is_down(client, monkeypatch):
+    def down(url, timeout):
+        raise requests.ConnectionError("refused")
+
+    monkeypatch.setattr(main.requests, "get", down)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["generator_available"] is False
+
+
+def test_health_generator_unavailable_when_the_model_is_missing(client, monkeypatch):
+    monkeypatch.setattr(main.requests, "get", fake_tags(["other:7b"]))
+
+    assert client.get("/health").json()["generator_available"] is False
+
+
+def test_health_accepts_an_untagged_model_name(client, monkeypatch):
+    monkeypatch.setattr(settings, "ollama_model", "tiny")
+    monkeypatch.setattr(main.requests, "get", fake_tags(["tiny:latest"]))
+
+    assert client.get("/health").json()["generator_available"] is True
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (requests.ConnectionError("refused"), f"Could not reach Ollama at {settings.ollama_url}. Start Ollama and try again."),
+        (RuntimeError("secret internal detail"), "Something went wrong while answering. Check the backend log."),
+    ],
+)
+def test_ask_errors_are_plain_and_do_not_leak(client, error, message):
+    def fail(query, top_k=5):
+        raise error
+
+    main.state.pipeline = SimpleNamespace(ask=fail)
+
+    response = client.post("/ask", json={"query": "What is RRF?"})
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == message
+
+
+def test_missing_upload_folder_is_created(client, monkeypatch, tmp_path):
+    missing = tmp_path / "data" / "uploads"
+    monkeypatch.setattr(main, "UPLOAD_DIR", missing)
+
+    assert client.get("/documents").json() == {"documents": []}
+    assert missing.is_dir()
+
+
+def test_upload_dir_comes_from_the_setting():
+    assert main.UPLOAD_DIR == main.PROJECT_ROOT / settings.upload_dir
