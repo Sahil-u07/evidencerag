@@ -10,7 +10,6 @@ from app.generation import pipeline as pipeline_module
 from app.generation import streaming
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
-from app.generation.verifier import EvidenceVerifier
 from app.generation.streaming import (
     ABSTENTION_MESSAGE,
     StreamToken,
@@ -27,14 +26,10 @@ def make_evidence(text, number):
     return SimpleNamespace(result=SimpleNamespace(chunk=chunk), score=1.0)
 
 
-class RecordingVerifier(EvidenceVerifier):
+class RecordingVerifier:
     def __init__(self, supported=False):
-        super().__init__()
         self.calls = []
         self.supported = supported
-
-    def best_entailing_passage(self, claim, texts):
-        return None
 
     def verify_grounding(self, answer, evidence):
         self.calls.append((answer, len(evidence)))

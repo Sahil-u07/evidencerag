@@ -192,10 +192,7 @@ def test_ask_checks_only_the_passages_the_model_saw_and_trims_a_cut_off_answer()
 
     calls = []
 
-    class Verifier(EvidenceVerifier):
-        def best_entailing_passage(self, claim, texts):
-            return 0
-
+    class Verifier:
         def verify_grounding(self, answer, evidence):
             calls.append((answer, len(evidence)))
             return SimpleNamespace(
@@ -219,80 +216,3 @@ def test_ask_checks_only_the_passages_the_model_saw_and_trims_a_cut_off_answer()
 def test_pipeline_requires_a_generator():
     with pytest.raises(TypeError):
         RAGPipeline(retriever=FakeRetriever())
-
-
-def make_pipeline(predict):
-    pipeline = RAGPipeline(
-        retriever=FakeRetriever(),
-        generator=FakeGenerator(""),
-        verifier=EvidenceVerifier(),
-    )
-    pipeline.verifier._predict_nli = predict
-    return pipeline
-
-
-def passages(*texts):
-    return [
-        SimpleNamespace(result=SimpleNamespace(chunk=SimpleNamespace(text=text)))
-        for text in texts
-    ]
-
-
-def test_attach_citation_picks_the_entailing_passage_over_the_best_overlap():
-    pipeline = make_pipeline(
-        lambda premise, hypothesis: (
-            ("entailment", 0.95) if "rotate" in premise else ("neutral", 0.9)
-        )
-    )
-    evidence = passages(
-        "Tokens are never reused after a token is issued to a client.",
-        "Refresh tokens rotate, so the old one stops working.",
-    )
-
-    cited = pipeline.attach_citation("Each token is issued to a client once.", evidence)
-
-    assert cited.endswith("[Evidence 2]")
-
-
-def test_attach_citation_cites_a_low_overlap_sentence_so_it_gets_checked():
-    pipeline = make_pipeline(
-        lambda premise, hypothesis: (
-            ("entailment", 0.95) if "rotate" in premise else ("neutral", 0.9)
-        )
-    )
-    evidence = passages(
-        "Sessions last one hour.", "Refresh tokens rotate on every use."
-    )
-
-    cited = pipeline.attach_citation("The old credential becomes invalid.", evidence)
-
-    assert cited == "The old credential becomes invalid. [Evidence 2]"
-
-
-def test_attach_citation_falls_back_to_overlap_when_nothing_entails():
-    pipeline = make_pipeline(lambda premise, hypothesis: ("neutral", 0.9))
-    evidence = passages("Sessions last one hour.", "Tokens rotate on every use.")
-
-    cited = pipeline.attach_citation("Tokens always rotate quickly.", evidence)
-
-    assert cited == "Tokens always rotate quickly. [Evidence 2]"
-
-
-def test_attach_citation_leaves_the_abstention_message_alone():
-    pipeline = make_pipeline(lambda premise, hypothesis: ("entailment", 0.95))
-
-    cited = pipeline.attach_citation(
-        ABSTENTION_MESSAGE, passages("I don't have enough evidence to answer.")
-    )
-
-    assert cited == ABSTENTION_MESSAGE
-
-
-def test_attach_citation_keeps_an_existing_citation_and_skips_short_replies():
-    pipeline = make_pipeline(lambda premise, hypothesis: ("entailment", 0.95))
-
-    cited = pipeline.attach_citation(
-        "Yes. Tokens rotate. [evidence 2]", passages("one", "two")
-    )
-
-    assert cited == "Yes. Tokens rotate. [Evidence 2]"

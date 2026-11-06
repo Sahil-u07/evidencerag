@@ -46,7 +46,6 @@ class EvidenceVerifier:
         self.model_name = model_name
         self.entailment_threshold = entailment_threshold
         self._nli_model: CrossEncoder | None = None
-        self._nli_cache: dict[tuple[str, str], tuple[str, float]] = {}
 
     @property
     def nli_model(self) -> CrossEncoder:
@@ -126,13 +125,32 @@ class EvidenceVerifier:
             claim_supported = False
 
             for evidence_id in citation_ids:
-                supported, lexical = self._passage_supports(
-                    evidence[evidence_id - 1].result.chunk.text, claim
+                chunk = evidence[evidence_id - 1].result.chunk
+
+                evidence_text = chunk.text
+
+                if not self._numbers(claim) <= self._numbers(evidence_text):
+                    continue
+
+                if self._is_verbatim_quote(evidence_text, claim):
+                    claim_supported = True
+                    used_lexical_fallback = True
+                    break
+
+                label, confidence = self._predict_nli(
+                    premise=evidence_text, hypothesis=claim
                 )
 
-                if supported:
+                if label == "entailment" and confidence >= self.entailment_threshold:
                     claim_supported = True
-                    used_lexical_fallback = used_lexical_fallback or lexical
+                    break
+
+                # The fallback covers NLI misses, so it must not overrule a contradiction.
+                if label != "contradiction" and self._has_strong_lexical_support(
+                    evidence_text, claim
+                ):
+                    claim_supported = True
+                    used_lexical_fallback = True
                     break
 
             if not claim_supported:
@@ -168,63 +186,6 @@ class EvidenceVerifier:
             cited_evidence=citation_result.cited_evidence,
             reason=("All cited claims were supported by NLI entailment."),
         )
-
-    def _passage_supports(self, evidence_text: str, claim: str) -> tuple[bool, bool]:
-        """Return (supported, accepted_by_lexical_overlap) for one cited passage."""
-
-        if not self._numbers(claim) <= self._numbers(evidence_text):
-            return False, False
-
-        if self._is_verbatim_quote(evidence_text, claim):
-            return True, True
-
-        label, confidence = self._cached_nli(evidence_text, claim)
-
-        if label == "entailment" and confidence >= self.entailment_threshold:
-            return True, False
-
-        # The fallback covers NLI misses, so it must not overrule a contradiction.
-        if label != "contradiction" and self._has_strong_lexical_support(
-            evidence_text, claim
-        ):
-            return True, True
-
-        return False, False
-
-    def _cached_nli(self, premise: str, hypothesis: str) -> tuple[str, float]:
-        key = (premise, hypothesis)
-
-        if key not in self._nli_cache:
-            if len(self._nli_cache) >= 4096:
-                self._nli_cache.clear()
-
-            self._nli_cache[key] = self._predict_nli(premise, hypothesis)
-
-        return self._nli_cache[key]
-
-    def best_entailing_passage(self, claim: str, texts: list[str]) -> int | None:
-        """Index of the passage that entails the claim most strongly, if any does."""
-
-        best_index = None
-        best_confidence = self.entailment_threshold
-
-        for index, text in enumerate(texts):
-            if not self._numbers(claim) <= self._numbers(text):
-                continue
-
-            label, confidence = self._cached_nli(text, claim)
-
-            if label == "entailment" and confidence >= best_confidence:
-                best_index, best_confidence = index, confidence
-
-        return best_index
-
-    def claim_of(self, sentence: str) -> str | None:
-        """The checkable claim in one sentence, or None for replies like "Yes"."""
-
-        claims = self._extract_claims(sentence)
-
-        return claims[0][0] if claims else None
 
     def _has_strong_lexical_support(self, evidence_text: str, claim: str) -> bool:
         """Accept near-verbatim claims that the NLI model failed to recognize."""
