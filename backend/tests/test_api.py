@@ -1,3 +1,6 @@
+from concurrent.futures import ThreadPoolExecutor
+import threading
+import time
 from types import SimpleNamespace
 
 import pytest
@@ -102,7 +105,6 @@ def client(monkeypatch, tmp_path, fake_retriever):
         yield test_client
 
     main.state.pipeline = None
-    main.state.retriever = None
 
 
 def test_health_endpoint(client):
@@ -512,6 +514,10 @@ def test_health_accepts_an_untagged_model_name(client, monkeypatch):
             requests.Timeout("read timed out"),
             "Ollama did not respond in time. It may still be loading the model; try again.",
         ),
+        (
+            requests.ConnectTimeout("connect timed out"),
+            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. Start Ollama and try again.",
+        ),
         (RuntimeError("secret internal detail"), "Something went wrong while answering. Check the backend log."),
     ],
 )
@@ -550,3 +556,132 @@ def test_error_message_has_no_double_slash(client, monkeypatch):
     detail = client.post("/ask", json={"query": "What is RRF?"}).json()["detail"]
 
     assert detail == "Could not reach Ollama at http://ollama.test:1234. Start Ollama and try again."
+
+
+UPLOAD_MD = {"file": ("note.md", b"# Note\n\nRRF combines ranked lists.", "text/markdown")}
+
+
+def test_other_requests_finish_while_an_upload_rebuilds(client, monkeypatch):
+    started = threading.Event()
+    release = threading.Event()
+    released_in_time = []
+
+    def slow_rebuild():
+        started.set()
+        released_in_time.append(release.wait(timeout=5))
+
+    monkeypatch.setattr(main, "rebuild_pipeline", slow_rebuild)
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        upload = pool.submit(client.post, "/documents/upload", files=UPLOAD_MD)
+        assert started.wait(timeout=5)
+        health = client.get("/health")
+        release.set()
+
+    assert health.status_code == 200
+    assert upload.result().status_code == 200
+    assert released_in_time == [True]
+
+
+def test_overlapping_rebuilds_run_one_at_a_time(monkeypatch):
+    guard = threading.Lock()
+    active = []
+    peak = []
+
+    def slow_build():
+        with guard:
+            active.append(1)
+            peak.append(len(active))
+        time.sleep(0.05)
+        with guard:
+            active.pop()
+        return FakeRetriever()
+
+    monkeypatch.setattr(main, "build_retriever", slow_build)
+    monkeypatch.setattr(main.state, "pipeline", None)
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        list(pool.map(lambda _: main.rebuild_pipeline(), range(4)))
+
+    assert len(peak) == 4
+    assert max(peak) == 1
+
+
+def test_search_uses_the_old_retriever_until_a_rebuild_finishes(client, monkeypatch):
+    started = threading.Event()
+    release = threading.Event()
+    new_retriever = SimpleNamespace(search=lambda query, top_k=5: [])
+
+    def slow_build():
+        started.set()
+        release.wait(timeout=5)
+        return new_retriever
+
+    monkeypatch.setattr(main, "build_retriever", slow_build)
+    search = {"query": "What is RRF?"}
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        rebuild = pool.submit(main.rebuild_pipeline)
+        assert started.wait(timeout=5)
+        during = client.post("/search", json=search)
+        release.set()
+        rebuild.result()
+
+    assert len(during.json()["results"]) == 1
+    assert client.post("/search", json=search).json()["results"] == []
+
+
+def test_upload_accepts_latin1_text(client, tmp_path):
+    response = client.post(
+        "/documents/upload",
+        files={"file": ("menu.txt", "Le caf\u00e9 est ouvert.".encode("latin-1"), "text/plain")},
+    )
+
+    assert response.status_code == 200
+    assert len(list(tmp_path.iterdir())) == 1
+
+
+def test_upload_refuses_a_corrupt_pdf_and_removes_it(client, tmp_path):
+    response = client.post(
+        "/documents/upload",
+        files={"file": ("broken.pdf", b"this is not a pdf", "application/pdf")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "This file could not be read."
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_failed_upload_rebuild_does_not_claim_success(client, tmp_path, monkeypatch):
+    def fail():
+        raise RuntimeError("index write failed")
+
+    monkeypatch.setattr(main, "rebuild_pipeline", fail)
+
+    response = client.post("/documents/upload", files=UPLOAD_MD)
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == "The document could not be indexed, so it was not saved."
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_failed_delete_rebuild_says_what_happened_and_stops_serving(client, tmp_path, monkeypatch):
+    document = tmp_path / "gone.md"
+    document.write_text("RRF combines ranked lists.", encoding="utf-8")
+
+    def fail():
+        raise RuntimeError("index write failed")
+
+    monkeypatch.setattr(main, "rebuild_pipeline", fail)
+
+    response = client.delete("/documents/gone.md")
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == (
+        "The document was removed, but the search index could not be rebuilt. "
+        "Restart the backend to rebuild it."
+    )
+    assert not document.exists()
+    assert main.state.pipeline is None
+    assert client.get("/health").json()["ready"] is False
+    assert client.post("/search", json={"query": "RRF"}).status_code == 503

@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import json
 import logging
 from pathlib import Path
+import threading
 import time
 from typing import Any, Iterator
 from uuid import uuid4
@@ -9,6 +10,7 @@ from uuid import uuid4
 import numpy as np
 import requests
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -23,7 +25,7 @@ from app.generation.streaming import (
     trim_unfinished_sentence,
 )
 from app.ingestion.chunker import build_chunks
-from app.ingestion.loader import load_document
+from app.ingestion.loader import UnreadableDocumentError, load_document
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DenseRetriever
 from app.retrieval.embedder import TextEmbedder
@@ -115,11 +117,14 @@ class DocumentListResponse(BaseModel):
 
 class ApplicationState:
     def __init__(self) -> None:
+        # The pipeline owns its retriever, so one assignment swaps both together.
         self.pipeline: RAGPipeline | None = None
-        self.retriever: RerankedHybridRetriever | None = None
 
 
 state = ApplicationState()
+
+# Rebuilds write the same index files, so they must not overlap.
+rebuild_lock = threading.Lock()
 
 
 def get_index_storage_dir() -> Path:
@@ -164,6 +169,14 @@ def build_runtime_retriever(
     )
 
 
+def load_readable_document(path: Path) -> list:
+    try:
+        return load_document(path)
+    except UnreadableDocumentError:
+        logger.warning("Skipping a file that could not be read: %s", path)
+        return []
+
+
 def clear_textless_index(store: PersistentIndexStore):
     logger.warning(
         "The uploaded documents contain no extractable text. "
@@ -184,7 +197,7 @@ def build_full_persistent_index(
 
     for path in source_paths:
         documents.extend(
-            load_document(path)
+            load_readable_document(path)
         )
 
     chunks = build_chunks(
@@ -283,7 +296,7 @@ def update_persistent_index_incrementally(
     new_embedding_blocks = []
 
     for path in changed_paths:
-        documents = load_document(path)
+        documents = load_readable_document(path)
 
         document_chunks = build_chunks(
             documents,
@@ -505,15 +518,35 @@ def build_retriever() -> RerankedHybridRetriever:
 
 
 def rebuild_pipeline() -> None:
-    new_retriever = build_retriever()
+    with rebuild_lock:
+        state.pipeline = RAGPipeline(
+            retriever=build_retriever(),
+            generator=OllamaGenerator(),
+        )
 
-    new_pipeline = RAGPipeline(
-        retriever=new_retriever,
-        generator=OllamaGenerator(),
-    )
 
-    state.retriever = new_retriever
-    state.pipeline = new_pipeline
+def index_upload(path: Path) -> None:
+    try:
+        documents = load_document(path)
+    except UnreadableDocumentError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="This file could not be read.",
+        ) from exc
+
+    # Check before indexing so a scanned PDF or blank file is refused, not stored.
+    if not build_chunks(
+        documents,
+        retrieval_defaults.CHUNKING,
+        retrieval_defaults.CHUNK_SIZE,
+        retrieval_defaults.CHUNK_OVERLAP,
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="No text could be extracted from this file.",
+        )
+
+    rebuild_pipeline()
 
 
 def serialize_evidence(
@@ -585,16 +618,17 @@ def sse_event(
 
 
 def describe_error(exc: Exception) -> str:
-    if isinstance(exc, requests.Timeout):
-        return (
-            "Ollama did not respond in time. "
-            "It may still be loading the model; try again."
-        )
-
+    # ConnectTimeout is both of these, and it means Ollama could not be reached.
     if isinstance(exc, requests.ConnectionError):
         return (
             f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. "
             "Start Ollama and try again."
+        )
+
+    if isinstance(exc, requests.Timeout):
+        return (
+            "Ollama did not respond in time. "
+            "It may still be loading the model; try again."
         )
 
     if (
@@ -614,7 +648,10 @@ def stream_query_events(
     query: str,
     top_k: int,
 ) -> Iterator[str]:
-    if state.retriever is None:
+    # Read once, so a rebuild mid-request cannot mix two pipelines.
+    pipeline = state.pipeline
+
+    if pipeline is None:
         yield sse_event(
             "error",
             {
@@ -633,7 +670,7 @@ def stream_query_events(
         # -----------------------------------------------------
         retrieval_start = time.perf_counter()
 
-        evidence = state.retriever.search(
+        evidence = pipeline.retriever.search(
             query,
             top_k=top_k,
         )
@@ -719,18 +756,13 @@ def stream_query_events(
         # Only the passages the model saw can back its sentences.
         context_evidence = evidence[:GENERATION_CONTEXT_K]
 
-        if state.pipeline is None:
-            raise RuntimeError(
-                "RAG pipeline is not ready."
-            )
-
         # -----------------------------------------------------
         # Citation alignment
         # -----------------------------------------------------
         citation_start = time.perf_counter()
 
         cited_answer = (
-            state.pipeline._attach_citation(
+            pipeline._attach_citation(
                 raw_answer,
                 context_evidence,
             )
@@ -747,7 +779,7 @@ def stream_query_events(
         verification_start = time.perf_counter()
 
         verification = (
-            state.pipeline.verifier
+            pipeline.verifier
             .verify_grounding(
                 answer=cited_answer,
                 evidence=context_evidence,
@@ -847,17 +879,11 @@ def stream_query_events(
 async def lifespan(
     application: FastAPI,
 ):
-    state.retriever = build_retriever()
-
-    state.pipeline = RAGPipeline(
-        retriever=state.retriever,
-        generator=OllamaGenerator(),
-    )
+    rebuild_pipeline()
 
     yield
 
     state.pipeline = None
-    state.retriever = None
 
 
 app = FastAPI(
@@ -970,10 +996,7 @@ def generator_available() -> bool:
 def health() -> dict[str, str | bool | int]:
     return {
         "status": "ok",
-        "ready": (
-            state.pipeline is not None
-            and state.retriever is not None
-        ),
+        "ready": state.pipeline is not None,
         "generator": "ollama",
         "model": settings.ollama_model,
         "generator_available": generator_available(),
@@ -988,13 +1011,15 @@ def health() -> dict[str, str | bool | int]:
 def search_documents(
     request: SearchRequest,
 ) -> SearchResponse:
-    if state.retriever is None:
+    pipeline = state.pipeline
+
+    if pipeline is None:
         raise HTTPException(
             status_code=503,
             detail="Retrieval system is not ready.",
         )
 
-    results = state.retriever.search(
+    results = pipeline.retriever.search(
         request.query,
         top_k=request.top_k,
     )
@@ -1147,15 +1172,28 @@ def delete_document(
 
     try:
         destination.unlink()
+    except OSError as exc:
+        logger.exception("Removing a document failed.")
 
+        raise HTTPException(
+            status_code=500,
+            detail="The document could not be removed.",
+        ) from exc
+
+    try:
         rebuild_pipeline()
 
     except Exception as exc:
+        logger.exception("Rebuilding the index after a delete failed.")
+
+        # The old retriever still holds the deleted text, so stop serving it.
+        state.pipeline = None
+
         raise HTTPException(
             status_code=500,
             detail=(
-                "Document was deleted, but rebuilding "
-                "the retrieval index failed."
+                "The document was removed, but the search index "
+                "could not be rebuilt. Restart the backend to rebuild it."
             ),
         ) from exc
 
@@ -1241,19 +1279,8 @@ async def upload_document(
 
                 output.write(chunk)
 
-        # Check before indexing so a scanned PDF or blank file is refused, not stored.
-        if not build_chunks(
-            load_document(destination),
-            retrieval_defaults.CHUNKING,
-            retrieval_defaults.CHUNK_SIZE,
-            retrieval_defaults.CHUNK_OVERLAP,
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="No text could be extracted from this file.",
-            )
-
-        rebuild_pipeline()
+        # Parsing and embedding take a while, and must not block other requests.
+        await run_in_threadpool(index_upload, destination)
 
     except HTTPException:
         if destination.exists():
@@ -1262,15 +1289,14 @@ async def upload_document(
         raise
 
     except Exception as exc:
+        logger.exception("Indexing an upload failed.")
+
         if destination.exists():
             destination.unlink()
 
         raise HTTPException(
             status_code=500,
-            detail=(
-                "Document upload succeeded, but rebuilding "
-                "the retrieval index failed."
-            ),
+            detail="The document could not be indexed, so it was not saved.",
         ) from exc
 
     finally:

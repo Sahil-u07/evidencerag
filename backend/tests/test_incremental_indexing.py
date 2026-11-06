@@ -409,3 +409,26 @@ def test_deleting_the_good_document_leaves_a_textless_one(monkeypatch, tmp_path)
 
     assert retriever.hybrid_retriever.dense_retriever.chunks == []
     assert not (tmp_path / "index" / "index.json").exists()
+
+
+def test_a_corrupt_pdf_does_not_stop_a_full_build(monkeypatch, tmp_path, caplog):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "broken.pdf").write_bytes(b"this is not a pdf")
+    (uploads / "good.txt").write_text("my document text", encoding="utf-8")
+
+    retriever = main.build_retriever()
+
+    assert [chunk.source for chunk in retriever.hybrid_retriever.dense_retriever.chunks] == ["good.txt"]
+    assert "broken.pdf" in caplog.text
+
+
+def test_a_corrupt_pdf_does_not_stop_an_incremental_build(monkeypatch, tmp_path, caplog):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "good.txt").write_text("my document text", encoding="utf-8")
+    main.build_retriever()
+    (uploads / "broken.pdf").write_bytes(b"this is not a pdf")
+
+    retriever = main.build_retriever()
+
+    assert [chunk.source for chunk in retriever.hybrid_retriever.dense_retriever.chunks] == ["good.txt"]
+    assert "broken.pdf" in caplog.text

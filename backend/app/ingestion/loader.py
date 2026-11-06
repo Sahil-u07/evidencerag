@@ -5,9 +5,17 @@ from pypdf import PdfReader
 from app.ingestion.models import DocumentChunk
 
 
+class UnreadableDocumentError(Exception):
+    """The file exists but its contents cannot be parsed."""
+
+
 def load_text_file(path: str | Path) -> list[DocumentChunk]:
     file_path = Path(path)
-    text = file_path.read_text(encoding="utf-8")
+
+    try:
+        text = file_path.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        text = file_path.read_text(encoding="cp1252", errors="replace")
 
     return [
         DocumentChunk(
@@ -20,13 +28,16 @@ def load_text_file(path: str | Path) -> list[DocumentChunk]:
 
 def load_pdf(path: str | Path) -> list[DocumentChunk]:
     file_path = Path(path)
-    reader = PdfReader(str(file_path))
+
+    # pypdf raises many error types on damaged files, not only PdfReadError.
+    try:
+        pages = [page.extract_text() or "" for page in PdfReader(str(file_path)).pages]
+    except Exception as exc:
+        raise UnreadableDocumentError(file_path.name) from exc
 
     documents: list[DocumentChunk] = []
 
-    for page_number, page in enumerate(reader.pages, start=1):
-        text = page.extract_text() or ""
-
+    for page_number, text in enumerate(pages, start=1):
         if not text.strip():
             continue
 

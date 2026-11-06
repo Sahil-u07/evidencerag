@@ -27,9 +27,9 @@ class RecordingVerifier:
 
 def run_stream(monkeypatch, evidence, tokens):
     verifier = RecordingVerifier()
-    monkeypatch.setattr(main.state, "retriever", SimpleNamespace(search=lambda query, top_k: evidence))
+    retriever = SimpleNamespace(search=lambda query, top_k: evidence)
     monkeypatch.setattr(
-        main.state, "pipeline", RAGPipeline(retriever=None, generator=object(), verifier=verifier)
+        main.state, "pipeline", RAGPipeline(retriever=retriever, generator=object(), verifier=verifier)
     )
     monkeypatch.setattr(main, "stream_generate", lambda query, evidence: iter(tokens))
 
@@ -132,6 +132,25 @@ def test_stream_uses_the_configured_endpoint(monkeypatch):
     assert captured == {"url": "http://ollama.test:1234/api/generate", "model": "tiny:1b"}
 
 
+def test_a_stream_keeps_the_pipeline_it_started_with(monkeypatch):
+    retriever = SimpleNamespace(search=lambda query, top_k: [make_evidence("text", 1)])
+    old_verifier, new_verifier = RecordingVerifier(), RecordingVerifier()
+    old = RAGPipeline(retriever=retriever, generator=object(), verifier=old_verifier)
+    new = RAGPipeline(retriever=retriever, generator=object(), verifier=new_verifier)
+
+    def swap_during_generation(query, evidence):
+        main.state.pipeline = new
+        yield StreamToken("Some answer.")
+
+    monkeypatch.setattr(main.state, "pipeline", old)
+    monkeypatch.setattr(main, "stream_generate", swap_during_generation)
+
+    list(main.stream_query_events("question", top_k=5))
+
+    assert len(old_verifier.calls) == 1
+    assert new_verifier.calls == []
+
+
 def test_verification_event_has_the_fields_the_frontend_reads(monkeypatch):
     events, _ = run_stream(monkeypatch, [make_evidence("text", 1)], [StreamToken("Some answer.")])
 
@@ -149,7 +168,8 @@ def run_failing_stream(monkeypatch, error):
     def fail(query, evidence):
         raise error
 
-    monkeypatch.setattr(main.state, "retriever", SimpleNamespace(search=lambda query, top_k: []))
+    retriever = SimpleNamespace(search=lambda query, top_k: [])
+    monkeypatch.setattr(main.state, "pipeline", SimpleNamespace(retriever=retriever))
     monkeypatch.setattr(main, "stream_generate", fail)
 
     events = []
