@@ -93,6 +93,11 @@ def client(monkeypatch, tmp_path, fake_retriever):
         tmp_path,
     )
 
+    def ollama_down(url, timeout):
+        raise requests.ConnectionError("no network in tests")
+
+    monkeypatch.setattr(main.requests, "get", ollama_down)
+
     with TestClient(main.app) as test_client:
         yield test_client
 
@@ -110,7 +115,7 @@ def test_health_endpoint(client):
     assert data["status"] == "ok"
     assert data["ready"] is True
     assert data["generator"] == "ollama"
-    assert data["model"] == "llama3.2:1b"
+    assert data["model"] == settings.ollama_model
 
 
 def test_request_id_header(client):
@@ -448,7 +453,7 @@ def test_upload_rejects_a_file_with_no_text(client, tmp_path):
 
 def fake_tags(models):
     def get(url, timeout):
-        assert url == f"{settings.ollama_url}/api/tags"
+        assert url == f"{settings.ollama_url.rstrip('/')}/api/tags"
         assert timeout == 2
         return SimpleNamespace(
             raise_for_status=lambda: None,
@@ -499,7 +504,14 @@ def test_health_accepts_an_untagged_model_name(client, monkeypatch):
 @pytest.mark.parametrize(
     ("error", "message"),
     [
-        (requests.ConnectionError("refused"), f"Could not reach Ollama at {settings.ollama_url}. Start Ollama and try again."),
+        (
+            requests.ConnectionError("refused"),
+            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. Start Ollama and try again.",
+        ),
+        (
+            requests.Timeout("read timed out"),
+            "Ollama did not respond in time. It may still be loading the model; try again.",
+        ),
         (RuntimeError("secret internal detail"), "Something went wrong while answering. Check the backend log."),
     ],
 )
@@ -525,3 +537,16 @@ def test_missing_upload_folder_is_created(client, monkeypatch, tmp_path):
 
 def test_upload_dir_comes_from_the_setting():
     assert main.UPLOAD_DIR == main.PROJECT_ROOT / settings.upload_dir
+
+
+def test_error_message_has_no_double_slash(client, monkeypatch):
+    monkeypatch.setattr(settings, "ollama_url", "http://ollama.test:1234/")
+
+    def fail(query, top_k=5):
+        raise requests.ConnectionError("refused")
+
+    main.state.pipeline = SimpleNamespace(ask=fail)
+
+    detail = client.post("/ask", json={"query": "What is RRF?"}).json()["detail"]
+
+    assert detail == "Could not reach Ollama at http://ollama.test:1234. Start Ollama and try again."

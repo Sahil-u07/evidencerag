@@ -165,11 +165,11 @@ def run_failing_stream(monkeypatch, error):
     [
         (
             requests.ConnectionError("HTTPConnectionPool(host='localhost') refused"),
-            f"Could not reach Ollama at {settings.ollama_url}. Start Ollama and try again.",
+            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. Start Ollama and try again.",
         ),
         (
             requests.Timeout("read timed out"),
-            f"Could not reach Ollama at {settings.ollama_url}. Start Ollama and try again.",
+            "Ollama did not respond in time. It may still be loading the model; try again.",
         ),
         (
             requests.HTTPError("404 for url http://x/api/generate", response=SimpleNamespace(status_code=404)),

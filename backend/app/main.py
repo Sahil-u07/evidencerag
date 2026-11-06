@@ -585,9 +585,15 @@ def sse_event(
 
 
 def describe_error(exc: Exception) -> str:
-    if isinstance(exc, (requests.ConnectionError, requests.Timeout)):
+    if isinstance(exc, requests.Timeout):
         return (
-            f"Could not reach Ollama at {settings.ollama_url}. "
+            "Ollama did not respond in time. "
+            "It may still be loading the model; try again."
+        )
+
+    if isinstance(exc, requests.ConnectionError):
+        return (
+            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. "
             "Start Ollama and try again."
         )
 
