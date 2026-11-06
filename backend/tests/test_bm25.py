@@ -24,10 +24,7 @@ def test_bm25_prefers_exact_keyword_match():
     retriever = BM25Retriever()
     retriever.add(chunks)
 
-    results = retriever.search(
-        "PostgreSQL GIN indexes",
-        top_k=1,
-    )
+    results = retriever.search("PostgreSQL GIN indexes", top_k=1)
 
     assert len(results) == 1
     assert results[0].chunk.chunk_id == "database:1"
@@ -36,10 +33,7 @@ def test_bm25_prefers_exact_keyword_match():
 def test_bm25_returns_empty_when_index_is_empty():
     retriever = BM25Retriever()
 
-    results = retriever.search(
-        "machine learning",
-        top_k=5,
-    )
+    results = retriever.search("machine learning", top_k=5)
 
     assert results == []
 
@@ -55,10 +49,7 @@ def test_bm25_preserves_chunk_metadata():
     retriever = BM25Retriever()
     retriever.add([chunk])
 
-    results = retriever.search(
-        "Python programming",
-        top_k=1,
-    )
+    results = retriever.search("Python programming", top_k=1)
 
     assert results[0].chunk.source == "notes.txt"
     assert results[0].chunk.page == 4
@@ -79,7 +70,9 @@ def test_hybrid_still_answers_a_stopword_only_query():
     )
     hybrid.add(chunks, [[1.0, 0.0]])
 
-    assert [item.chunk.chunk_id for item in hybrid.search("what is the", top_k=3)] == ["a:1"]
+    assert [item.chunk.chunk_id for item in hybrid.search("what is the", top_k=3)] == [
+        "a:1"
+    ]
 
 
 def test_bm25_returns_nothing_when_no_query_term_matches():

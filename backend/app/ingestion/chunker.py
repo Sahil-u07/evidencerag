@@ -11,17 +11,14 @@ def chunk_id(document: DocumentChunk, number: int) -> str:
 
 
 def chunk_documents(
-    documents: list[DocumentChunk],
-    chunk_size: int = 800,
-    overlap: int = 120,
+    documents: list[DocumentChunk], chunk_size: int = 800, overlap: int = 120
 ) -> list[DocumentChunk]:
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than 0")
 
     if overlap < 0 or overlap >= chunk_size:
         raise ValueError(
-            "overlap must be greater than or equal to 0 "
-            "and smaller than chunk_size"
+            "overlap must be greater than or equal to 0 and smaller than chunk_size"
         )
 
     chunks: list[DocumentChunk] = []
@@ -70,9 +67,7 @@ def _sentences_of(text: str, max_words: int) -> list[str]:
 
 
 def chunk_by_sentences(
-    documents: list[DocumentChunk],
-    max_words: int = 200,
-    overlap_sentences: int = 1,
+    documents: list[DocumentChunk], max_words: int = 200, overlap_sentences: int = 1
 ) -> list[DocumentChunk]:
     if max_words <= 0:
         raise ValueError("max_words must be greater than 0")
@@ -121,10 +116,7 @@ def chunk_by_sentences(
 
 
 def build_chunks(
-    documents: list[DocumentChunk],
-    method: str,
-    size: int,
-    overlap: int,
+    documents: list[DocumentChunk], method: str, size: int, overlap: int
 ) -> list[DocumentChunk]:
     if method == "words":
         return chunk_documents(documents, chunk_size=size, overlap=overlap)

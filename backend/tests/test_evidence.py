@@ -85,10 +85,7 @@ def test_validate_max_matches_can_be_disabled():
     assert validate_questions([question()], [FACT_A] * 4, max_matches=None) == []
 
 
-@pytest.mark.parametrize(
-    "phrase",
-    ["too short here", " ".join(["word"] * 16)],
-)
+@pytest.mark.parametrize("phrase", ["too short here", " ".join(["word"] * 16)])
 def test_validate_rejects_phrase_length(phrase):
     errors = validate_questions([question(evidence=[phrase])], [phrase])
     assert "5 to 15 words" in errors[0]

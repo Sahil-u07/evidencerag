@@ -68,7 +68,9 @@ def v1_config(config: RetrievalConfig) -> RetrievalConfig:
 
 def chunk_corpus(paths: list[Path], config: RetrievalConfig) -> list:
     documents = [document for path in paths for document in load_document(path)]
-    return build_chunks(documents, config.chunking, config.chunk_size, config.chunk_overlap)
+    return build_chunks(
+        documents, config.chunking, config.chunk_size, config.chunk_overlap
+    )
 
 
 def v2_corpus_paths() -> list[Path]:
@@ -93,7 +95,9 @@ def embed_chunks(chunks: list, embedder: TextEmbedder, model_name: str) -> np.nd
     if cache_path.exists():
         return np.load(cache_path, allow_pickle=False)
 
-    embeddings = np.asarray(embedder.encode([chunk.text for chunk in chunks]), dtype=np.float32)
+    embeddings = np.asarray(
+        embedder.encode([chunk.text for chunk in chunks]), dtype=np.float32
+    )
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     np.save(cache_path, embeddings)
     return embeddings
@@ -107,25 +111,38 @@ def build_systems(chunks: list, config: RetrievalConfig) -> dict:
     dense.add(chunks, embeddings)
     bm25 = BM25Retriever()
     bm25.add(chunks)
-    hybrid = HybridRetriever(embedder=embedder, dense_retriever=dense, bm25_retriever=bm25)
-    reranked = RerankedHybridRetriever(hybrid, CrossEncoderReranker(config.reranker_model))
+    hybrid = HybridRetriever(
+        embedder=embedder, dense_retriever=dense, bm25_retriever=bm25
+    )
+    reranked = RerankedHybridRetriever(
+        hybrid, CrossEncoderReranker(config.reranker_model)
+    )
 
     return {
         "dense": lambda query: [
-            item.chunk for item in dense.search(embedder.encode_query(query), top_k=TOP_K)
+            item.chunk
+            for item in dense.search(embedder.encode_query(query), top_k=TOP_K)
         ],
         "bm25": lambda query: [item.chunk for item in bm25.search(query, top_k=TOP_K)],
-        "hybrid": lambda query: [item.chunk for item in hybrid.search(query, top_k=TOP_K)],
+        "hybrid": lambda query: [
+            item.chunk for item in hybrid.search(query, top_k=TOP_K)
+        ],
         "reranked_hybrid": lambda query: [
             item.result.chunk
-            for item in reranked.search(query, top_k=TOP_K, candidate_k=config.candidate_k)
+            for item in reranked.search(
+                query, top_k=TOP_K, candidate_k=config.candidate_k
+            )
         ],
     }
 
 
 def summarize(per_query: list[dict]) -> dict:
     def aggregate(rows: list[dict]) -> dict:
-        metrics = [key for key in rows[0] if key not in {"id", "type", "latency_ms", "retrieved"}]
+        metrics = [
+            key
+            for key in rows[0]
+            if key not in {"id", "type", "latency_ms", "retrieved"}
+        ]
         return {
             metric: {
                 "mean": mean(row[metric] for row in rows),
@@ -140,7 +157,8 @@ def summarize(per_query: list[dict]) -> dict:
     return {
         "overall": aggregate(per_query),
         "by_type": {
-            name: aggregate([row for row in per_query if row["type"] == name]) for name in types
+            name: aggregate([row for row in per_query if row["type"] == name])
+            for name in types
         },
         "latency_ms": {
             "median": median(latencies),
@@ -175,7 +193,11 @@ def run_v1(config: RetrievalConfig) -> dict:
             per_query.append(row)
         results[name] = {"summary": summarize(per_query), "per_query": per_query}
 
-    return {"chunk_count": len(chunks), "question_count": len(golden), "systems": results}
+    return {
+        "chunk_count": len(chunks),
+        "question_count": len(golden),
+        "systems": results,
+    }
 
 
 def run_v2(split: str, config: RetrievalConfig) -> dict:
@@ -185,8 +207,14 @@ def run_v2(split: str, config: RetrievalConfig) -> dict:
     questions = [item for item in every_question if item["split"] == split]
 
     # The too-common check only applies to the chunking the labels were written against.
-    is_label_chunking = (config.chunking, config.chunk_size, config.chunk_overlap) == ("words", 50, 10)
-    errors = validate_questions(every_question, texts, max_matches=3 if is_label_chunking else None)
+    is_label_chunking = (config.chunking, config.chunk_size, config.chunk_overlap) == (
+        "words",
+        50,
+        10,
+    )
+    errors = validate_questions(
+        every_question, texts, max_matches=3 if is_label_chunking else None
+    )
     if errors:
         raise SystemExit("Invalid questions:\n" + "\n".join(errors))
 
@@ -216,7 +244,11 @@ def run_v2(split: str, config: RetrievalConfig) -> dict:
             )
         results[name] = {"summary": summarize(per_query), "per_query": per_query}
 
-    return {"chunk_count": len(chunks), "question_count": len(questions), "systems": results}
+    return {
+        "chunk_count": len(chunks),
+        "question_count": len(questions),
+        "systems": results,
+    }
 
 
 def _as_evidence(passage: str) -> SimpleNamespace:
@@ -278,7 +310,10 @@ def run_verification(split: str, verifier=None) -> dict:
         "false_reject_rate": rate(supported),
         "false_reject_rate_ci95": interval(errors(supported)),
         "by_category": {
-            name: {"accuracy": 1.0 - rate([row for row in per_case if row["category"] == name])}
+            name: {
+                "accuracy": 1.0
+                - rate([row for row in per_case if row["category"] == name])
+            }
             for name in categories
         },
         "per_case": per_case,
@@ -309,7 +344,11 @@ def write_report(
     report = {
         "git_commit": _git("rev-parse", "HEAD"),
         # Reports written earlier in the same run should not mark the code as dirty.
-        "git_dirty": bool(_git("status", "--porcelain", "--", ".", ":(exclude)data/evaluation/reports")),
+        "git_dirty": bool(
+            _git(
+                "status", "--porcelain", "--", ".", ":(exclude)data/evaluation/reports"
+            )
+        ),
         "run_count": run_count,
         "set": set_name,
         "final": final,
@@ -333,12 +372,17 @@ def print_retrieval(result: dict) -> None:
         "ndcg_at_5",
     ]
     print("chunks:", result["chunk_count"], "questions:", result["question_count"])
-    print(f"{'system':<18}" + "".join(f"{name:>20}" for name in header) + f"{'median ms':>12}")
+    print(
+        f"{'system':<18}"
+        + "".join(f"{name:>20}" for name in header)
+        + f"{'median ms':>12}"
+    )
 
     for name, system in result["systems"].items():
         overall = system["summary"]["overall"]
         cells = "".join(
-            f"{overall[key]['mean']:>20.3f}" if key in overall else f"{'-':>20}" for key in header
+            f"{overall[key]['mean']:>20.3f}" if key in overall else f"{'-':>20}"
+            for key in header
         )
         print(f"{name:<18}{cells}{system['summary']['latency_ms']['median']:>12.0f}")
 
@@ -348,7 +392,9 @@ def main(argv: list[str] | None = None) -> None:
     commands = parser.add_subparsers(dest="kind", required=True)
 
     retrieval = commands.add_parser("retrieval")
-    retrieval.add_argument("--set", dest="set_name", choices=["v1", "dev", "test"], required=True)
+    retrieval.add_argument(
+        "--set", dest="set_name", choices=["v1", "dev", "test"], required=True
+    )
     retrieval.add_argument("--chunking", choices=["words", "sentences"])
     retrieval.add_argument("--chunk-size", type=int)
     retrieval.add_argument("--chunk-overlap", type=int)
@@ -357,7 +403,9 @@ def main(argv: list[str] | None = None) -> None:
     retrieval.add_argument("--reranker-model")
 
     verification = commands.add_parser("verification")
-    verification.add_argument("--set", dest="set_name", choices=["dev", "test"], required=True)
+    verification.add_argument(
+        "--set", dest="set_name", choices=["dev", "test"], required=True
+    )
 
     for command in (retrieval, verification):
         command.add_argument("--final", action="store_true")
@@ -388,7 +436,12 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.kind == "verification":
         result = run_verification(args.set_name)
-        print(json.dumps({key: value for key, value in result.items() if key != "per_case"}, indent=2))
+        print(
+            json.dumps(
+                {key: value for key, value in result.items() if key != "per_case"},
+                indent=2,
+            )
+        )
     elif args.set_name == "v1":
         config = v1_config(config)
         result = run_v1(config)
@@ -397,7 +450,10 @@ def main(argv: list[str] | None = None) -> None:
         result = run_v2(args.set_name, config)
         print_retrieval(result)
 
-    print("report:", write_report(args.label, args.kind, args.set_name, config, result, args.final))
+    print(
+        "report:",
+        write_report(args.label, args.kind, args.set_name, config, result, args.final),
+    )
 
 
 if __name__ == "__main__":

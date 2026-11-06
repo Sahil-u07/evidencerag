@@ -5,28 +5,36 @@ from pypdf import PdfReader
 from app.ingestion.models import DocumentChunk
 
 
+class UnreadableDocumentError(Exception):
+    """The file exists but its contents cannot be parsed."""
+
+
 def load_text_file(path: str | Path) -> list[DocumentChunk]:
     file_path = Path(path)
-    text = file_path.read_text(encoding="utf-8")
+
+    # Not utf-8-sig: rfc9110.txt starts with a BOM, and dropping it shifts every chunk.
+    try:
+        text = file_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        text = file_path.read_text(encoding="cp1252", errors="replace")
 
     return [
-        DocumentChunk(
-            text=text,
-            source=file_path.name,
-            metadata={"file_type": "text"},
-        )
+        DocumentChunk(text=text, source=file_path.name, metadata={"file_type": "text"})
     ]
 
 
 def load_pdf(path: str | Path) -> list[DocumentChunk]:
     file_path = Path(path)
-    reader = PdfReader(str(file_path))
+
+    # pypdf raises many error types on damaged files, not only PdfReadError.
+    try:
+        pages = [page.extract_text() or "" for page in PdfReader(str(file_path)).pages]
+    except Exception as exc:
+        raise UnreadableDocumentError(file_path.name) from exc
 
     documents: list[DocumentChunk] = []
 
-    for page_number, page in enumerate(reader.pages, start=1):
-        text = page.extract_text() or ""
-
+    for page_number, text in enumerate(pages, start=1):
         if not text.strip():
             continue
 
@@ -35,10 +43,7 @@ def load_pdf(path: str | Path) -> list[DocumentChunk]:
                 text=text,
                 source=file_path.name,
                 page=page_number,
-                metadata={
-                    "file_type": "pdf",
-                    "page": str(page_number),
-                },
+                metadata={"file_type": "pdf", "page": str(page_number)},
             )
         )
 

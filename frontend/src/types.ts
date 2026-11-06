@@ -1,51 +1,63 @@
-export type ProgressStage = {
-  i: number;
-  ms: number;
-  label: string;
-  complete: boolean;
-};
-
-export type EvidenceSource = {
-  id: number;
-  file: string;
-  page: number | null;
-  score: number;
-  label:
-    | "Best match"
-    | "Good match"
-    | "Weak match";
-  text: string;
-  used: boolean;
-};
-
-export type VerificationState = {
-  supported: boolean;
-  total: number;
-  supportedClaims: number;
-  reason: string;
-};
+export type Health = {
+  status: string
+  ready: boolean
+  generator: string
+  model: string
+  generator_available: boolean
+  max_upload_mb: number
+}
 
 export type DocumentItem = {
-  name: string;
-  status: string;
-  size?: string | number;
-};
+  filename: string
+  extension: string
+  size_bytes: number
+}
 
-export type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  query?: string;
-  loading?: boolean;
-  error?: boolean;
-  stages?: ProgressStage[];
-  sources?: EvidenceSource[];
-  verification?: VerificationState | null;
-  responseTimeMs?: number | null;
-};
+export type Source = {
+  evidence_id: number
+  source: string
+  chunk_id: string
+  page: number | null
+  score: number
+  text: string
+}
 
-export type QueryResult = {
-  answer: string;
-  sources: EvidenceSource[];
-  verification: VerificationState;
-};
+export type Verification = {
+  supported: boolean
+  cited_evidence: number[]
+  unsupported_claims: string[]
+  reason: string
+}
+
+export type StreamEvent =
+  | { event: 'stage'; data: { i: number; ms: number } }
+  | { event: 'sources'; data: { items: Source[] } }
+  | { event: 'token'; data: { t: string } }
+  | { event: 'verification'; data: Verification }
+  | { event: 'final'; data: { answer: string; supported: boolean; latency_ms: number } }
+  | { event: 'done'; data: { latency_ms: number; supported: boolean } }
+  | { event: 'error'; data: { message: string } }
+
+export type TurnStatus = 'running' | 'verified' | 'abstained' | 'failed' | 'stopped' | 'demo'
+
+export type Turn = {
+  id: number
+  question: string
+  demo: boolean
+  status: TurnStatus
+  stages: Record<number, number>
+  sources: Source[]
+  draft: string
+  answer: string
+  verification: Verification | null
+  error: string
+  latencyMs: number | null
+}
+
+export type HealthState =
+  | { kind: 'connecting' }
+  | { kind: 'offline' }
+  | { kind: 'model-missing'; model: string; maxUploadMb: number }
+  | { kind: 'ready'; model: string; maxUploadMb: number }
+
+export type Theme = 'system' | 'light' | 'dark'

@@ -4,12 +4,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
-RESULT_PATH = (
-    ROOT_DIR
-    / "data"
-    / "evaluation"
-    / "reranker_benchmark_results.json"
-)
+RESULT_PATH = ROOT_DIR / "data" / "evaluation" / "reranker_benchmark_results.json"
 
 
 def first_relevant_rank(retrieved_ids, relevant_ids):
@@ -23,20 +18,15 @@ def first_relevant_rank(retrieved_ids, relevant_ids):
 
 
 def main():
-    with RESULT_PATH.open(
-        "r",
-        encoding="utf-8",
-    ) as file:
+    with RESULT_PATH.open("r", encoding="utf-8") as file:
         data = json.load(file)
 
     hybrid_queries = {
-        item["id"]: item
-        for item in data["systems"]["hybrid"]["per_query"]
+        item["id"]: item for item in data["systems"]["hybrid"]["per_query"]
     }
 
     reranked_queries = {
-        item["id"]: item
-        for item in data["systems"]["reranked_hybrid"]["per_query"]
+        item["id"]: item for item in data["systems"]["reranked_hybrid"]["per_query"]
     }
 
     improved = []
@@ -48,44 +38,28 @@ def main():
 
         relevant_ids = hybrid["relevant_ids"]
 
-        hybrid_rank = first_relevant_rank(
-            hybrid["retrieved_ids"],
-            relevant_ids,
-        )
+        hybrid_rank = first_relevant_rank(hybrid["retrieved_ids"], relevant_ids)
 
-        reranked_rank = first_relevant_rank(
-            reranked["retrieved_ids"],
-            relevant_ids,
-        )
+        reranked_rank = first_relevant_rank(reranked["retrieved_ids"], relevant_ids)
 
         if hybrid_rank is None and reranked_rank is not None:
-            improved.append(
-                (query_id, hybrid, reranked)
-            )
+            improved.append((query_id, hybrid, reranked))
         elif reranked_rank is None and hybrid_rank is not None:
-            degraded.append(
-                (query_id, hybrid, reranked)
-            )
+            degraded.append((query_id, hybrid, reranked))
         elif (
             reranked_rank is not None
             and hybrid_rank is not None
             and reranked_rank < hybrid_rank
         ):
-            improved.append(
-                (query_id, hybrid, reranked)
-            )
+            improved.append((query_id, hybrid, reranked))
         elif (
             hybrid_rank is not None
             and reranked_rank is not None
             and reranked_rank > hybrid_rank
         ):
-            degraded.append(
-                (query_id, hybrid, reranked)
-            )
+            degraded.append((query_id, hybrid, reranked))
         else:
-            unchanged.append(
-                (query_id, hybrid, reranked)
-            )
+            unchanged.append((query_id, hybrid, reranked))
 
     print("\n" + "=" * 90)
     print("RERANKER DIAGNOSTICS")
@@ -104,12 +78,8 @@ def main():
     for query_id, hybrid, reranked in improved:
         print(f"\n[{query_id}]")
         print(f"Query: {hybrid['query']}")
-        print(
-            f"Hybrid:   {hybrid['retrieved_ids']}"
-        )
-        print(
-            f"Reranked: {reranked['retrieved_ids']}"
-        )
+        print(f"Hybrid:   {hybrid['retrieved_ids']}")
+        print(f"Reranked: {reranked['retrieved_ids']}")
 
     print("\n" + "-" * 90)
     print("DEGRADED QUERIES")
@@ -118,12 +88,8 @@ def main():
     for query_id, hybrid, reranked in degraded:
         print(f"\n[{query_id}]")
         print(f"Query: {hybrid['query']}")
-        print(
-            f"Hybrid:   {hybrid['retrieved_ids']}"
-        )
-        print(
-            f"Reranked: {reranked['retrieved_ids']}"
-        )
+        print(f"Hybrid:   {hybrid['retrieved_ids']}")
+        print(f"Reranked: {reranked['retrieved_ids']}")
 
     print("\n" + "=" * 90)
 

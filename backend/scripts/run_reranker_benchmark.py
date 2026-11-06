@@ -2,11 +2,7 @@ import json
 from pathlib import Path
 from statistics import mean
 
-from app.evaluation.metrics import (
-    ndcg_at_k,
-    recall_at_k,
-    reciprocal_rank,
-)
+from app.evaluation.metrics import ndcg_at_k, recall_at_k, reciprocal_rank
 from app.ingestion.chunker import chunk_documents
 from app.ingestion.loader import load_document
 from app.reranking.cross_encoder import CrossEncoderReranker
@@ -22,12 +18,7 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 CORPUS_DIR = ROOT_DIR / "data" / "evaluation" / "corpus"
 GOLDEN_SET_PATH = ROOT_DIR / "data" / "evaluation" / "golden_set.json"
 
-RESULT_PATH = (
-    ROOT_DIR
-    / "data"
-    / "evaluation"
-    / "reranker_benchmark_results.json"
-)
+RESULT_PATH = ROOT_DIR / "data" / "evaluation" / "reranker_benchmark_results.json"
 
 CHUNK_SIZE = 50
 CHUNK_OVERLAP = 10
@@ -39,16 +30,13 @@ RERANK_CANDIDATE_K = 20
 
 
 def load_corpus():
-    """Load and chunk every document in the evaluation corpus."""
     all_chunks = []
 
     for file_path in sorted(CORPUS_DIR.glob("*.md")):
         documents = load_document(file_path)
 
         chunks = chunk_documents(
-            documents,
-            chunk_size=CHUNK_SIZE,
-            overlap=CHUNK_OVERLAP,
+            documents, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP
         )
 
         all_chunks.extend(chunks)
@@ -57,37 +45,25 @@ def load_corpus():
 
 
 def load_golden_set():
-    """Load the manually curated evaluation questions."""
-    with GOLDEN_SET_PATH.open(
-        "r",
-        encoding="utf-8",
-    ) as file:
+    with GOLDEN_SET_PATH.open("r", encoding="utf-8") as file:
         return json.load(file)
 
 
-def validate_ground_truth(
-    golden_set,
-    available_ids,
-):
-    """Ensure every ground-truth chunk ID exists in the corpus."""
+def validate_ground_truth(golden_set, available_ids):
     missing = []
 
     for item in golden_set:
         for relevant_id in item["relevant_ids"]:
             if relevant_id not in available_ids:
-                missing.append(
-                    f'{item["id"]}: {relevant_id}'
-                )
+                missing.append(f"{item['id']}: {relevant_id}")
 
     if missing:
         raise ValueError(
-            "Golden set contains unknown chunk IDs:\n"
-            + "\n".join(missing)
+            "Golden set contains unknown chunk IDs:\n" + "\n".join(missing)
         )
 
 
 def average(values):
-    """Calculate an arithmetic mean."""
     values = list(values)
 
     if not values:
@@ -96,37 +72,19 @@ def average(values):
     return mean(values)
 
 
-def calculate_query_metrics(
-    retrieved_ids,
-    relevant_ids,
-):
-    """Calculate retrieval metrics for one query."""
+def calculate_query_metrics(retrieved_ids, relevant_ids):
     metrics = {
-        "mrr": reciprocal_rank(
-            retrieved_ids,
-            relevant_ids,
-        ),
-        "ndcg_at_5": ndcg_at_k(
-            retrieved_ids,
-            relevant_ids,
-            NDCG_K,
-        ),
+        "mrr": reciprocal_rank(retrieved_ids, relevant_ids),
+        "ndcg_at_5": ndcg_at_k(retrieved_ids, relevant_ids, NDCG_K),
     }
 
     for k in EVALUATION_KS:
-        metrics[f"recall_at_{k}"] = recall_at_k(
-            retrieved_ids,
-            relevant_ids,
-            k,
-        )
+        metrics[f"recall_at_{k}"] = recall_at_k(retrieved_ids, relevant_ids, k)
 
     return metrics
 
 
-def extract_retrieved_ids(
-    system_name,
-    retrieved,
-):
+def extract_retrieved_ids(system_name, retrieved):
     """
     Normalize the different result object types into chunk IDs.
 
@@ -137,24 +95,12 @@ def extract_retrieved_ids(
         result.result.chunk.chunk_id
     """
     if system_name == "reranked_hybrid":
-        return [
-            item.result.chunk.chunk_id
-            for item in retrieved
-        ]
+        return [item.result.chunk.chunk_id for item in retrieved]
 
-    return [
-        item.chunk.chunk_id
-        for item in retrieved
-    ]
+    return [item.chunk.chunk_id for item in retrieved]
 
 
-def evaluate_retriever(
-    system_name,
-    retriever,
-    golden_set,
-    embedder=None,
-):
-    """Evaluate one retrieval system over every question."""
+def evaluate_retriever(system_name, retriever, golden_set, embedder=None):
     per_query = []
 
     for item in golden_set:
@@ -163,41 +109,23 @@ def evaluate_retriever(
 
         if system_name == "dense":
             if embedder is None:
-                raise ValueError(
-                    "Dense evaluation requires an embedder."
-                )
+                raise ValueError("Dense evaluation requires an embedder.")
 
-            query_embedding = embedder.encode_query(
-                query
-            )
+            query_embedding = embedder.encode_query(query)
 
-            retrieved = retriever.search(
-                query_embedding,
-                top_k=max(EVALUATION_KS),
-            )
+            retrieved = retriever.search(query_embedding, top_k=max(EVALUATION_KS))
 
         elif system_name == "reranked_hybrid":
             retrieved = retriever.search(
-                query,
-                top_k=max(EVALUATION_KS),
-                candidate_k=RERANK_CANDIDATE_K,
+                query, top_k=max(EVALUATION_KS), candidate_k=RERANK_CANDIDATE_K
             )
 
         else:
-            retrieved = retriever.search(
-                query,
-                top_k=max(EVALUATION_KS),
-            )
+            retrieved = retriever.search(query, top_k=max(EVALUATION_KS))
 
-        retrieved_ids = extract_retrieved_ids(
-            system_name,
-            retrieved,
-        )
+        retrieved_ids = extract_retrieved_ids(system_name, retrieved)
 
-        metrics = calculate_query_metrics(
-            retrieved_ids,
-            relevant_ids,
-        )
+        metrics = calculate_query_metrics(retrieved_ids, relevant_ids)
 
         per_query.append(
             {
@@ -213,54 +141,31 @@ def evaluate_retriever(
 
 
 def summarize(per_query):
-    """Average retrieval metrics across all questions."""
     summary = {}
 
     for k in EVALUATION_KS:
         summary[f"recall_at_{k}"] = average(
-            item[f"recall_at_{k}"]
-            for item in per_query
+            item[f"recall_at_{k}"] for item in per_query
         )
 
-    summary["mrr"] = average(
-        item["mrr"]
-        for item in per_query
-    )
+    summary["mrr"] = average(item["mrr"] for item in per_query)
 
-    summary["ndcg_at_5"] = average(
-        item["ndcg_at_5"]
-        for item in per_query
-    )
+    summary["ndcg_at_5"] = average(item["ndcg_at_5"] for item in per_query)
 
     return summary
 
 
-def build_retrievers(
-    chunks,
-    embeddings,
-    embedder,
-):
-    """Construct all retrieval systems used by the benchmark."""
-
-    # Dense retrieval
+def build_retrievers(chunks, embeddings, embedder):
     dense = DenseRetriever()
-    dense.add(
-        chunks,
-        embeddings,
-    )
+    dense.add(chunks, embeddings)
 
-    # BM25 retrieval
     bm25 = BM25Retriever()
     bm25.add(chunks)
 
-    # Hybrid retrieval
     hybrid = HybridRetriever(
-        embedder=embedder,
-        dense_retriever=dense,
-        bm25_retriever=bm25,
+        embedder=embedder, dense_retriever=dense, bm25_retriever=bm25
     )
 
-    # Cross-encoder reranking
     print("\nLoading cross-encoder reranker...")
 
     reranker = CrossEncoderReranker()
@@ -280,12 +185,7 @@ def build_retrievers(
     }
 
 
-def save_results(
-    chunks,
-    golden_set,
-    all_results,
-):
-    """Persist the full benchmark configuration and results."""
+def save_results(chunks, golden_set, all_results):
     output = {
         "chunk_size": CHUNK_SIZE,
         "chunk_overlap": CHUNK_OVERLAP,
@@ -297,36 +197,18 @@ def save_results(
         "systems": all_results,
     }
 
-    RESULT_PATH.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    RESULT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-    with RESULT_PATH.open(
-        "w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            output,
-            file,
-            indent=2,
-        )
+    with RESULT_PATH.open("w", encoding="utf-8") as file:
+        json.dump(output, file, indent=2)
 
 
 def print_summary(all_results):
-    """Print a compact comparison table."""
     print("\n" + "=" * 90)
     print("RETRIEVAL BENCHMARK — RERANKER")
     print("=" * 90)
 
-    print(
-        f"{'System':<20}"
-        f"{'R@1':>10}"
-        f"{'R@3':>10}"
-        f"{'R@5':>10}"
-        f"{'MRR':>10}"
-        f"{'nDCG@5':>12}"
-    )
+    print(f"{'System':<20}{'R@1':>10}{'R@3':>10}{'R@5':>10}{'MRR':>10}{'nDCG@5':>12}")
 
     for system_name, result in all_results.items():
         metrics = result["average"]
@@ -349,26 +231,13 @@ def main():
     chunks = load_corpus()
     golden_set = load_golden_set()
 
-    available_ids = {
-        chunk.chunk_id
-        for chunk in chunks
-    }
+    available_ids = {chunk.chunk_id for chunk in chunks}
 
-    validate_ground_truth(
-        golden_set,
-        available_ids,
-    )
+    validate_ground_truth(golden_set, available_ids)
 
     print(f"Chunks: {len(chunks)}")
     print(f"Questions: {len(golden_set)}")
-    print(
-        f"Chunk size: {CHUNK_SIZE} words | "
-        f"overlap: {CHUNK_OVERLAP} words"
-    )
-
-    # ---------------------------------------------------------
-    # Embedding model
-    # ---------------------------------------------------------
+    print(f"Chunk size: {CHUNK_SIZE} words | overlap: {CHUNK_OVERLAP} words")
 
     print("\nLoading embedding model...")
 
@@ -376,30 +245,14 @@ def main():
 
     print("Generating document embeddings...")
 
-    embeddings = embedder.encode(
-        [chunk.text for chunk in chunks]
-    )
+    embeddings = embedder.encode([chunk.text for chunk in chunks])
 
-    # ---------------------------------------------------------
-    # Build retrieval systems
-    # ---------------------------------------------------------
-
-    systems = build_retrievers(
-        chunks,
-        embeddings,
-        embedder,
-    )
-
-    # ---------------------------------------------------------
-    # Run evaluation
-    # ---------------------------------------------------------
+    systems = build_retrievers(chunks, embeddings, embedder)
 
     all_results = {}
 
     for system_name, retriever in systems.items():
-        print(
-            f"\nEvaluating {system_name}..."
-        )
+        print(f"\nEvaluating {system_name}...")
 
         per_query = evaluate_retriever(
             system_name=system_name,
@@ -413,21 +266,11 @@ def main():
             "average": summarize(per_query),
         }
 
-    # ---------------------------------------------------------
-    # Save and display
-    # ---------------------------------------------------------
-
-    save_results(
-        chunks,
-        golden_set,
-        all_results,
-    )
+    save_results(chunks, golden_set, all_results)
 
     print_summary(all_results)
 
-    print(
-        f"Results saved to: {RESULT_PATH}"
-    )
+    print(f"Results saved to: {RESULT_PATH}")
 
 
 if __name__ == "__main__":

@@ -7,37 +7,25 @@ from app.retrieval.dense import SearchResult
 
 
 def tokenize(text: str) -> list[str]:
-    """Convert text into normalized tokens for lexical retrieval."""
     return re.findall(r"\b\w+\b", text.lower())
 
 
 class BM25Retriever:
-    """Lexical retrieval using the BM25 ranking algorithm."""
-
     def __init__(self) -> None:
         self.chunks: list[DocumentChunk] = []
         self.index: BM25Okapi | None = None
 
     def add(self, chunks: list[DocumentChunk]) -> None:
-        """Add document chunks and rebuild the BM25 index."""
         if not chunks:
             return
 
         self.chunks.extend(chunks)
 
-        tokenized_documents = [
-            tokenize(chunk.text)
-            for chunk in self.chunks
-        ]
+        tokenized_documents = [tokenize(chunk.text) for chunk in self.chunks]
 
         self.index = BM25Okapi(tokenized_documents)
 
-    def search(
-        self,
-        query: str,
-        top_k: int = 5,
-    ) -> list[SearchResult]:
-        """Return the highest-scoring lexical matches."""
+    def search(self, query: str, top_k: int = 5) -> list[SearchResult]:
         if not query.strip():
             raise ValueError("Query cannot be empty")
 
@@ -59,17 +47,12 @@ class BM25Retriever:
         top_indices = [
             index
             for index in sorted(
-                range(len(scores)),
-                key=lambda index: scores[index],
-                reverse=True,
+                range(len(scores)), key=lambda index: scores[index], reverse=True
             )
             if scores[index] != 0
         ][:top_k]
 
         return [
-            SearchResult(
-                chunk=self.chunks[index],
-                score=float(scores[index]),
-            )
+            SearchResult(chunk=self.chunks[index], score=float(scores[index]))
             for index in top_indices
         ]

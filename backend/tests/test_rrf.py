@@ -3,15 +3,10 @@ from app.retrieval.dense import SearchResult
 from app.retrieval.rrf import reciprocal_rank_fusion
 
 
-def make_result(
-    chunk_id: str,
-    score: float,
-) -> SearchResult:
+def make_result(chunk_id: str, score: float) -> SearchResult:
     return SearchResult(
         chunk=DocumentChunk(
-            text=f"content for {chunk_id}",
-            source="test.txt",
-            chunk_id=chunk_id,
+            text=f"content for {chunk_id}", source="test.txt", chunk_id=chunk_id
         ),
         score=score,
     )
@@ -30,11 +25,7 @@ def test_rrf_combines_rankings():
         make_result("A", 6.0),
     ]
 
-    results = reciprocal_rank_fusion(
-        [dense_results, bm25_results],
-        top_k=3,
-        k=1,
-    )
+    results = reciprocal_rank_fusion([dense_results, bm25_results], top_k=3, k=1)
 
     ids = [result.chunk.chunk_id for result in results]
 
@@ -42,19 +33,11 @@ def test_rrf_combines_rankings():
 
 
 def test_rrf_includes_results_found_by_only_one_retriever():
-    dense_results = [
-        make_result("A", 0.99),
-    ]
+    dense_results = [make_result("A", 0.99)]
 
-    bm25_results = [
-        make_result("B", 10.0),
-    ]
+    bm25_results = [make_result("B", 10.0)]
 
-    results = reciprocal_rank_fusion(
-        [dense_results, bm25_results],
-        top_k=2,
-        k=1,
-    )
+    results = reciprocal_rank_fusion([dense_results, bm25_results], top_k=2, k=1)
 
     ids = {result.chunk.chunk_id for result in results}
 
@@ -63,13 +46,7 @@ def test_rrf_includes_results_found_by_only_one_retriever():
 
 def test_rrf_handles_duplicate_result_in_same_list():
     results = reciprocal_rank_fusion(
-        [
-            [
-                make_result("A", 1.0),
-                make_result("A", 0.9),
-                make_result("B", 0.8),
-            ]
-        ],
+        [[make_result("A", 1.0), make_result("A", 0.9), make_result("B", 0.8)]],
         top_k=2,
         k=1,
     )
@@ -81,11 +58,7 @@ def test_rrf_handles_duplicate_result_in_same_list():
 
 def test_rrf_rejects_results_without_chunk_id():
     result = SearchResult(
-        chunk=DocumentChunk(
-            text="missing id",
-            source="test.txt",
-        ),
-        score=1.0,
+        chunk=DocumentChunk(text="missing id", source="test.txt"), score=1.0
     )
 
     try:

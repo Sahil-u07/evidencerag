@@ -3,7 +3,20 @@ import re
 
 _CITATION = r"\[\s*Evidence\s*\d+\s*\]"
 _BOUNDARY = re.compile(rf"[.!?]+(?:\s*{_CITATION})*(?=\s|$)", re.IGNORECASE)
-_ABBREVIATIONS = {"etc.", "vs.", "cf.", "fig.", "sec.", "dr.", "mr.", "mrs.", "ms.", "al.", "inc.", "approx."}
+_ABBREVIATIONS = {
+    "etc.",
+    "vs.",
+    "cf.",
+    "fig.",
+    "sec.",
+    "dr.",
+    "mr.",
+    "mrs.",
+    "ms.",
+    "al.",
+    "inc.",
+    "approx.",
+}
 _INITIALISM = re.compile(r"(?:[a-z]\.){2,}")
 _LIST_NUMBER = re.compile(r"\d+(?:\.\d+)*\.")
 

@@ -1,0 +1,270 @@
+{
+  "git_commit": "88494fde32ace05395746e544a59039f95002f47",
+  "git_dirty": false,
+  "run_count": 1,
+  "set": "dev",
+  "final": false,
+  "nli_model": "cross-encoder/nli-MiniLM2-L6-H768",
+  "entailment_threshold": 0.7,
+  "case_count": 30,
+  "supported_cases": 15,
+  "unsupported_cases": 15,
+  "false_accepts": 0,
+  "false_rejects": 4,
+  "accuracy": 0.8666666666666667,
+  "accuracy_ci95": [
+    0.7333333333333333,
+    0.9666666666666667
+  ],
+  "false_accept_rate": 0.0,
+  "false_accept_rate_ci95": [
+    0.0,
+    0.0
+  ],
+  "false_reject_rate": 0.26666666666666666,
+  "false_reject_rate_ci95": [
+    0.06666666666666667,
+    0.5333333333333333
+  ],
+  "by_category": {
+    "abbreviation_or_decimal": {
+      "accuracy": 0.6666666666666667
+    },
+    "multi_sentence": {
+      "accuracy": 0.5
+    },
+    "negation": {
+      "accuracy": 1.0
+    },
+    "paraphrase": {
+      "accuracy": 0.75
+    },
+    "uncited": {
+      "accuracy": 1.0
+    },
+    "verbatim": {
+      "accuracy": 1.0
+    },
+    "wrong_citation": {
+      "accuracy": 1.0
+    },
+    "wrong_entity": {
+      "accuracy": 1.0
+    },
+    "wrong_number": {
+      "accuracy": 1.0
+    }
+  },
+  "per_case": [
+    {
+      "id": "vc-003",
+      "category": "verbatim",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI or strong lexical evidence overlap."
+    },
+    {
+      "id": "vc-005",
+      "category": "verbatim",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI or strong lexical evidence overlap."
+    },
+    {
+      "id": "vc-007",
+      "category": "verbatim",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI or strong lexical evidence overlap."
+    },
+    {
+      "id": "vc-008",
+      "category": "verbatim",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI or strong lexical evidence overlap."
+    },
+    {
+      "id": "vc-009",
+      "category": "paraphrase",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI entailment."
+    },
+    {
+      "id": "vc-012",
+      "category": "paraphrase",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI entailment."
+    },
+    {
+      "id": "vc-014",
+      "category": "paraphrase",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI entailment."
+    },
+    {
+      "id": "vc-015",
+      "category": "paraphrase",
+      "expected": true,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-018",
+      "category": "multi_sentence",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI entailment."
+    },
+    {
+      "id": "vc-022",
+      "category": "multi_sentence",
+      "expected": true,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-023",
+      "category": "multi_sentence",
+      "expected": true,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-024",
+      "category": "multi_sentence",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI or strong lexical evidence overlap."
+    },
+    {
+      "id": "vc-026",
+      "category": "abbreviation_or_decimal",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI entailment."
+    },
+    {
+      "id": "vc-027",
+      "category": "abbreviation_or_decimal",
+      "expected": true,
+      "predicted": true,
+      "reason": "All cited claims were supported by NLI entailment."
+    },
+    {
+      "id": "vc-028",
+      "category": "abbreviation_or_decimal",
+      "expected": true,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-032",
+      "category": "negation",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-033",
+      "category": "negation",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-034",
+      "category": "negation",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-037",
+      "category": "wrong_number",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-039",
+      "category": "wrong_number",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-041",
+      "category": "wrong_number",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-044",
+      "category": "wrong_entity",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-046",
+      "category": "wrong_entity",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-048",
+      "category": "wrong_entity",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-051",
+      "category": "uncited",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more sentences were uncited or not supported by their cited evidence."
+    },
+    {
+      "id": "vc-052",
+      "category": "uncited",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more sentences were uncited or not supported by their cited evidence."
+    },
+    {
+      "id": "vc-054",
+      "category": "uncited",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more sentences were uncited or not supported by their cited evidence."
+    },
+    {
+      "id": "vc-056",
+      "category": "wrong_citation",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-057",
+      "category": "wrong_citation",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    },
+    {
+      "id": "vc-060",
+      "category": "wrong_citation",
+      "expected": false,
+      "predicted": false,
+      "reason": "One or more cited claims were not entailed by their cited evidence."
+    }
+  ]
+}
