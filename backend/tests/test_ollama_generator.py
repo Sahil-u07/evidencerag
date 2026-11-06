@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 
 
@@ -176,3 +177,20 @@ def test_ollama_generator_does_not_delegate_citations(monkeypatch):
         "RRF combines ranked retrieval results."
     )
     assert "[Evidence 1]" not in result.answer
+
+
+def test_ollama_generator_uses_the_configured_endpoint(monkeypatch):
+    monkeypatch.setattr(settings, "ollama_url", "http://ollama.test:1234")
+    monkeypatch.setattr(settings, "ollama_model", "tiny:1b")
+    captured = {}
+
+    def fake_post(url, **kwargs):
+        captured["url"] = url
+        captured["model"] = kwargs["json"]["model"]
+        return make_ollama_response("RRF combines ranked retrieval results.")
+
+    monkeypatch.setattr("app.generation.ollama_generator.requests.post", fake_post)
+
+    OllamaGenerator().generate("What is RRF?", [make_evidence()])
+
+    assert captured == {"url": "http://ollama.test:1234/api/generate", "model": "tiny:1b"}
