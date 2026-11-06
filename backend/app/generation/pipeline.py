@@ -5,16 +5,11 @@ import time
 
 from app.core.text import split_sentences
 from app.generation.ollama_generator import GeneratedAnswer
+from app.generation.streaming import ABSTENTION_MESSAGE
 from app.generation.verifier import EvidenceVerifier, VerificationResult
 
 
 logger = logging.getLogger(__name__)
-
-
-ABSTENTION_MESSAGE = (
-    "I don't have enough verified evidence in the indexed "
-    "documents to answer this question."
-)
 
 
 @dataclass

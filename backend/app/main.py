@@ -20,6 +20,7 @@ from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
 from app.generation.streaming import (
+    ABSTENTION_MESSAGE,
     GENERATION_CONTEXT_K,
     stream_generate,
     trim_unfinished_sentence,
@@ -815,11 +816,7 @@ def stream_query_events(
         if verification.supported:
             final_answer = cited_answer
         else:
-            final_answer = (
-                "I don't have enough verified evidence "
-                "in the indexed documents to answer "
-                "this question."
-            )
+            final_answer = ABSTENTION_MESSAGE
 
         total_ms = (
             time.perf_counter()

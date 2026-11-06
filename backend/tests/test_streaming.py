@@ -6,9 +6,17 @@ import requests
 
 import app.main as main
 from app.core.config import settings
+from app.generation import pipeline as pipeline_module
 from app.generation import streaming
+from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
-from app.generation.streaming import StreamToken, stream_generate, trim_unfinished_sentence
+from app.generation.streaming import (
+    ABSTENTION_MESSAGE,
+    StreamToken,
+    build_prompt,
+    stream_generate,
+    trim_unfinished_sentence,
+)
 
 
 def make_evidence(text, number):
@@ -149,6 +157,15 @@ def test_a_stream_keeps_the_pipeline_it_started_with(monkeypatch):
 
     assert len(old_verifier.calls) == 1
     assert new_verifier.calls == []
+
+
+def test_every_path_uses_the_one_abstention_message(monkeypatch):
+    events, _ = run_stream(monkeypatch, [make_evidence("text", 1)], [StreamToken("Some answer.")])
+
+    assert dict(events)["final"]["answer"] == ABSTENTION_MESSAGE
+    assert OllamaGenerator().generate("question", []).answer == ABSTENTION_MESSAGE
+    assert pipeline_module.ABSTENTION_MESSAGE is ABSTENTION_MESSAGE
+    assert ABSTENTION_MESSAGE in build_prompt("question", [make_evidence("text", 1)])
 
 
 def test_verification_event_has_the_fields_the_frontend_reads(monkeypatch):

@@ -4,6 +4,7 @@ import json
 import requests
 
 from app.core.config import settings
+from app.generation.streaming import ABSTENTION_MESSAGE
 
 
 @dataclass
@@ -63,12 +64,7 @@ class OllamaGenerator:
             raise ValueError("Query cannot be empty")
 
         if not evidence:
-            return GeneratedAnswer(
-                answer=(
-                    "I don't have enough evidence in the indexed "
-                    "documents to answer this question."
-                )
-            )
+            return GeneratedAnswer(answer=ABSTENTION_MESSAGE)
 
         context = self._build_context(evidence)
 
@@ -86,7 +82,7 @@ Rules:
 - Each sentence should contain one main factual claim.
 - Do not add citations or evidence IDs.
 - If the evidence is insufficient, return exactly:
-  I don't have enough evidence in the indexed documents to answer this question.
+  {ABSTENTION_MESSAGE}
 - Return ONLY valid JSON.
 - Do not use markdown.
 
