@@ -23,6 +23,8 @@ from app.core.text import split_sentences
         ("Acme Inc. makes it. Next.", ["Acme Inc. makes it.", "Next."]),
         ("It is approx. 5 long. Next.", ["It is approx. 5 long.", "Next."]),
         ("Do not ask for no. Next.", ["Do not ask for no.", "Next."]),
+        ("Use a token (e.g. a JWT) here. Next.", ["Use a token (e.g. a JWT) here.", "Next."]),
+        ('Say "i.e. this" now. Next.', ['Say "i.e. this" now.', "Next."]),
         ("No end mark", ["No end mark"]),
         ("", []),
     ],
