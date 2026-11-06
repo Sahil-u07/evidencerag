@@ -1,139 +1,41 @@
-import { useEffect, useState } from "react";
-import EvidenceStack from "./EvidenceStack";
+import type { ReactNode } from 'react'
 
-type EmptyStateProps = {
-  onExampleQuestion: (question: string) => void;
-  onAddDocument: () => void;
-  hasDocuments: boolean;
-};
+const SAMPLES = [
+  'Summarise the main points of this document',
+  'What are the key terms and how are they defined?',
+  'What dates, numbers or deadlines are mentioned?',
+]
 
-const exampleQuestions = [
-  "What is BM25 and how does it work?",
-  "Which documents contain information about retrieval?",
-  "How does hybrid search improve the results?",
-];
+type Props = {
+  noDocuments: boolean
+  hasDocuments: boolean
+  upload: ReactNode
+  onSample: (question: string) => void
+}
 
-export default function EmptyState({
-  onExampleQuestion,
-  onAddDocument,
-  hasDocuments,
-}: EmptyStateProps) {
-  // Decorative loop that shows what the product does: search, find, check.
-  const [stage, setStage] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setStage(5); return; }
-    const seq: [number, number][] = [[0, 1400], [1, 1800], [2, 2300], [3, 2500], [5, 2800]];
-    let i = 0, t = 0;
-    const run = () => { setStage(seq[i][0]); t = window.setTimeout(() => { i = (i + 1) % seq.length; run(); }, seq[i][1]); };
-    run();
-    return () => window.clearTimeout(t);
-  }, []);
+export function EmptyState({ noDocuments, hasDocuments, upload, onSample }: Props) {
   return (
-    <section className="empty-state">
-      <div className="empty-state-inner">
-        <div
-          className="empty-mark"
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <p className="empty-eyebrow">
-          Document intelligence
-        </p>
-
-        <h1>
-          Ask questions.
-          <br />
-          <span>Get answers you can trace.</span>
-        </h1>
-
-        <p className="empty-description">
-          EvidenceRAG searches your documents, finds the
-          most relevant passages, and checks that the
-          answer is supported by evidence.
-        </p>
-
-        <EvidenceStack stage={stage} hits={3} />
-
-        <div className="empty-steps">
-          <div className={`empty-step${stage === 1 ? " is-on" : ""}`}>
-            <span>1</span>
-            <div>
-              <strong>Ask</strong>
-              <p>Ask a question in plain English.</p>
-            </div>
-          </div>
-
-          <div className={`empty-step${stage === 2 ? " is-on" : ""}`}>
-            <span>2</span>
-            <div>
-              <strong>Find</strong>
-              <p>Relevant passages are retrieved.</p>
-            </div>
-          </div>
-
-          <div className={`empty-step${stage === 3 || stage === 5 ? " is-on" : ""}`}>
-            <span>3</span>
-            <div>
-              <strong>Check</strong>
-              <p>Claims are checked against sources.</p>
-            </div>
-          </div>
-        </div>
-
-        {!hasDocuments && (
-          <div className="empty-upload-card">
-            <div>
-              <strong>
-                Start with your documents
-              </strong>
-
-              <p>
-                Add a PDF, TXT, or Markdown file before
-                asking your first question.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={onAddDocument}
-            >
-              Add document
-            </button>
-          </div>
-        )}
-
-        <div className="example-section">
-          <div className="example-heading">
-            <span>Try an example</span>
-            <span>Click to ask</span>
-          </div>
-
-          <div className="example-list">
-            {exampleQuestions.map((question) => (
-              <button
-                type="button"
-                className="example-question"
-                key={question}
-                onClick={() =>
-                  onExampleQuestion(question)
-                }
-              >
-                <span>{question}</span>
-                <span
-                  className="example-arrow"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
+    <div className="empty">
+      <h2 className="empty__title">{noDocuments ? 'Upload a document to begin' : 'Ask about your documents'}</h2>
+      <p className="empty__text">
+        Answers come only from your files. Each one shows the passages behind it and is checked against them. When the
+        evidence isn't there, the app says so instead of answering.
+      </p>
+      {noDocuments && (upload ?? <p className="empty__text">Use the upload button in the left column, or drop a file anywhere in this window.</p>)}
+      {hasDocuments && (
+        <div className="samples">
+          <h3 className="section-label">Try asking</h3>
+          <ul>
+            {SAMPLES.map((sample) => (
+              <li key={sample}>
+                <button type="button" className="sample" onClick={() => onSample(sample)}>
+                  {sample}
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-      </div>
-    </section>
-  );
+      )}
+    </div>
+  )
 }

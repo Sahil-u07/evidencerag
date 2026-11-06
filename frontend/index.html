@@ -4,7 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>-frontend</title>
+    <title>EvidenceRAG</title>
+    <style>
+      html { background: #f8fafc; color-scheme: light; }
+      html[data-theme='dark'] { background: #0b1220; color-scheme: dark; }
+    </style>
+    <script>
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem('evidencerag-theme');
+        } catch (error) {}
+        var dark = stored === 'dark' || (stored !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
