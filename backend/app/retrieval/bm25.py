@@ -55,11 +55,16 @@ class BM25Retriever:
         scores = self.index.get_scores(query_tokens)
 
         top_k = min(top_k, len(self.chunks))
-        top_indices = sorted(
-            range(len(scores)),
-            key=lambda index: scores[index],
-            reverse=True,
-        )[:top_k]
+        # Not "> 0": BM25Okapi can score a real match below zero on tiny corpora.
+        top_indices = [
+            index
+            for index in sorted(
+                range(len(scores)),
+                key=lambda index: scores[index],
+                reverse=True,
+            )
+            if scores[index] != 0
+        ][:top_k]
 
         return [
             SearchResult(

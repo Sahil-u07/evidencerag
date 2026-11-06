@@ -17,7 +17,7 @@ def split_sentences(text: str) -> list[str]:
         for match in _BOUNDARY.finditer(line):
             words = line[start : match.start() + 1].split()
 
-            last = words[-1].lower()
+            last = words[-1].lower().lstrip("([\"'")
 
             if last in _ABBREVIATIONS or _INITIALISM.fullmatch(last):
                 continue

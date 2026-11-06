@@ -494,8 +494,8 @@ def test_exact_quote_inside_a_negated_sentence_is_not_accepted():
     verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
 
     result = verifier.verify_grounding(
-        "The header is required. [Evidence 1]",
-        [make_evidence("It is not true that the header is required.")],
+        "The authentication header is required for every request. [Evidence 1]",
+        [make_evidence("It is not true that the authentication header is required for every request.")],
     )
 
     assert result.supported is False
@@ -537,3 +537,87 @@ def test_quote_must_match_whole_words():
 
     assert verifier._is_verbatim_quote("The secure server rejects every unsigned requests.", claim) is False
     assert verifier._is_verbatim_quote("Note: the secure server rejects every unsigned request.", claim) is True
+
+
+def test_numbered_list_answer_is_not_blocked_by_the_list_number():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "2. The server sends a reset segment to the client. [Evidence 1]",
+        [make_evidence("The server sends a reset segment to the client.")],
+    )
+
+    assert result.supported is True
+
+
+@pytest.mark.parametrize(
+    ("claim", "evidence"),
+    [
+        (
+            "The server closes the connection after each response",
+            "The server closes the connection after each response unless keep-alive was negotiated.",
+        ),
+        (
+            "The server closes the connection after each response",
+            "The server closes the connection after each response only if keep-alive was refused.",
+        ),
+        (
+            "The server accepts every request from the client",
+            "The server accepts every request from the client except those from blocked hosts.",
+        ),
+        (
+            "The server closes the connection after each response",
+            "The server closes the connection after each response only when keep-alive was refused.",
+        ),
+    ],
+)
+def test_dropped_condition_is_not_accepted_without_nli(claim, evidence):
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    assert verifier._is_verbatim_quote(evidence, claim) is False
+
+    result = verifier.verify_grounding(f"{claim}. [Evidence 1]", [make_evidence(evidence)])
+
+    assert result.supported is False
+
+
+def test_curly_apostrophe_negation_is_detected():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = lambda premise, hypothesis: ("neutral", 0.99)
+
+    result = verifier.verify_grounding(
+        "The cross encoder doesn’t rerank retrieved candidates using query document pairs. [Evidence 1]",
+        [make_evidence(LEXICAL_EVIDENCE)],
+    )
+
+    assert result.supported is False
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "BM25 ranks documents. [Evidence 1] The timeout is 30.",
+        "BM25 ranks documents. [Evidence 1] It is 30 seconds.",
+    ],
+)
+def test_short_uncited_fact_with_a_number_is_unsupported(answer):
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(answer, [make_evidence("BM25 ranks documents.")])
+
+    assert result.supported is False
+
+
+def test_reason_names_an_uncited_sentence():
+    verifier = EvidenceVerifier()
+    verifier._predict_nli = entail_everything
+
+    result = verifier.verify_grounding(
+        "BM25 ranks documents. [Evidence 1] BM25 was invented by Napoleon in 1742.",
+        [make_evidence("BM25 ranks documents.")],
+    )
+
+    assert "uncited" in result.reason

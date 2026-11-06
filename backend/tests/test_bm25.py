@@ -80,3 +80,16 @@ def test_hybrid_still_answers_a_stopword_only_query():
     hybrid.add(chunks, [[1.0, 0.0]])
 
     assert [item.chunk.chunk_id for item in hybrid.search("what is the", top_k=3)] == ["a:1"]
+
+
+def test_bm25_returns_nothing_when_no_query_term_matches():
+    retriever = BM25Retriever()
+    retriever.add(
+        [
+            DocumentChunk(text="Python language", source="a.txt", chunk_id="a:1"),
+            DocumentChunk(text="PostgreSQL indexes", source="b.txt", chunk_id="b:1"),
+        ]
+    )
+
+    assert retriever.search("what is the", top_k=3) == []
+    assert retriever.search("kubernetes", top_k=3) == []

@@ -16,7 +16,11 @@ from app.core import retrieval_defaults
 from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
-from app.generation.streaming import stream_generate
+from app.generation.streaming import (
+    GENERATION_CONTEXT_K,
+    stream_generate,
+    trim_unfinished_sentence,
+)
 from app.ingestion.chunker import build_chunks
 from app.ingestion.loader import load_document
 from app.retrieval.bm25 import BM25Retriever
@@ -172,6 +176,16 @@ def build_runtime_retriever(
     )
 
 
+def clear_textless_index(store: PersistentIndexStore):
+    logger.warning(
+        "The uploaded documents contain no extractable text. "
+        "Starting with an empty index."
+    )
+    store.clear()
+
+    return [], np.empty((0, 0), dtype=np.float32)
+
+
 def build_full_persistent_index(
     store: PersistentIndexStore,
     source_paths: list[Path],
@@ -193,9 +207,7 @@ def build_full_persistent_index(
     )
 
     if not chunks:
-        raise RuntimeError(
-            "Documents produced no indexable chunks."
-        )
+        return clear_textless_index(store)
 
     embeddings = embedder.encode(
         [chunk.text for chunk in chunks]
@@ -373,9 +385,7 @@ def update_persistent_index_incrementally(
         )
 
     if not combined_chunks:
-        raise RuntimeError(
-            "Documents produced no indexable chunks."
-        )
+        return clear_textless_index(store)
 
     store.save(
         combined_chunks,
@@ -649,11 +659,17 @@ def stream_query_events(
         generation_start = time.perf_counter()
 
         answer_parts: list[str] = []
+        truncated = False
 
         for token in stream_generate(
             query=query,
             evidence=evidence,
         ):
+            truncated = truncated or token.truncated
+
+            if not token.text:
+                continue
+
             answer_parts.append(token.text)
 
             yield sse_event(
@@ -683,6 +699,12 @@ def stream_query_events(
             answer_parts
         ).strip()
 
+        if truncated:
+            raw_answer = trim_unfinished_sentence(raw_answer)
+
+        # Only the passages the model saw can back its sentences.
+        context_evidence = evidence[:GENERATION_CONTEXT_K]
+
         if state.pipeline is None:
             raise RuntimeError(
                 "RAG pipeline is not ready."
@@ -696,7 +718,7 @@ def stream_query_events(
         cited_answer = (
             state.pipeline._attach_citation(
                 raw_answer,
-                evidence,
+                context_evidence,
             )
         )
 
@@ -714,7 +736,7 @@ def stream_query_events(
             state.pipeline.verifier
             .verify_grounding(
                 answer=cited_answer,
-                evidence=evidence,
+                evidence=context_evidence,
             )
         )
 
@@ -1191,6 +1213,18 @@ async def upload_document(
                     )
 
                 output.write(chunk)
+
+        # Check before indexing so a scanned PDF or blank file is refused, not stored.
+        if not build_chunks(
+            load_document(destination),
+            retrieval_defaults.CHUNKING,
+            retrieval_defaults.CHUNK_SIZE,
+            retrieval_defaults.CHUNK_OVERLAP,
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="No text could be extracted from this file.",
+            )
 
         rebuild_pipeline()
 

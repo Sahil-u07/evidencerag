@@ -337,12 +337,18 @@ def test_old_index_format_is_rebuilt(monkeypatch, tmp_path):
     index_path = tmp_path / "index" / "index.json"
     payload = json.loads(index_path.read_text(encoding="utf-8"))
     payload["version"] = 2
+    payload["chunks"][0]["text"] = "stale sentinel text"
     index_path.write_text(json.dumps(payload), encoding="utf-8")
 
-    main.build_retriever()
+    retriever = main.build_retriever()
 
     rebuilt = json.loads(index_path.read_text(encoding="utf-8"))
     assert rebuilt["version"] == main.PersistentIndexStore.VERSION
+    assert "stale sentinel text" not in index_path.read_text(encoding="utf-8")
+    assert all(
+        "stale sentinel text" not in chunk.text
+        for chunk in retriever.hybrid_retriever.dense_retriever.chunks
+    )
 
 
 def test_production_uses_the_retrieval_defaults(monkeypatch, tmp_path):
@@ -378,3 +384,28 @@ def test_candidate_count_scales_with_top_k(monkeypatch, tmp_path):
     retriever.search("one", top_k=20)
 
     assert requested == [main.retrieval_defaults.CANDIDATE_K, 80]
+
+
+def test_app_starts_when_the_only_document_has_no_text(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "blank.txt").write_text("   \n  ", encoding="utf-8")
+
+    retriever = main.build_retriever()
+
+    assert retriever.hybrid_retriever.dense_retriever.chunks == []
+    assert retriever.hybrid_retriever.bm25_retriever.chunks == []
+    assert not (tmp_path / "index" / "index.json").exists()
+
+
+def test_deleting_the_good_document_leaves_a_textless_one(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    good = uploads / "good.txt"
+    good.write_text("my document text", encoding="utf-8")
+    (uploads / "blank.txt").write_text("   ", encoding="utf-8")
+    assert main.build_retriever().hybrid_retriever.dense_retriever.chunks
+    good.unlink()
+
+    retriever = main.build_retriever()
+
+    assert retriever.hybrid_retriever.dense_retriever.chunks == []
+    assert not (tmp_path / "index" / "index.json").exists()
