@@ -234,7 +234,7 @@ By question type on test: identifier 0.583 verified and 0.417 useful, multi-fact
 
 ### The graveyard
 
-Ideas I was sure would help, measured on dev. A retrieval change had to raise nDCG@5 by at least 0.01 and keep median retrieval under 3 seconds. Almost nothing survived.
+Ideas that looked promising, measured on dev. A retrieval change had to raise nDCG@5 by at least 0.01 and keep median retrieval under 3 seconds. Almost nothing survived.
 
 | Trial | Dev nDCG@5 | Median | Verdict |
 |---|---:|---:|---|
