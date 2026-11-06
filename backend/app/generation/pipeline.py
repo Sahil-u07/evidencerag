@@ -4,7 +4,7 @@ import re
 import time
 
 from app.core.text import split_sentences
-from app.generation.generator import GeneratedAnswer, OpenAIGenerator
+from app.generation.ollama_generator import GeneratedAnswer
 from app.generation.verifier import EvidenceVerifier, VerificationResult
 
 
@@ -68,11 +68,11 @@ class RAGPipeline:
     def __init__(
         self,
         retriever,
-        generator=None,
+        generator,
         verifier: EvidenceVerifier | None = None,
     ) -> None:
         self.retriever = retriever
-        self.generator = generator or OpenAIGenerator()
+        self.generator = generator
         self.verifier = verifier or EvidenceVerifier()
 
     @staticmethod

@@ -7,6 +7,7 @@ from typing import Any, Iterator
 from uuid import uuid4
 
 import numpy as np
+import requests
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -45,11 +46,7 @@ logger = logging.getLogger("evidencerag.api")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-UPLOAD_DIR = (
-    PROJECT_ROOT
-    / "data"
-    / "uploads"
-)
+UPLOAD_DIR = PROJECT_ROOT / settings.upload_dir
 
 SUPPORTED_EXTENSIONS = {
     ".pdf",
@@ -126,16 +123,7 @@ state = ApplicationState()
 
 
 def get_index_storage_dir() -> Path:
-    index_storage_dir = Path(
-        settings.index_storage_dir
-    )
-
-    if not index_storage_dir.is_absolute():
-        index_storage_dir = (
-            PROJECT_ROOT / index_storage_dir
-        )
-
-    return index_storage_dir
+    return PROJECT_ROOT / settings.index_storage_dir
 
 
 def collect_source_paths() -> list[Path]:
@@ -596,6 +584,32 @@ def sse_event(
     )
 
 
+def describe_error(exc: Exception) -> str:
+    if isinstance(exc, requests.Timeout):
+        return (
+            "Ollama did not respond in time. "
+            "It may still be loading the model; try again."
+        )
+
+    if isinstance(exc, requests.ConnectionError):
+        return (
+            f"Could not reach Ollama at {settings.ollama_url.rstrip('/')}. "
+            "Start Ollama and try again."
+        )
+
+    if (
+        isinstance(exc, requests.HTTPError)
+        and exc.response is not None
+        and exc.response.status_code == 404
+    ):
+        return (
+            f"The model {settings.ollama_model} is not available "
+            f"in Ollama. Run: ollama pull {settings.ollama_model}"
+        )
+
+    return "Something went wrong while answering. Check the backend log."
+
+
 def stream_query_events(
     query: str,
     top_k: int,
@@ -756,20 +770,12 @@ def stream_query_events(
             },
         )
 
-        cited_evidence_count = len(
-            verification.cited_evidence
-        )
-
         yield sse_event(
             "verification",
             {
                 "supported": verification.supported,
-                "total": 1 if cited_evidence_count else 0,
-                "supported_claims": (
-                    1
-                    if verification.supported
-                    else 0
-                ),
+                "cited_evidence": verification.cited_evidence,
+                "unsupported_claims": verification.unsupported_claims,
                 "reason": verification.reason,
             },
         )
@@ -832,7 +838,7 @@ def stream_query_events(
         yield sse_event(
             "error",
             {
-                "message": str(exc),
+                "message": describe_error(exc),
             },
         )
 
@@ -939,8 +945,29 @@ def root() -> dict[str, str]:
     }
 
 
+def generator_available() -> bool:
+    model = settings.ollama_model
+
+    if ":" not in model:
+        model += ":latest"
+
+    try:
+        response = requests.get(
+            f"{settings.ollama_url.rstrip('/')}/api/tags",
+            timeout=2,
+        )
+        response.raise_for_status()
+
+        return model in {
+            item["name"] for item in response.json()["models"]
+        }
+
+    except (requests.RequestException, ValueError, KeyError, TypeError):
+        return False
+
+
 @app.get("/health")
-def health() -> dict[str, str | bool]:
+def health() -> dict[str, str | bool | int]:
     return {
         "status": "ok",
         "ready": (
@@ -948,7 +975,9 @@ def health() -> dict[str, str | bool]:
             and state.retriever is not None
         ),
         "generator": "ollama",
-        "model": "llama3.2:1b",
+        "model": settings.ollama_model,
+        "generator_available": generator_available(),
+        "max_upload_mb": settings.max_upload_size_mb,
     }
 
 
@@ -1018,13 +1047,11 @@ def ask_question(
         )
 
     except Exception as exc:
+        logger.exception("RAG generation failed.")
+
         raise HTTPException(
             status_code=503,
-            detail=(
-                "RAG generation failed. "
-                "Make sure Ollama is running and "
-                "llama3.2:1b is available."
-            ),
+            detail=describe_error(exc),
         ) from exc
 
     evidence = serialize_evidence(

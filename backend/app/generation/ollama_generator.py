@@ -3,9 +3,7 @@ import json
 
 import requests
 
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.2:1b"
+from app.core.config import settings
 
 
 @dataclass
@@ -24,11 +22,11 @@ class OllamaGenerator:
 
     def __init__(
         self,
-        model: str = OLLAMA_MODEL,
-        url: str = OLLAMA_URL,
+        model: str | None = None,
+        url: str | None = None,
     ) -> None:
-        self.model = model
-        self.url = url
+        self.model = model or settings.ollama_model
+        self.url = url or settings.generate_url
 
     def _build_context(
         self,

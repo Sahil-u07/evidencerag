@@ -5,11 +5,9 @@ from typing import Iterator
 
 import requests
 
+from app.core.config import settings
 from app.core.text import split_sentences
 
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.2:1b"
 
 ABSTENTION_MESSAGE = (
     "I don't have enough evidence in the indexed "
@@ -115,8 +113,8 @@ ANSWER:
 def stream_generate(
     query: str,
     evidence: list,
-    model: str = OLLAMA_MODEL,
-    url: str = OLLAMA_URL,
+    model: str | None = None,
+    url: str | None = None,
 ) -> Iterator[StreamToken]:
     """
     Stream answer text from Ollama as soon as tokens are available.
@@ -137,9 +135,9 @@ def stream_generate(
     )
 
     response = requests.post(
-        url,
+        url or settings.generate_url,
         json={
-            "model": model,
+            "model": model or settings.ollama_model,
             "prompt": prompt,
             "stream": True,
             "keep_alive": "30m",
