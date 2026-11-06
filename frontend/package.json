@@ -1,5 +1,5 @@
 {
-  "name": "-frontend",
+  "name": "evidencerag-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,14 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --test src/lib/*.test.ts"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.9",
-    "@react-three/fiber": "^9.8.1",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "three": "^0.186.1"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
