@@ -16,7 +16,10 @@ NUMBER_WORDS = {
     for value, word in enumerate("zero one two three four five six seven eight nine ten eleven twelve".split())
     if word != "one"
 } | {word: word for word in ("hundred", "thousand", "million")}
-NEGATION = re.compile(r"\b(?:not|no|never|none|cannot|without|neither|nor)\b|n't\b", re.IGNORECASE)
+NEGATION = re.compile(
+    r"\b(?:not|no|never|none|cannot|without|neither|nor|unless|except|only if|only when)\b|n['’]t\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -177,6 +180,7 @@ class EvidenceVerifier:
             )
 
         unsupported_claims = []
+        has_uncited = False
         used_lexical_fallback = False
 
         for claim, citation_ids in claims:
@@ -216,6 +220,7 @@ class EvidenceVerifier:
                 unsupported_claims.append(
                     claim
                 )
+                has_uncited = has_uncited or not citation_ids
 
         if unsupported_claims:
             return VerificationResult(
@@ -223,7 +228,10 @@ class EvidenceVerifier:
                 cited_evidence=citation_result.cited_evidence,
                 unsupported_claims=unsupported_claims,
                 reason=(
-                    "One or more cited claims were not "
+                    "One or more sentences were uncited or "
+                    "not supported by their cited evidence."
+                    if has_uncited
+                    else "One or more cited claims were not "
                     "entailed by their cited evidence."
                 ),
             )
@@ -503,10 +511,10 @@ class EvidenceVerifier:
         for sentence in split_sentences(answer):
             citation_ids = sorted({int(item) for item in self.CITATION_PATTERN.findall(sentence)})
             claim = self.CITATION_PATTERN.sub("", sentence).strip(" .,:;!?\n\t")
-            claim = re.sub(r"^[-*•]\s+", "", claim)
+            claim = re.sub(r"^(?:[-*•]|\d+[.)])\s+", "", claim)
 
             # Replies like "Yes." state no fact of their own.
-            if len(self._meaningful_tokens(claim)) < 2 and not citation_ids:
+            if len(self._meaningful_tokens(claim)) < 2 and not citation_ids and not self._numbers(claim):
                 continue
 
             if claim:
