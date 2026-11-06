@@ -3,6 +3,8 @@ from collections import Counter
 
 import numpy as np
 
+from app.generation.verifier import EvidenceVerifier
+
 
 QUESTION_SPLITS = {"dev", "test"}
 QUESTION_TYPES = {"paraphrase", "identifier", "multi_fact"}
@@ -55,6 +57,20 @@ def score_question(
     scores[f"ndcg_at_{ndcg_k}"] = dcg / ideal if ideal else 0.0
 
     return scores
+
+
+def answer_coverage(answer: str, evidence: list[str], abstained: bool) -> float:
+    """Average share of each evidence phrase's content words found in the answer."""
+    if abstained:
+        return 0.0
+
+    answer_tokens = EvidenceVerifier._meaningful_tokens(answer)
+    shares = [
+        len(tokens & answer_tokens) / len(tokens)
+        for tokens in map(EvidenceVerifier._meaningful_tokens, evidence)
+        if tokens
+    ]
+    return sum(shares) / len(shares) if shares else 0.0
 
 
 def validate_questions(

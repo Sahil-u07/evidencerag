@@ -1,3 +1,4 @@
+import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
@@ -610,3 +611,48 @@ def test_failed_delete_rebuild_says_what_happened_and_stops_serving(
     assert main.state.pipeline is None
     assert client.get("/health").json()["ready"] is False
     assert client.post("/search", json={"query": "RRF"}).status_code == 503
+
+
+def test_upload_is_written_as_a_part_file_until_the_size_check_passes(
+    client, monkeypatch, tmp_path
+):
+    seen = []
+    monkeypatch.setattr(
+        main,
+        "index_upload",
+        lambda path: seen.append(sorted(p.name for p in tmp_path.iterdir())),
+    )
+
+    client.post(
+        "/documents/upload", files={"file": ("a.md", b"# A\n\ntext", "text/markdown")}
+    )
+
+    assert len(seen[0]) == 1 and seen[0][0].endswith("_a.md")
+    assert [p.suffix for p in tmp_path.iterdir()] == [".md"]
+    assert indexing.collect_source_paths() == list(tmp_path.iterdir())
+
+
+def test_a_part_file_is_never_collected_for_indexing(client, tmp_path):
+    (tmp_path / "half_written.md.part").write_bytes(b"# half")
+
+    assert indexing.collect_source_paths() == []
+
+
+def test_a_cancelled_upload_leaves_no_part_file(monkeypatch, tmp_path):
+    monkeypatch.setattr(indexing, "UPLOAD_DIR", tmp_path)
+    chunks = [b"# A"]
+
+    async def close():
+        pass
+
+    async def cancelled(size):
+        if not chunks:
+            raise asyncio.CancelledError
+        return chunks.pop(0)
+
+    upload = SimpleNamespace(filename="a.md", read=cancelled, close=close)
+
+    with pytest.raises(asyncio.CancelledError):
+        asyncio.run(main.upload_document(upload))
+
+    assert list(tmp_path.iterdir()) == []

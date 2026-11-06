@@ -12,7 +12,7 @@ def no_benchmark_runs(monkeypatch):
     def refuse(*args, **kwargs):
         raise AssertionError("a benchmark ran")
 
-    for name in ("run_v1", "run_v2", "run_verification"):
+    for name in ("run_v1", "run_v2", "run_verification", "run_answers"):
         monkeypatch.setattr(benchmark, name, refuse)
 
 
@@ -24,6 +24,16 @@ def test_test_split_requires_final(no_benchmark_runs):
 def test_verification_test_split_requires_final(no_benchmark_runs):
     with pytest.raises(SystemExit):
         benchmark.main(["verification", "--set", "test"])
+
+
+def test_answers_test_split_requires_final(no_benchmark_runs):
+    with pytest.raises(SystemExit):
+        benchmark.main(["answers", "--set", "test"])
+
+
+def test_answers_final_rejects_a_model_override(no_benchmark_runs):
+    with pytest.raises(SystemExit):
+        benchmark.main(["answers", "--set", "test", "--final", "--model", "x"])
 
 
 def test_final_rejects_config_overrides(no_benchmark_runs):
@@ -197,3 +207,78 @@ def test_v1_report_records_the_pinned_config(tmp_path, monkeypatch):
     assert report["config"]["chunk_overlap"] == 10
     assert report["set"] == "v1"
     assert report["final"] is False
+
+
+ANSWER_QUESTIONS = [
+    {
+        "id": f"q{n}",
+        "type": "paraphrase" if n < 3 else "identifier",
+        "evidence": ["the server enters the listening state"],
+        "query": "what?",
+    }
+    for n in range(4)
+]
+GOOD = "The server enters the listening state."
+
+
+def fake_pipeline(verdicts=(True, True, False, False)):
+    calls = iter(verdicts)
+
+    def check_answer(raw, evidence, truncated):
+        ok = next(calls)
+        return SimpleNamespace(
+            final_answer=raw if ok else benchmark.ABSTENTION_MESSAGE,
+            verification=SimpleNamespace(supported=ok),
+        )
+
+    return SimpleNamespace(check_answer=check_answer)
+
+
+def fake_search(query):
+    return [SimpleNamespace(text="Note: the server enters the listening state.")]
+
+
+def test_run_answers_summary_maths():
+    result = benchmark.run_answers(
+        "dev",
+        fake_search,
+        fake_pipeline(),
+        generate=lambda query, evidence: (GOOD, False),
+        questions=ANSWER_QUESTIONS,
+    )
+    overall = result["summary"]["overall"]
+    assert overall["verified_rate"]["mean"] == 0.5
+    assert overall["abstention_rate"]["mean"] == 0.5
+    assert overall["useful_rate"]["mean"] == 0.5
+    assert overall["verified_given_hit"]["mean"] == 0.5
+    assert overall["mean_coverage"]["mean"] == 0.5
+    assert overall["errors"] == 0
+    assert result["summary"]["by_type"]["identifier"]["useful_rate"]["mean"] == 0.0
+    assert result["per_query"][2]["coverage"] == 0.0
+
+
+def test_run_answers_counts_an_ollama_error_without_crashing():
+    def generate(query, evidence):
+        if query == "boom":
+            raise ConnectionError("down")
+        return GOOD, False
+
+    questions = [{**ANSWER_QUESTIONS[0], "query": "boom"}, ANSWER_QUESTIONS[1]]
+    result = benchmark.run_answers(
+        "dev", fake_search, fake_pipeline((True,)), generate, questions
+    )
+    rows = result["per_query"]
+    assert rows[0]["error"].startswith("ConnectionError")
+    assert not rows[0]["supported"] and not rows[0]["useful"]
+    assert result["summary"]["overall"]["errors"] == 1
+    assert result["summary"]["overall"]["useful_rate"]["mean"] == 0.5
+
+
+def test_run_answers_stops_when_the_first_three_all_error():
+    def generate(query, evidence):
+        raise ConnectionError("down")
+
+    with pytest.raises(SystemExit):
+        benchmark.run_answers(
+            "dev", fake_search, fake_pipeline(), generate, ANSWER_QUESTIONS
+        )

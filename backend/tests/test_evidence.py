@@ -1,6 +1,7 @@
 import pytest
 
 from app.evaluation.evidence import (
+    answer_coverage,
     bootstrap_ci,
     relevant_chunk_count,
     relevant_facts,
@@ -124,3 +125,13 @@ def test_bootstrap_ci_is_seeded_and_contains_mean():
 
 def test_bootstrap_ci_of_constant_values():
     assert bootstrap_ci([1.0] * 10) == (1.0, 1.0)
+
+
+def test_coverage_averages_the_share_of_words_per_phrase():
+    evidence = ["alpha bravo charlie delta", "echo foxtrot golf hotel"]
+    answer = "alpha bravo echo foxtrot golf hotel"
+    assert answer_coverage(answer, evidence, abstained=False) == pytest.approx(0.75)
+
+
+def test_coverage_is_zero_for_an_abstained_answer():
+    assert answer_coverage("alpha bravo", ["alpha bravo"], abstained=True) == 0.0

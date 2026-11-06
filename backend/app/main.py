@@ -181,7 +181,7 @@ async def lifespan(application: FastAPI):
 app = FastAPI(
     title="EvidenceRAG API",
     description=(
-        "Production-oriented document intelligence API "
+        "Document question answering API "
         "with hybrid retrieval, reranking, grounded generation, "
         "and evidence verification."
     ),
@@ -364,10 +364,12 @@ async def upload_document(file: UploadFile = File(...)) -> dict[str, Any]:
     indexing.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     unique_name = f"{uuid4().hex}_{original_name}"
     destination = indexing.UPLOAD_DIR / unique_name
+    # A rebuild skips .part files, so it never indexes a half-written upload.
+    partial = destination.with_name(unique_name + ".part")
     total_bytes = 0
 
     try:
-        with destination.open("wb") as output:
+        with partial.open("wb") as output:
             while chunk := await file.read(1024 * 1024):
                 total_bytes += len(chunk)
 
@@ -381,22 +383,22 @@ async def upload_document(file: UploadFile = File(...)) -> dict[str, Any]:
                         ),
                     )
                 output.write(chunk)
+        partial.rename(destination)
         # Parsing and embedding take a while, and must not block other requests.
         await run_in_threadpool(index_upload, destination)
     except HTTPException:
-        if destination.exists():
-            destination.unlink()
+        destination.unlink(missing_ok=True)
         raise
     except Exception as exc:
         logger.exception("Indexing an upload failed.")
 
-        if destination.exists():
-            destination.unlink()
+        destination.unlink(missing_ok=True)
         raise HTTPException(
             status_code=500,
             detail="The document could not be indexed, so it was not saved.",
         ) from exc
     finally:
+        partial.unlink(missing_ok=True)
         await file.close()
 
     return {
