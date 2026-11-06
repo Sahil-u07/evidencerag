@@ -19,12 +19,7 @@ from app.core import retrieval_defaults
 from app.core.config import settings
 from app.generation.ollama_generator import OllamaGenerator
 from app.generation.pipeline import RAGPipeline
-from app.generation.streaming import (
-    ABSTENTION_MESSAGE,
-    GENERATION_CONTEXT_K,
-    stream_generate,
-    trim_unfinished_sentence,
-)
+from app.generation.streaming import stream_generate
 from app.ingestion.chunker import build_chunks
 from app.ingestion.loader import UnreadableDocumentError, load_document
 from app.retrieval.bm25 import BM25Retriever
@@ -751,41 +746,18 @@ def stream_query_events(
             answer_parts
         ).strip()
 
-        if truncated:
-            raw_answer = trim_unfinished_sentence(raw_answer)
-
-        # Only the passages the model saw can back its sentences.
-        context_evidence = evidence[:GENERATION_CONTEXT_K]
-
         # -----------------------------------------------------
-        # Citation alignment
-        # -----------------------------------------------------
-        citation_start = time.perf_counter()
-
-        cited_answer = (
-            pipeline._attach_citation(
-                raw_answer,
-                context_evidence,
-            )
-        )
-
-        citation_ms = (
-            time.perf_counter()
-            - citation_start
-        ) * 1000
-
-        # -----------------------------------------------------
-        # Stage 3: Grounding verification
+        # Stage 3: Citation alignment and grounding verification
         # -----------------------------------------------------
         verification_start = time.perf_counter()
 
-        verification = (
-            pipeline.verifier
-            .verify_grounding(
-                answer=cited_answer,
-                evidence=context_evidence,
-            )
+        checked = pipeline.check_answer(
+            raw_answer,
+            evidence,
+            truncated,
         )
+
+        verification = checked.verification
 
         verification_ms = (
             time.perf_counter()
@@ -813,11 +785,6 @@ def stream_query_events(
             },
         )
 
-        if verification.supported:
-            final_answer = cited_answer
-        else:
-            final_answer = ABSTENTION_MESSAGE
-
         total_ms = (
             time.perf_counter()
             - started_at
@@ -826,7 +793,7 @@ def stream_query_events(
         yield sse_event(
             "final",
             {
-                "answer": final_answer,
+                "answer": checked.final_answer,
                 "supported": verification.supported,
                 "latency_ms": round(
                     total_ms,
@@ -838,12 +805,10 @@ def stream_query_events(
         logger.info(
             "Streaming RAG timing | total=%.0fms "
             "retrieval=%.0fms generation=%.0fms "
-            "citation=%.0fms verification=%.0fms "
-            "evidence=%d",
+            "verification=%.0fms evidence=%d",
             total_ms,
             retrieval_ms,
             generation_ms,
-            citation_ms,
             verification_ms,
             len(evidence),
         )

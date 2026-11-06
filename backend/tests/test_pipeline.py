@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.generation.ollama_generator import GeneratedAnswer
 from app.generation.pipeline import (
     ABSTENTION_MESSAGE,
     RAGPipeline,
@@ -46,9 +47,7 @@ class FakeGenerator:
         self.received_query = query
         self.received_evidence = evidence
 
-        return SimpleNamespace(
-            answer=self.answer
-        )
+        return GeneratedAnswer(answer=self.answer)
 
 
 def test_pipeline_returns_verified_answer():
@@ -194,7 +193,7 @@ def test_attach_citation_keeps_bullets_on_separate_lines():
         )
     ]
 
-    cited = pipeline._attach_citation(
+    cited = pipeline.attach_citation(
         "## Overview\n- TCP uses a three way handshake\n\n- UDP is connectionless and unreliable",
         evidence,
     )
@@ -208,6 +207,30 @@ def test_attach_citation_keeps_bullets_on_separate_lines():
         ("TCP uses a three way handshake", [1]),
         ("UDP is connectionless and unreliable", [2]),
     ]
+
+
+def test_ask_checks_only_the_passages_the_model_saw_and_trims_a_cut_off_answer():
+    class FiveResults(FakeRetriever):
+        def search(self, query, top_k=5):
+            return super().search(query, top_k) * 5
+
+    calls = []
+
+    class Verifier:
+        def verify_grounding(self, answer, evidence):
+            calls.append((answer, len(evidence)))
+            return SimpleNamespace(supported=True, cited_evidence=[1], unsupported_claims=[], reason="")
+
+    generator = FakeGenerator("")
+    generator.generate = lambda query, evidence: GeneratedAnswer(
+        answer="RRF combines ranked retrieval results. It then so", truncated=True
+    )
+
+    result = RAGPipeline(retriever=FiveResults(), generator=generator, verifier=Verifier()).ask("What is RRF?")
+
+    assert calls == [("RRF combines ranked retrieval results. [Evidence 1]", 3)]
+    assert result.answer.answer == "RRF combines ranked retrieval results. [Evidence 1]"
+    assert len(result.evidence) == 5
 
 
 def test_pipeline_requires_a_generator():

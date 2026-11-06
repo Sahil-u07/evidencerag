@@ -113,8 +113,6 @@ ANSWER:
 def stream_generate(
     query: str,
     evidence: list,
-    model: str | None = None,
-    url: str | None = None,
 ) -> Iterator[StreamToken]:
     """
     Stream answer text from Ollama as soon as tokens are available.
@@ -135,9 +133,9 @@ def stream_generate(
     )
 
     response = requests.post(
-        url or settings.generate_url,
+        settings.generate_url,
         json={
-            "model": model or settings.ollama_model,
+            "model": settings.ollama_model,
             "prompt": prompt,
             "stream": True,
             "keep_alive": "30m",

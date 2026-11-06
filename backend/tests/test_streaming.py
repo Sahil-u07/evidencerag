@@ -25,12 +25,13 @@ def make_evidence(text, number):
 
 
 class RecordingVerifier:
-    def __init__(self):
+    def __init__(self, supported=False):
         self.calls = []
+        self.supported = supported
 
     def verify_grounding(self, answer, evidence):
         self.calls.append((answer, len(evidence)))
-        return SimpleNamespace(supported=False, cited_evidence=[], unsupported_claims=[], reason="x")
+        return SimpleNamespace(supported=self.supported, cited_evidence=[], unsupported_claims=[], reason="x")
 
 
 def run_stream(monkeypatch, evidence, tokens):
@@ -97,9 +98,9 @@ def test_trim_unfinished_sentence(text, expected):
 
 
 class FakeResponse:
-    def __init__(self, done_reason):
+    def __init__(self, done_reason, text="Hello"):
         self.lines = [
-            json.dumps({"response": "Hello", "done": False}),
+            json.dumps({"response": text, "done": False}),
             json.dumps({"response": "", "done": True, "done_reason": done_reason}),
         ]
 
@@ -166,6 +167,47 @@ def test_every_path_uses_the_one_abstention_message(monkeypatch):
     assert OllamaGenerator().generate("question", []).answer == ABSTENTION_MESSAGE
     assert pipeline_module.ABSTENTION_MESSAGE is ABSTENTION_MESSAGE
     assert ABSTENTION_MESSAGE in build_prompt("question", [make_evidence("text", 1)])
+
+
+@pytest.mark.parametrize("supported", [True, False])
+@pytest.mark.parametrize(
+    ("done_reason", "model_output"),
+    [
+        ("stop", "The server sends a reset segment."),
+        ("length", "The server sends a reset segment. The client then clo"),
+    ],
+)
+def test_ask_and_stream_agree_for_the_same_model_output(monkeypatch, supported, done_reason, model_output):
+    evidence = [make_evidence("The server sends a reset segment to the client.", number) for number in range(5)]
+    verifier = RecordingVerifier(supported)
+    payloads = []
+
+    def fake_post(url, **kwargs):
+        payloads.append(kwargs["json"])
+        return FakeResponse(done_reason, model_output)
+
+    monkeypatch.setattr(streaming.requests, "post", fake_post)
+    monkeypatch.setattr(
+        main.state,
+        "pipeline",
+        RAGPipeline(
+            retriever=SimpleNamespace(search=lambda query, top_k: evidence),
+            generator=OllamaGenerator(),
+            verifier=verifier,
+        ),
+    )
+
+    streamed = dict(
+        (name.removeprefix("event: "), json.loads(data.removeprefix("data: ")))
+        for name, data in (raw.strip().split("\n", 1) for raw in main.stream_query_events("question", top_k=5))
+    )
+    asked = main.ask_question(main.AskRequest(query="question", top_k=5))
+
+    assert payloads[0] == payloads[1]
+    assert verifier.calls == [("The server sends a reset segment. [Evidence 1]", 3)] * 2
+    assert asked.answer == streamed["final"]["answer"]
+    assert asked.verification.model_dump() == streamed["verification"]
+    assert len(asked.evidence) == len(streamed["sources"]["items"]) == 5
 
 
 def test_verification_event_has_the_fields_the_frontend_reads(monkeypatch):

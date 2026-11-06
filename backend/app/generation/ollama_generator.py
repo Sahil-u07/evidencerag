@@ -1,155 +1,21 @@
 from dataclasses import dataclass
-import json
 
-import requests
-
-from app.core.config import settings
-from app.generation.streaming import ABSTENTION_MESSAGE
+from app.generation.streaming import stream_generate
 
 
 @dataclass
 class GeneratedAnswer:
     answer: str
+    truncated: bool = False
 
 
 class OllamaGenerator:
-    """
-    Local LLM generator using Ollama.
+    """Non-streaming view of the same Ollama stream that /query/stream uses."""
 
-    EvidenceRAG supplies only retrieved evidence.
-    Citation assignment and grounding verification are
-    handled separately by the pipeline.
-    """
-
-    def __init__(
-        self,
-        model: str | None = None,
-        url: str | None = None,
-    ) -> None:
-        self.model = model or settings.ollama_model
-        self.url = url or settings.generate_url
-
-    def _build_context(
-        self,
-        evidence: list,
-    ) -> str:
-        sections = []
-
-        for index, reranked_result in enumerate(
-            evidence,
-            start=1,
-        ):
-            chunk = reranked_result.result.chunk
-
-            page = (
-                f", page {chunk.page}"
-                if chunk.page is not None
-                else ""
-            )
-
-            sections.append(
-                f"[Evidence {index}]\n"
-                f"Source: {chunk.source}{page}\n"
-                f"Content:\n{chunk.text}"
-            )
-
-        return "\n\n".join(sections)
-
-    def generate(
-        self,
-        query: str,
-        evidence: list,
-    ) -> GeneratedAnswer:
-        if not query.strip():
-            raise ValueError("Query cannot be empty")
-
-        if not evidence:
-            return GeneratedAnswer(answer=ABSTENTION_MESSAGE)
-
-        context = self._build_context(evidence)
-
-        prompt = f"""
-You are EvidenceRAG's grounded answer generator.
-
-Answer the user's question using ONLY the supplied evidence.
-
-Rules:
-- Use only facts explicitly supported by the evidence.
-- Do not use outside knowledge.
-- Do not invent facts or sources.
-- Keep the answer concise.
-- Use short, clear sentences.
-- Each sentence should contain one main factual claim.
-- Do not add citations or evidence IDs.
-- If the evidence is insufficient, return exactly:
-  {ABSTENTION_MESSAGE}
-- Return ONLY valid JSON.
-- Do not use markdown.
-
-JSON:
-{{
-  "answer": "Your concise answer."
-}}
-
-USER QUESTION:
-{query}
-
-EVIDENCE:
-{context}
-
-RETURN JSON:
-""".strip()
-
-        response = requests.post(
-            self.url,
-            json={
-                "model": self.model,
-                "prompt": prompt,
-                "stream": False,
-                "format": "json",
-                "keep_alive": "30m",
-                "options": {
-                    "temperature": 0.1,
-                    "num_ctx": 2048,
-                    "num_predict": 96,
-                },
-            },
-            timeout=120,
-        )
-
-        response.raise_for_status()
-
-        data = response.json()
-
-        raw_response = data.get(
-            "response",
-            "",
-        ).strip()
-
-        if not raw_response:
-            raise RuntimeError(
-                "Ollama returned an empty response."
-            )
-
-        try:
-            result = json.loads(raw_response)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(
-                "Ollama returned invalid JSON."
-            ) from exc
-
-        answer = result.get("answer")
-
-        if not isinstance(answer, str):
-            raise RuntimeError(
-                "Ollama returned an invalid answer field."
-            )
-
-        if not answer.strip():
-            raise RuntimeError(
-                "Ollama returned an empty answer."
-            )
+    def generate(self, query: str, evidence: list) -> GeneratedAnswer:
+        tokens = list(stream_generate(query, evidence))
 
         return GeneratedAnswer(
-            answer=answer.strip()
+            answer="".join(token.text for token in tokens).strip(),
+            truncated=any(token.truncated for token in tokens),
         )
