@@ -431,3 +431,14 @@ def test_upload_document(client, tmp_path):
     assert uploaded_files[0].read_text(
         encoding="utf-8"
     ) == "# Test Document\n\nRRF combines ranked lists."
+
+
+def test_upload_rejects_a_file_with_no_text(client, tmp_path):
+    response = client.post(
+        "/documents/upload",
+        files={"file": ("blank.txt", b"   \n  ", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert "No text could be extracted" in response.json()["detail"]
+    assert list(tmp_path.iterdir()) == []

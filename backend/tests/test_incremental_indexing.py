@@ -378,3 +378,28 @@ def test_candidate_count_scales_with_top_k(monkeypatch, tmp_path):
     retriever.search("one", top_k=20)
 
     assert requested == [main.retrieval_defaults.CANDIDATE_K, 80]
+
+
+def test_app_starts_when_the_only_document_has_no_text(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    (uploads / "blank.txt").write_text("   \n  ", encoding="utf-8")
+
+    retriever = main.build_retriever()
+
+    assert retriever.hybrid_retriever.dense_retriever.chunks == []
+    assert retriever.hybrid_retriever.bm25_retriever.chunks == []
+    assert not (tmp_path / "index" / "index.json").exists()
+
+
+def test_deleting_the_good_document_leaves_a_textless_one(monkeypatch, tmp_path):
+    main, uploads = _patch_main(monkeypatch, tmp_path)
+    good = uploads / "good.txt"
+    good.write_text("my document text", encoding="utf-8")
+    (uploads / "blank.txt").write_text("   ", encoding="utf-8")
+    assert main.build_retriever().hybrid_retriever.dense_retriever.chunks
+    good.unlink()
+
+    retriever = main.build_retriever()
+
+    assert retriever.hybrid_retriever.dense_retriever.chunks == []
+    assert not (tmp_path / "index" / "index.json").exists()

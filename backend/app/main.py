@@ -172,6 +172,16 @@ def build_runtime_retriever(
     )
 
 
+def clear_textless_index(store: PersistentIndexStore):
+    logger.warning(
+        "The uploaded documents contain no extractable text. "
+        "Starting with an empty index."
+    )
+    store.clear()
+
+    return [], np.empty((0, 0), dtype=np.float32)
+
+
 def build_full_persistent_index(
     store: PersistentIndexStore,
     source_paths: list[Path],
@@ -193,9 +203,7 @@ def build_full_persistent_index(
     )
 
     if not chunks:
-        raise RuntimeError(
-            "Documents produced no indexable chunks."
-        )
+        return clear_textless_index(store)
 
     embeddings = embedder.encode(
         [chunk.text for chunk in chunks]
@@ -373,9 +381,7 @@ def update_persistent_index_incrementally(
         )
 
     if not combined_chunks:
-        raise RuntimeError(
-            "Documents produced no indexable chunks."
-        )
+        return clear_textless_index(store)
 
     store.save(
         combined_chunks,
@@ -1191,6 +1197,18 @@ async def upload_document(
                     )
 
                 output.write(chunk)
+
+        # Check before indexing so a scanned PDF or blank file is refused, not stored.
+        if not build_chunks(
+            load_document(destination),
+            retrieval_defaults.CHUNKING,
+            retrieval_defaults.CHUNK_SIZE,
+            retrieval_defaults.CHUNK_OVERLAP,
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="No text could be extracted from this file.",
+            )
 
         rebuild_pipeline()
 
