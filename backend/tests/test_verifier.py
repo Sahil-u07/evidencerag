@@ -621,3 +621,18 @@ def test_reason_names_an_uncited_sentence():
     )
 
     assert "uncited" in result.reason
+
+
+def test_nli_labels_come_from_the_model_config():
+    verifier = EvidenceVerifier()
+    verifier._nli_model = SimpleNamespace(
+        predict=lambda pairs, apply_softmax: [[0.1, 0.8, 0.1]],
+        model=SimpleNamespace(
+            config=SimpleNamespace(id2label={0: "NEUTRAL", 1: "ENTAILMENT", 2: "CONTRADICTION"})
+        ),
+    )
+
+    label, confidence = verifier._predict_nli("premise", "hypothesis")
+
+    assert label == "entailment"
+    assert confidence == 0.8

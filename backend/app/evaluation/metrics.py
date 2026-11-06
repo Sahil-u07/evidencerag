@@ -90,27 +90,3 @@ def ndcg_at_k(
         return 0.0
 
     return dcg / idcg
-
-
-def evaluate_ranking(
-    retrieved_ids: Sequence[str],
-    relevant_ids: Collection[str],
-    k: int = 5,
-) -> dict[str, float]:
-    """Calculate the main retrieval metrics for one query."""
-    return {
-        "recall_at_k": recall_at_k(
-            retrieved_ids,
-            relevant_ids,
-            k,
-        ),
-        "mrr": reciprocal_rank(
-            retrieved_ids,
-            relevant_ids,
-        ),
-        "ndcg_at_k": ndcg_at_k(
-            retrieved_ids,
-            relevant_ids,
-            k,
-        ),
-    }

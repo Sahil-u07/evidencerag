@@ -175,7 +175,7 @@ def test_search_endpoint(client):
     assert result["score"] == 5.5
 
 
-def test_ask_endpoint(monkeypatch, client):
+def test_ask_endpoint(client):
     main.state.pipeline = FakePipeline()
 
     response = client.post(

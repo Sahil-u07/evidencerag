@@ -2,7 +2,6 @@ import pytest
 
 from app.evaluation.metrics import (
     capped_recall_at_k,
-    evaluate_ranking,
     ndcg_at_k,
     recall_at_k,
     reciprocal_rank,
@@ -58,27 +57,6 @@ def test_ndcg_perfect_ranking():
     )
 
     assert result == pytest.approx(1.0)
-
-
-def test_evaluate_ranking_returns_all_metrics():
-    retrieved = ["X", "A", "B", "Y"]
-    relevant = {"A", "B"}
-
-    result = evaluate_ranking(
-        retrieved,
-        relevant,
-        k=4,
-    )
-
-    assert set(result.keys()) == {
-        "recall_at_k",
-        "mrr",
-        "ndcg_at_k",
-    }
-
-    assert result["recall_at_k"] == pytest.approx(1.0)
-    assert result["mrr"] == pytest.approx(0.5)
-    assert 0.0 < result["ndcg_at_k"] < 1.0
 
 
 def test_capped_recall_uses_smaller_of_k_and_relevant():

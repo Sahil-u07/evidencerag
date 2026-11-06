@@ -390,119 +390,18 @@ class EvidenceVerifier:
             dtype=float,
         )
 
-        labels = self._get_model_labels(
-            len(probabilities)
-        )
-
         best_index = int(
             np.argmax(probabilities)
         )
 
-        label = labels[best_index]
+        # Class order differs between NLI models, so read it from the config.
+        label = self.nli_model.model.config.id2label[best_index].lower()
 
         confidence = float(
             probabilities[best_index]
         )
 
         return label, confidence
-
-    def _get_model_labels(
-        self,
-        number_of_labels: int,
-    ) -> list[str]:
-        """
-        Resolve the model's label ordering from its configuration.
-
-        This avoids hard-coding the numeric order of the NLI classes.
-        """
-
-        try:
-            config = (
-                self.nli_model.model.config
-            )
-
-            id2label = getattr(
-                config,
-                "id2label",
-                None,
-            )
-
-            if id2label:
-                labels = []
-
-                for index in range(
-                    number_of_labels
-                ):
-                    raw_label = id2label.get(
-                        index,
-                        id2label.get(
-                            str(index),
-                            "",
-                        ),
-                    )
-
-                    labels.append(
-                        self._normalize_label(
-                            str(raw_label)
-                        )
-                    )
-
-                if all(labels):
-                    return labels
-
-        except Exception:
-            pass
-
-        # Fallback for the expected 3-class NLI model.
-        if number_of_labels == 3:
-            return [
-                "contradiction",
-                "entailment",
-                "neutral",
-            ]
-
-        return [
-            f"label_{index}"
-            for index in range(
-                number_of_labels
-            )
-        ]
-
-    def _normalize_label(
-        self,
-        label: str,
-    ) -> str:
-        """
-        Normalize common NLI label formats.
-        """
-
-        normalized = (
-            label
-            .strip()
-            .lower()
-            .replace("_", " ")
-            .replace("-", " ")
-        )
-
-        if (
-            "entail" in normalized
-            or normalized in {
-                "label 1",
-                "label_1",
-            }
-        ):
-            return "entailment"
-
-        if "contrad" in normalized:
-            return "contradiction"
-
-        if "neutral" in normalized:
-            return "neutral"
-
-        return normalized.replace(
-            " ",
-            "_",
-        )
 
     def _extract_claims(self, answer: str) -> list[tuple[str, list[int]]]:
         """Return each sentence with its citations. Uncited sentences get an empty list."""
