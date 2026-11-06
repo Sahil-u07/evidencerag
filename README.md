@@ -85,7 +85,7 @@ cp .env.example .env      # PowerShell: Copy-Item .env.example .env
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `OLLAMA_URL` | `http://localhost:11434` | Where Ollama listens |
+| `OLLAMA_URL` | `http://127.0.0.1:11434` | Where Ollama listens |
 | `OLLAMA_MODEL` | `qwen2.5:3b` | Generation model |
 | `MAX_UPLOAD_SIZE_MB` | `10` | Upload size limit |
 | `INDEX_STORAGE_DIR` | `data/index` | Index location, relative to the repository root |
@@ -287,7 +287,7 @@ The verifier's own changes (the shared sentence splitter, the citation rule, the
 - **The questions and labels have not had an independent review.** The split was frozen before the baseline runs.
 - **A few dev and test questions share neighbouring text,** so the splits are not fully independent (for example v2-019 and v2-003, v2-042 and v2-048, v2-056 and v2-065). Some dev verifier passages also quote text that a test question's label uses.
 - **The test set is 40 questions.** The intervals above are wide. Differences of a few points are inconclusive.
-- **Latency comes from one CPU-only laptop.** On that machine, a request to `http://localhost:11434` took about 2 seconds longer than one to `http://127.0.0.1:11434` (I timed both, outside the reports), apparently because the connection tries IPv6 first. The generation times above used the default `localhost` address, so they include that delay. Setting `OLLAMA_URL=http://127.0.0.1:11434` avoids it on such a machine. Treat all latencies as one machine's measurements.
+- **Latency comes from one CPU-only laptop.** The answer reports were measured with Ollama at `http://localhost:11434`, where each request took about 2 seconds longer than at `http://127.0.0.1:11434` on that machine, so their generation times are about 2 seconds too high. The default is now `127.0.0.1`.
 - **The browser tests are not in the repository.** I checked the UI with browser scripts that I did not commit, and CI runs the unit tests, the frontend lint and the build only.
 - **Licences.** `qwen2.5:3b` is under the Qwen Research License, so check its terms for your use. The MIT licence in this repository covers this code, not model weights. The RFC files in `data/evaluation/v2/corpus/` are redistributed under the IETF Trust's legal provisions, which are summarised in `data/evaluation/v2/corpus/SOURCES.md`.
 - **Not done:** a remote or larger generation backend, and an independent review of the benchmark labels.

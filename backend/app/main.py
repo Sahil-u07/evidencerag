@@ -181,7 +181,7 @@ async def lifespan(application: FastAPI):
 app = FastAPI(
     title="EvidenceRAG API",
     description=(
-        "Production-oriented document intelligence API "
+        "Document question answering API "
         "with hybrid retrieval, reranking, grounded generation, "
         "and evidence verification."
     ),
