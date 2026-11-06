@@ -50,8 +50,7 @@ def score_question(
         if facts
     )
     ideal = sum(
-        1.0 / math.log2(rank + 1)
-        for rank in range(1, min(ndcg_k, relevant_chunks) + 1)
+        1.0 / math.log2(rank + 1) for rank in range(1, min(ndcg_k, relevant_chunks) + 1)
     )
     scores[f"ndcg_at_{ndcg_k}"] = dcg / ideal if ideal else 0.0
 
@@ -59,9 +58,7 @@ def score_question(
 
 
 def validate_questions(
-    questions: list[dict],
-    chunk_texts: list[str],
-    max_matches: int | None = 3,
+    questions: list[dict], chunk_texts: list[str], max_matches: int | None = 3
 ) -> list[str]:
     errors: list[str] = []
     normalized_chunks = [normalize_text(text) for text in chunk_texts]
@@ -112,9 +109,7 @@ def validate_cases(cases: list[dict], corpus_text: str) -> list[str]:
 
 
 def bootstrap_ci(
-    values: list[float],
-    resamples: int = 10000,
-    seed: int = 42,
+    values: list[float], resamples: int = 10000, seed: int = 42
 ) -> tuple[float, float]:
     data = np.asarray(values, dtype=float)
     picks = np.random.default_rng(seed).integers(0, data.size, (resamples, data.size))

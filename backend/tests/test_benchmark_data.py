@@ -8,11 +8,16 @@ from scripts import benchmark
 QUESTIONS = json.loads(benchmark.QUESTIONS_PATH.read_text(encoding="utf-8"))
 CASES = json.loads(benchmark.CASES_PATH.read_text(encoding="utf-8"))
 
-SHIPPED_CHUNKING = benchmark.RetrievalConfig(chunking="words", chunk_size=50, chunk_overlap=10)
+SHIPPED_CHUNKING = benchmark.RetrievalConfig(
+    chunking="words", chunk_size=50, chunk_overlap=10
+)
 
 
 def test_question_labels_match_the_corpus():
-    texts = [c.text for c in benchmark.chunk_corpus(benchmark.v2_corpus_paths(), SHIPPED_CHUNKING)]
+    texts = [
+        c.text
+        for c in benchmark.chunk_corpus(benchmark.v2_corpus_paths(), SHIPPED_CHUNKING)
+    ]
     assert validate_questions(QUESTIONS, texts) == []
 
 
@@ -38,7 +43,13 @@ def test_case_split_and_category_balance():
     assert Counter(case["split"] for case in CASES) == {"dev": 30, "test": 30}
     categories = {
         True: {"verbatim", "paraphrase", "multi_sentence", "abbreviation_or_decimal"},
-        False: {"negation", "wrong_number", "wrong_entity", "uncited", "wrong_citation"},
+        False: {
+            "negation",
+            "wrong_number",
+            "wrong_entity",
+            "uncited",
+            "wrong_citation",
+        },
     }
     for case in CASES:
         assert case["category"] in categories[case["supported"]], case["id"]

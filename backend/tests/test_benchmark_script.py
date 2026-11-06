@@ -38,16 +38,41 @@ def test_summarize_means_and_intervals():
     ]
     summary = benchmark.summarize(per_query)
     assert summary["overall"]["mrr"]["mean"] == 0.5
-    assert summary["overall"]["mrr"]["ci95"][0] <= 0.5 <= summary["overall"]["mrr"]["ci95"][1]
+    assert (
+        summary["overall"]["mrr"]["ci95"][0]
+        <= 0.5
+        <= summary["overall"]["mrr"]["ci95"][1]
+    )
     assert summary["by_type"]["paraphrase"]["mrr"]["mean"] == 1.0
     assert summary["latency_ms"]["median"] == 20.0
 
 
 def test_run_verification_counts_false_accepts_and_rejects(tmp_path, monkeypatch):
     cases = [
-        {"id": "1", "split": "dev", "category": "verbatim", "supported": True, "answer": "ok", "evidence": ["p"]},
-        {"id": "2", "split": "dev", "category": "negation", "supported": False, "answer": "bad", "evidence": ["p"]},
-        {"id": "3", "split": "test", "category": "negation", "supported": False, "answer": "bad", "evidence": ["p"]},
+        {
+            "id": "1",
+            "split": "dev",
+            "category": "verbatim",
+            "supported": True,
+            "answer": "ok",
+            "evidence": ["p"],
+        },
+        {
+            "id": "2",
+            "split": "dev",
+            "category": "negation",
+            "supported": False,
+            "answer": "bad",
+            "evidence": ["p"],
+        },
+        {
+            "id": "3",
+            "split": "test",
+            "category": "negation",
+            "supported": False,
+            "answer": "bad",
+            "evidence": ["p"],
+        },
     ]
     path = tmp_path / "cases.json"
     path.write_text(json.dumps(cases), encoding="utf-8")
@@ -55,7 +80,9 @@ def test_run_verification_counts_false_accepts_and_rejects(tmp_path, monkeypatch
     monkeypatch.setattr(benchmark, "read_corpus_text", lambda: "p")
 
     fake = SimpleNamespace(
-        verify_grounding=lambda answer, evidence: SimpleNamespace(supported=True, reason="x"),
+        verify_grounding=lambda answer, evidence: SimpleNamespace(
+            supported=True, reason="x"
+        ),
         model_name="nli-model",
         entailment_threshold=0.7,
     )
@@ -78,16 +105,27 @@ def test_run_verification_counts_false_accepts_and_rejects(tmp_path, monkeypatch
     assert result["entailment_threshold"] == 0.7
 
 
-def test_run_verification_interval_is_none_without_cases_of_a_kind(tmp_path, monkeypatch):
+def test_run_verification_interval_is_none_without_cases_of_a_kind(
+    tmp_path, monkeypatch
+):
     cases = [
-        {"id": "1", "split": "dev", "category": "verbatim", "supported": True, "answer": "ok", "evidence": ["p"]},
+        {
+            "id": "1",
+            "split": "dev",
+            "category": "verbatim",
+            "supported": True,
+            "answer": "ok",
+            "evidence": ["p"],
+        }
     ]
     path = tmp_path / "cases.json"
     path.write_text(json.dumps(cases), encoding="utf-8")
     monkeypatch.setattr(benchmark, "CASES_PATH", path)
     monkeypatch.setattr(benchmark, "read_corpus_text", lambda: "p")
     fake = SimpleNamespace(
-        verify_grounding=lambda answer, evidence: SimpleNamespace(supported=True, reason="x"),
+        verify_grounding=lambda answer, evidence: SimpleNamespace(
+            supported=True, reason="x"
+        ),
         model_name="m",
         entailment_threshold=0.7,
     )
@@ -102,7 +140,9 @@ def test_print_retrieval_shows_the_three_passage_columns(capsys):
     overall = {"hit_at_3": {"mean": 0.8}, "capped_recall_at_3": {"mean": 0.6}}
     system = {"summary": {"overall": overall, "latency_ms": {"median": 5.0}}}
 
-    benchmark.print_retrieval({"chunk_count": 1, "question_count": 1, "systems": {"dense": system}})
+    benchmark.print_retrieval(
+        {"chunk_count": 1, "question_count": 1, "systems": {"dense": system}}
+    )
 
     output = capsys.readouterr().out
     assert "hit_at_3" in output
@@ -124,11 +164,15 @@ def test_report_counts_repeat_test_runs(tmp_path, monkeypatch):
     assert "git_commit" in report
 
 
-def test_verification_report_records_the_model_and_no_retrieval_config(tmp_path, monkeypatch):
+def test_verification_report_records_the_model_and_no_retrieval_config(
+    tmp_path, monkeypatch
+):
     monkeypatch.setattr(benchmark, "REPORTS_DIR", tmp_path)
     result = {"nli_model": "nli-model", "entailment_threshold": 0.7}
 
-    path = benchmark.write_report("x", "verification", "dev", benchmark.RetrievalConfig(), result)
+    path = benchmark.write_report(
+        "x", "verification", "dev", benchmark.RetrievalConfig(), result
+    )
 
     report = json.loads(path.read_text(encoding="utf-8"))
     assert report["nli_model"] == "nli-model"
@@ -140,7 +184,9 @@ def test_verification_report_records_the_model_and_no_retrieval_config(tmp_path,
 
 def test_v1_report_records_the_pinned_config(tmp_path, monkeypatch):
     monkeypatch.setattr(benchmark, "REPORTS_DIR", tmp_path)
-    monkeypatch.setattr(benchmark, "run_v1", lambda config: {"ran_with": config.chunk_size})
+    monkeypatch.setattr(
+        benchmark, "run_v1", lambda config: {"ran_with": config.chunk_size}
+    )
     monkeypatch.setattr(benchmark, "print_retrieval", lambda result: None)
 
     benchmark.main(["retrieval", "--set", "v1", "--chunk-size", "100", "--label", "x"])

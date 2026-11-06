@@ -43,39 +43,12 @@ class RAGResponse:
 
 
 class RAGPipeline:
-    """
-    End-to-end EvidenceRAG pipeline.
+    """Retrieve, generate, then cite and verify the answer."""
 
-    Flow:
-        Query
-          ↓
-        Retrieval
-          ↓
-        Reranking
-          ↓
-        Grounded generation
-          ↓
-        Citation normalization
-          ↓
-        Deterministic citation alignment
-          ↓
-        Grounding verification
-          ↓
-        Metrics collection
-          ↓
-        Verified answer or abstention
-    """
-
-    CITATION_PATTERN = re.compile(
-        r"\[\s*Evidence\s*(\d+)\s*\]",
-        re.IGNORECASE,
-    )
+    CITATION_PATTERN = re.compile(r"\[\s*Evidence\s*(\d+)\s*\]", re.IGNORECASE)
 
     def __init__(
-        self,
-        retriever,
-        generator,
-        verifier: EvidenceVerifier | None = None,
+        self, retriever, generator, verifier: EvidenceVerifier | None = None
     ) -> None:
         self.retriever = retriever
         self.generator = generator
@@ -85,10 +58,7 @@ class RAGPipeline:
     def _tokens(text: str) -> set[str]:
         return {
             token
-            for token in re.findall(
-                r"[a-zA-Z0-9]+",
-                text.lower(),
-            )
+            for token in re.findall(r"[a-zA-Z0-9]+", text.lower())
             if len(token) > 2
         }
 
@@ -98,16 +68,9 @@ class RAGPipeline:
             evidence_id = match.group(1)
             return f"[Evidence {evidence_id}]"
 
-        return cls.CITATION_PATTERN.sub(
-            replace,
-            answer,
-        )
+        return cls.CITATION_PATTERN.sub(replace, answer)
 
-    def attach_citation(
-        self,
-        answer: str,
-        evidence: list,
-    ) -> str:
+    def attach_citation(self, answer: str, evidence: list) -> str:
         if not answer.strip() or not evidence:
             return answer
 
@@ -156,10 +119,7 @@ class RAGPipeline:
         return sentence
 
     def check_answer(
-        self,
-        raw_answer: str,
-        evidence: list,
-        truncated: bool = False,
+        self, raw_answer: str, evidence: list, truncated: bool = False
     ) -> CheckedAnswer:
         """Turn raw model text into a cited, verified answer or an abstention."""
         if truncated:
@@ -171,8 +131,7 @@ class RAGPipeline:
         cited_answer = self.attach_citation(raw_answer, context_evidence)
 
         verification = self.verifier.verify_grounding(
-            answer=cited_answer,
-            evidence=context_evidence,
+            answer=cited_answer, evidence=context_evidence
         )
 
         return CheckedAnswer(
@@ -181,68 +140,35 @@ class RAGPipeline:
             final_answer=cited_answer if verification.supported else ABSTENTION_MESSAGE,
         )
 
-    def ask(
-        self,
-        query: str,
-        top_k: int = 5,
-    ) -> RAGResponse:
+    def ask(self, query: str, top_k: int = 5) -> RAGResponse:
         if not query.strip():
             raise ValueError("Query cannot be empty")
 
         start_time = time.perf_counter()
 
-        # ---------------------------------------------------------
-        # Stage 1: Retrieval + reranking
-        # ---------------------------------------------------------
         retrieval_start = time.perf_counter()
 
-        evidence = self.retriever.search(
-            query,
-            top_k=top_k,
-        )
+        evidence = self.retriever.search(query, top_k=top_k)
 
-        retrieval_ms = (
-            time.perf_counter() - retrieval_start
-        ) * 1000
+        retrieval_ms = (time.perf_counter() - retrieval_start) * 1000
 
-        # ---------------------------------------------------------
-        # Stage 2: Generation
-        # ---------------------------------------------------------
         generation_start = time.perf_counter()
 
-        generated = self.generator.generate(
-            query=query,
-            evidence=evidence,
-        )
+        generated = self.generator.generate(query=query, evidence=evidence)
 
-        generation_ms = (
-            time.perf_counter() - generation_start
-        ) * 1000
+        generation_ms = (time.perf_counter() - generation_start) * 1000
 
-        # ---------------------------------------------------------
-        # Stage 3: Citation alignment and grounding verification
-        # ---------------------------------------------------------
         verification_start = time.perf_counter()
 
-        checked = self.check_answer(
-            generated.answer,
-            evidence,
-            generated.truncated,
-        )
+        checked = self.check_answer(generated.answer, evidence, generated.truncated)
 
         verification = checked.verification
 
-        verification_ms = (
-            time.perf_counter() - verification_start
-        ) * 1000
+        verification_ms = (time.perf_counter() - verification_start) * 1000
 
-        cited_evidence_count = len(
-            verification.cited_evidence
-        )
+        cited_evidence_count = len(verification.cited_evidence)
 
-        total_ms = (
-            time.perf_counter() - start_time
-        ) * 1000
+        total_ms = (time.perf_counter() - start_time) * 1000
 
         metrics = PipelineMetrics(
             query=query,

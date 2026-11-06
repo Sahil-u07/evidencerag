@@ -23,22 +23,13 @@ class HybridRetriever:
         self.bm25_retriever = bm25_retriever or BM25Retriever()
         self.fusion_k = fusion_k
 
-    def add(
-        self,
-        chunks: list[DocumentChunk],
-        embeddings: list[list[float]],
-    ) -> None:
-        """Add the same chunks to both retrieval systems."""
+    def add(self, chunks: list[DocumentChunk], embeddings: list[list[float]]) -> None:
         self.dense_retriever.add(chunks, embeddings)
         self.bm25_retriever.add(chunks)
 
     def search(
-        self,
-        query: str,
-        top_k: int = 5,
-        candidate_k: int | None = None,
+        self, query: str, top_k: int = 5, candidate_k: int | None = None
     ) -> list[SearchResult]:
-        """Retrieve and fuse semantic and lexical results."""
         if not query.strip():
             raise ValueError("Query cannot be empty")
 
@@ -49,18 +40,10 @@ class HybridRetriever:
 
         query_embedding = self.embedder.encode_query(query)
 
-        dense_results = self.dense_retriever.search(
-            query_embedding,
-            top_k=candidate_k,
-        )
+        dense_results = self.dense_retriever.search(query_embedding, top_k=candidate_k)
 
-        bm25_results = self.bm25_retriever.search(
-            query,
-            top_k=candidate_k,
-        )
+        bm25_results = self.bm25_retriever.search(query, top_k=candidate_k)
 
         return reciprocal_rank_fusion(
-            [dense_results, bm25_results],
-            top_k=top_k,
-            k=self.fusion_k,
+            [dense_results, bm25_results], top_k=top_k, k=self.fusion_k
         )

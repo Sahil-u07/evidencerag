@@ -61,15 +61,10 @@ class DocumentListResponse(BaseModel):
     documents: list[DocumentItem]
 
 
-def serialize_evidence(
-    evidence: list[Any],
-) -> list[EvidenceItem]:
+def serialize_evidence(evidence: list[Any]) -> list[EvidenceItem]:
     items = []
 
-    for index, reranked_result in enumerate(
-        evidence,
-        start=1,
-    ):
+    for index, reranked_result in enumerate(evidence, start=1):
         chunk = reranked_result.result.chunk
 
         items.append(
@@ -78,9 +73,7 @@ def serialize_evidence(
                 source=chunk.source,
                 chunk_id=chunk.chunk_id,
                 page=chunk.page,
-                score=float(
-                    reranked_result.score
-                ),
+                score=float(reranked_result.score),
                 text=chunk.text,
             )
         )

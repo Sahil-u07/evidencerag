@@ -8,32 +8,18 @@ from app.ingestion.models import DocumentChunk
 
 
 def test_chunk_documents_preserves_source():
-    document = DocumentChunk(
-        text="one two three four five six",
-        source="example.txt",
-    )
+    document = DocumentChunk(text="one two three four five six", source="example.txt")
 
-    chunks = chunk_documents(
-        [document],
-        chunk_size=3,
-        overlap=1,
-    )
+    chunks = chunk_documents([document], chunk_size=3, overlap=1)
 
     assert len(chunks) == 3
     assert all(chunk.source == "example.txt" for chunk in chunks)
 
 
 def test_chunk_ids_are_unique():
-    document = DocumentChunk(
-        text="one two three four five six",
-        source="example.txt",
-    )
+    document = DocumentChunk(text="one two three four five six", source="example.txt")
 
-    chunks = chunk_documents(
-        [document],
-        chunk_size=3,
-        overlap=1,
-    )
+    chunks = chunk_documents([document], chunk_size=3, overlap=1)
 
     ids = [chunk.chunk_id for chunk in chunks]
 
@@ -171,7 +157,9 @@ def test_corrupt_pdf_raises_a_clear_error(tmp_path):
 
 
 def test_benchmark_corpus_text_is_what_a_plain_utf8_read_gives():
-    corpus = Path(__file__).resolve().parents[2] / "data" / "evaluation" / "v2" / "corpus"
+    corpus = (
+        Path(__file__).resolve().parents[2] / "data" / "evaluation" / "v2" / "corpus"
+    )
     paths = sorted(corpus.glob("*.txt"))
 
     assert paths

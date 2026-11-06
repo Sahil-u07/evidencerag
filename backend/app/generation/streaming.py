@@ -10,8 +10,7 @@ from app.core.text import split_sentences
 
 
 ABSTENTION_MESSAGE = (
-    "I don't have enough evidence in the indexed "
-    "documents to answer this question."
+    "I don't have enough evidence in the indexed documents to answer this question."
 )
 
 
@@ -35,44 +34,22 @@ def trim_unfinished_sentence(text: str) -> str:
     return text
 
 
-def build_context(
-    evidence: list,
-) -> str:
-    """
-    Build a compact context from the highest-ranked evidence.
-
-    The top-ranked passages are preferred to reduce distraction
-    during local-model generation while the API can still return
-    the full retrieved source set separately.
-    """
-
+def build_context(evidence: list) -> str:
     sections = []
 
-    for index, reranked_result in enumerate(
-        evidence[:GENERATION_CONTEXT_K],
-        start=1,
-    ):
+    for index, reranked_result in enumerate(evidence[:GENERATION_CONTEXT_K], start=1):
         chunk = reranked_result.result.chunk
 
-        page = (
-            f", page {chunk.page}"
-            if chunk.page is not None
-            else ""
-        )
+        page = f", page {chunk.page}" if chunk.page is not None else ""
 
         sections.append(
-            f"[Evidence {index}]\n"
-            f"Source: {chunk.source}{page}\n"
-            f"Content:\n{chunk.text}"
+            f"[Evidence {index}]\nSource: {chunk.source}{page}\nContent:\n{chunk.text}"
         )
 
     return "\n\n".join(sections)
 
 
-def build_prompt(
-    query: str,
-    evidence: list,
-) -> str:
+def build_prompt(query: str, evidence: list) -> str:
     context = build_context(evidence)
 
     return f"""
@@ -110,27 +87,15 @@ ANSWER:
 """.strip()
 
 
-def stream_generate(
-    query: str,
-    evidence: list,
-) -> Iterator[StreamToken]:
-    """
-    Stream answer text from Ollama as soon as tokens are available.
-    """
-
+def stream_generate(query: str, evidence: list) -> Iterator[StreamToken]:
     if not query.strip():
         raise ValueError("Query cannot be empty")
 
     if not evidence:
-        yield StreamToken(
-            text=ABSTENTION_MESSAGE
-        )
+        yield StreamToken(text=ABSTENTION_MESSAGE)
         return
 
-    prompt = build_prompt(
-        query=query,
-        evidence=evidence,
-    )
+    prompt = build_prompt(query=query, evidence=evidence)
 
     response = requests.post(
         settings.generate_url,
@@ -139,11 +104,7 @@ def stream_generate(
             "prompt": prompt,
             "stream": True,
             "keep_alive": "30m",
-            "options": {
-                "temperature": 0.0,
-                "num_ctx": 2048,
-                "num_predict": 80,
-            },
+            "options": {"temperature": 0.0, "num_ctx": 2048, "num_predict": 80},
         },
         stream=True,
         timeout=120,
@@ -152,9 +113,7 @@ def stream_generate(
     try:
         response.raise_for_status()
 
-        for line in response.iter_lines(
-            decode_unicode=True,
-        ):
+        for line in response.iter_lines(decode_unicode=True):
             if not line:
                 continue
 
@@ -163,15 +122,10 @@ def stream_generate(
             except json.JSONDecodeError:
                 continue
 
-            token = data.get(
-                "response",
-                "",
-            )
+            token = data.get("response", "")
 
             if token:
-                yield StreamToken(
-                    text=str(token),
-                )
+                yield StreamToken(text=str(token))
 
             if data.get("done"):
                 if data.get("done_reason") == "length":
@@ -218,14 +172,11 @@ def generator_available() -> bool:
 
     try:
         response = requests.get(
-            f"{settings.ollama_url.rstrip('/')}/api/tags",
-            timeout=2,
+            f"{settings.ollama_url.rstrip('/')}/api/tags", timeout=2
         )
         response.raise_for_status()
 
-        return model in {
-            item["name"] for item in response.json()["models"]
-        }
+        return model in {item["name"] for item in response.json()["models"]}
 
     except (requests.RequestException, ValueError, KeyError, TypeError):
         return False

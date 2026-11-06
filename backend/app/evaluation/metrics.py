@@ -8,11 +8,8 @@ def _validate_k(k: int) -> None:
 
 
 def recall_at_k(
-    retrieved_ids: Sequence[str],
-    relevant_ids: Collection[str],
-    k: int,
+    retrieved_ids: Sequence[str], relevant_ids: Collection[str], k: int
 ) -> float:
-    """Calculate Recall@K for binary relevance."""
     _validate_k(k)
 
     relevant = set(relevant_ids)
@@ -26,9 +23,7 @@ def recall_at_k(
 
 
 def capped_recall_at_k(
-    retrieved_ids: Sequence[str],
-    relevant_ids: Collection[str],
-    k: int,
+    retrieved_ids: Sequence[str], relevant_ids: Collection[str], k: int
 ) -> float:
     """Recall@K divided by min(k, relevant), so a perfect ranking scores 1.0."""
     _validate_k(k)
@@ -42,10 +37,8 @@ def capped_recall_at_k(
 
 
 def reciprocal_rank(
-    retrieved_ids: Sequence[str],
-    relevant_ids: Collection[str],
+    retrieved_ids: Sequence[str], relevant_ids: Collection[str]
 ) -> float:
-    """Calculate Reciprocal Rank."""
     relevant = set(relevant_ids)
 
     if not relevant:
@@ -59,11 +52,8 @@ def reciprocal_rank(
 
 
 def ndcg_at_k(
-    retrieved_ids: Sequence[str],
-    relevant_ids: Collection[str],
-    k: int,
+    retrieved_ids: Sequence[str], relevant_ids: Collection[str], k: int
 ) -> float:
-    """Calculate binary-relevance nDCG@K."""
     _validate_k(k)
 
     relevant = set(relevant_ids)
@@ -82,8 +72,7 @@ def ndcg_at_k(
     ideal_relevance_count = min(len(relevant), k)
 
     idcg = sum(
-        1.0 / math.log2(rank + 1)
-        for rank in range(1, ideal_relevance_count + 1)
+        1.0 / math.log2(rank + 1) for rank in range(1, ideal_relevance_count + 1)
     )
 
     if idcg == 0.0:

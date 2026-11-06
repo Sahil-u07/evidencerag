@@ -12,11 +12,7 @@ def test_recall_at_k():
     retrieved = ["A", "B", "C", "D"]
     relevant = {"B", "D"}
 
-    result = recall_at_k(
-        retrieved,
-        relevant,
-        k=3,
-    )
+    result = recall_at_k(retrieved, relevant, k=3)
 
     assert result == pytest.approx(0.5)
 
@@ -25,11 +21,7 @@ def test_recall_at_k_can_reach_one():
     retrieved = ["A", "B", "C"]
     relevant = {"A", "C"}
 
-    result = recall_at_k(
-        retrieved,
-        relevant,
-        k=3,
-    )
+    result = recall_at_k(retrieved, relevant, k=3)
 
     assert result == pytest.approx(1.0)
 
@@ -38,10 +30,7 @@ def test_reciprocal_rank():
     retrieved = ["A", "B", "C"]
     relevant = {"B"}
 
-    result = reciprocal_rank(
-        retrieved,
-        relevant,
-    )
+    result = reciprocal_rank(retrieved, relevant)
 
     assert result == pytest.approx(0.5)
 
@@ -50,11 +39,7 @@ def test_ndcg_perfect_ranking():
     retrieved = ["A", "B", "C"]
     relevant = {"A", "B"}
 
-    result = ndcg_at_k(
-        retrieved,
-        relevant,
-        k=3,
-    )
+    result = ndcg_at_k(retrieved, relevant, k=3)
 
     assert result == pytest.approx(1.0)
 

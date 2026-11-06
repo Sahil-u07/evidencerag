@@ -4,19 +4,11 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 
-RESULT_PATH = (
-    ROOT_DIR
-    / "data"
-    / "evaluation"
-    / "benchmark_results.json"
-)
+RESULT_PATH = ROOT_DIR / "data" / "evaluation" / "benchmark_results.json"
 
 
 def main():
-    with RESULT_PATH.open(
-        "r",
-        encoding="utf-8",
-    ) as file:
+    with RESULT_PATH.open("r", encoding="utf-8") as file:
         results = json.load(file)
 
     systems = results["systems"]

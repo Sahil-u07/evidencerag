@@ -19,11 +19,7 @@ def load_text_file(path: str | Path) -> list[DocumentChunk]:
         text = file_path.read_text(encoding="cp1252", errors="replace")
 
     return [
-        DocumentChunk(
-            text=text,
-            source=file_path.name,
-            metadata={"file_type": "text"},
-        )
+        DocumentChunk(text=text, source=file_path.name, metadata={"file_type": "text"})
     ]
 
 
@@ -47,10 +43,7 @@ def load_pdf(path: str | Path) -> list[DocumentChunk]:
                 text=text,
                 source=file_path.name,
                 page=page_number,
-                metadata={
-                    "file_type": "pdf",
-                    "page": str(page_number),
-                },
+                metadata={"file_type": "pdf", "page": str(page_number)},
             )
         )
 

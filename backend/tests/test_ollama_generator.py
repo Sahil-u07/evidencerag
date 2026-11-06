@@ -10,8 +10,12 @@ from app.generation.streaming import ABSTENTION_MESSAGE, GENERATION_CONTEXT_K
 
 class FakeResponse:
     def __init__(self, tokens, done_reason="stop"):
-        self.lines = [json.dumps({"response": token, "done": False}) for token in tokens]
-        self.lines.append(json.dumps({"response": "", "done": True, "done_reason": done_reason}))
+        self.lines = [
+            json.dumps({"response": token, "done": False}) for token in tokens
+        ]
+        self.lines.append(
+            json.dumps({"response": "", "done": True, "done_reason": done_reason})
+        )
 
     def raise_for_status(self):
         pass
@@ -67,7 +71,10 @@ def test_generate_shows_the_model_only_the_top_passages(monkeypatch):
         return FakeResponse(["Answer."])
 
     monkeypatch.setattr(streaming.requests, "post", fake_post)
-    evidence = [make_evidence(f"Passage number {number}.") for number in range(GENERATION_CONTEXT_K + 1)]
+    evidence = [
+        make_evidence(f"Passage number {number}.")
+        for number in range(GENERATION_CONTEXT_K + 1)
+    ]
 
     OllamaGenerator().generate("What is RRF?", evidence)
 
@@ -76,9 +83,15 @@ def test_generate_shows_the_model_only_the_top_passages(monkeypatch):
 
 
 def test_generate_reports_a_length_cutoff(monkeypatch):
-    monkeypatch.setattr(streaming.requests, "post", lambda *args, **kwargs: FakeResponse(["Cut of"], "length"))
+    monkeypatch.setattr(
+        streaming.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(["Cut of"], "length"),
+    )
 
-    assert OllamaGenerator().generate("What is RRF?", [make_evidence()]).truncated is True
+    assert (
+        OllamaGenerator().generate("What is RRF?", [make_evidence()]).truncated is True
+    )
 
 
 def test_generate_rejects_empty_query():
@@ -104,4 +117,7 @@ def test_generate_uses_the_configured_endpoint(monkeypatch):
 
     OllamaGenerator().generate("What is RRF?", [make_evidence()])
 
-    assert captured == {"url": "http://ollama.test:1234/api/generate", "model": "tiny:1b"}
+    assert captured == {
+        "url": "http://ollama.test:1234/api/generate",
+        "model": "tiny:1b",
+    }

@@ -25,11 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 UPLOAD_DIR = PROJECT_ROOT / settings.upload_dir
 
-SUPPORTED_EXTENSIONS = {
-    ".pdf",
-    ".txt",
-    ".md",
-}
+SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 
 def get_index_storage_dir() -> Path:
@@ -47,23 +43,15 @@ def collect_source_paths() -> list[Path]:
 
 
 def list_uploaded_documents() -> list[DocumentItem]:
-    UPLOAD_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     documents = []
 
-    for path in sorted(
-        UPLOAD_DIR.iterdir()
-    ):
+    for path in sorted(UPLOAD_DIR.iterdir()):
         if not path.is_file():
             continue
 
-        if (
-            path.suffix.lower()
-            not in SUPPORTED_EXTENSIONS
-        ):
+        if path.suffix.lower() not in SUPPORTED_EXTENSIONS:
             continue
 
         documents.append(
@@ -89,9 +77,7 @@ def has_indexable_text(path: Path) -> bool:
 
 
 def build_runtime_retriever(
-    chunks,
-    embeddings,
-    embedder: TextEmbedder,
+    chunks, embeddings, embedder: TextEmbedder
 ) -> RerankedHybridRetriever:
     dense_retriever = DenseRetriever()
     bm25_retriever = BM25Retriever()
@@ -102,10 +88,7 @@ def build_runtime_retriever(
         bm25_retriever=bm25_retriever,
     )
 
-    hybrid_retriever.add(
-        chunks,
-        embeddings,
-    )
+    hybrid_retriever.add(chunks, embeddings)
 
     reranker = CrossEncoderReranker(retrieval_defaults.RERANKER_MODEL)
 
@@ -143,9 +126,7 @@ def build_full_persistent_index(
     documents = []
 
     for path in source_paths:
-        documents.extend(
-            load_readable_document(path)
-        )
+        documents.extend(load_readable_document(path))
 
     chunks = build_chunks(
         documents,
@@ -157,21 +138,12 @@ def build_full_persistent_index(
     if not chunks:
         return clear_textless_index(store)
 
-    embeddings = embedder.encode(
-        [chunk.text for chunk in chunks]
-    )
+    embeddings = embedder.encode([chunk.text for chunk in chunks])
 
-    store.save(
-        chunks,
-        embeddings,
-        manifest=manifest,
-    )
+    store.save(chunks, embeddings, manifest=manifest)
 
     logger.info(
-        "Built and persisted index "
-        "(chunks=%d, files=%d)",
-        len(chunks),
-        len(manifest),
+        "Built and persisted index (chunks=%d, files=%d)", len(chunks), len(manifest)
     )
 
     return chunks, embeddings
@@ -189,55 +161,30 @@ def update_persistent_index_incrementally(
     changed_paths = [
         path
         for path in source_paths
-        if previous_manifest.get(
-            str(path.resolve())
-        )
-        != current_manifest.get(
-            str(path.resolve())
-        )
+        if previous_manifest.get(str(path.resolve()))
+        != current_manifest.get(str(path.resolve()))
     ]
 
     deleted_paths = [
-        Path(path)
-        for path in previous_manifest
-        if path not in current_manifest
+        Path(path) for path in previous_manifest if path not in current_manifest
     ]
 
-    sources_to_replace = {
-        path.name
-        for path in changed_paths
-    }
+    sources_to_replace = {path.name for path in changed_paths}
 
-    sources_to_replace.update(
-        path.name
-        for path in deleted_paths
-    )
+    sources_to_replace.update(path.name for path in deleted_paths)
 
     kept_indices = [
         index
-        for index, chunk in enumerate(
-            existing_chunks
-        )
+        for index, chunk in enumerate(existing_chunks)
         if chunk.source not in sources_to_replace
     ]
 
-    kept_chunks = [
-        existing_chunks[index]
-        for index in kept_indices
-    ]
+    kept_chunks = [existing_chunks[index] for index in kept_indices]
 
     if kept_indices:
-        kept_embeddings = existing_embeddings[
-            kept_indices
-        ]
+        kept_embeddings = existing_embeddings[kept_indices]
     else:
-        kept_embeddings = np.empty(
-            (
-                0,
-                existing_embeddings.shape[1],
-            ),
-            dtype=np.float32,
-        )
+        kept_embeddings = np.empty((0, existing_embeddings.shape[1]), dtype=np.float32)
 
     new_chunks = []
     new_embedding_blocks = []
@@ -253,93 +200,48 @@ def update_persistent_index_incrementally(
         )
 
         if not document_chunks:
-            logger.warning(
-                "Document produced no indexable chunks: %s",
-                path,
-            )
+            logger.warning("Document produced no indexable chunks: %s", path)
             continue
 
-        document_embeddings = embedder.encode(
-            [
-                chunk.text
-                for chunk in document_chunks
-            ]
-        )
+        document_embeddings = embedder.encode([chunk.text for chunk in document_chunks])
 
-        document_embeddings = np.asarray(
-            document_embeddings,
-            dtype=np.float32,
-        )
+        document_embeddings = np.asarray(document_embeddings, dtype=np.float32)
 
         if document_embeddings.ndim != 2:
-            raise ValueError(
-                "Document embeddings must be a 2D matrix"
-            )
+            raise ValueError("Document embeddings must be a 2D matrix")
 
-        if (
-            len(document_embeddings)
-            != len(document_chunks)
+        if len(document_embeddings) != len(document_chunks):
+            raise ValueError("Document chunks and embeddings are out of sync")
+
+        if len(kept_embeddings) > 0 and (
+            kept_embeddings.shape[1] != document_embeddings.shape[1]
         ):
-            raise ValueError(
-                "Document chunks and embeddings "
-                "are out of sync"
-            )
+            raise ValueError("Embedding dimensions do not match")
 
-        if (
-            len(kept_embeddings) > 0
-            and (
-                kept_embeddings.shape[1]
-                != document_embeddings.shape[1]
-            )
-        ):
-            raise ValueError(
-                "Embedding dimensions do not match"
-            )
+        new_chunks.extend(document_chunks)
 
-        new_chunks.extend(
-            document_chunks
-        )
+        new_embedding_blocks.append(document_embeddings)
 
-        new_embedding_blocks.append(
-            document_embeddings
-        )
-
-    combined_chunks = (
-        kept_chunks + new_chunks
-    )
+    combined_chunks = kept_chunks + new_chunks
 
     embedding_blocks = []
 
     if len(kept_embeddings) > 0:
-        embedding_blocks.append(
-            kept_embeddings
-        )
+        embedding_blocks.append(kept_embeddings)
 
-    embedding_blocks.extend(
-        new_embedding_blocks
-    )
+    embedding_blocks.extend(new_embedding_blocks)
 
     if embedding_blocks:
-        combined_embeddings = np.vstack(
-            embedding_blocks
-        )
+        combined_embeddings = np.vstack(embedding_blocks)
     else:
         combined_embeddings = np.empty(
-            (
-                0,
-                existing_embeddings.shape[1],
-            ),
-            dtype=np.float32,
+            (0, existing_embeddings.shape[1]), dtype=np.float32
         )
 
     if not combined_chunks:
         return clear_textless_index(store)
 
-    store.save(
-        combined_chunks,
-        combined_embeddings,
-        manifest=current_manifest,
-    )
+    store.save(combined_chunks, combined_embeddings, manifest=current_manifest)
 
     logger.info(
         "Incrementally updated persistent index "
@@ -351,10 +253,7 @@ def update_persistent_index_incrementally(
         len(current_manifest),
     )
 
-    return (
-        combined_chunks,
-        combined_embeddings,
-    )
+    return (combined_chunks, combined_embeddings)
 
 
 def build_retriever() -> RerankedHybridRetriever:
@@ -367,98 +266,55 @@ def build_retriever() -> RerankedHybridRetriever:
         store.clear()
         return build_runtime_retriever([], [], embedder)
 
-    current_manifest = store.build_manifest(
-        source_paths
-    )
+    current_manifest = store.build_manifest(source_paths)
 
-    if store.matches_manifest(
-        current_manifest
-    ):
+    if store.matches_manifest(current_manifest):
         try:
             chunks, embeddings = store.load()
 
             logger.info(
-                "Loaded persistent index from %s "
-                "(chunks=%d, files=%d)",
+                "Loaded persistent index from %s (chunks=%d, files=%d)",
                 index_storage_dir,
                 len(chunks),
                 len(current_manifest),
             )
 
-        except (
-            OSError,
-            ValueError,
-            json.JSONDecodeError,
-        ):
-            logger.warning(
-                "Persistent index could not be loaded. "
-                "Rebuilding index."
-            )
+        except (OSError, ValueError, json.JSONDecodeError):
+            logger.warning("Persistent index could not be loaded. Rebuilding index.")
 
-            chunks, embeddings = (
-                build_full_persistent_index(
-                    store,
-                    source_paths,
-                    current_manifest,
-                    embedder,
-                )
+            chunks, embeddings = build_full_persistent_index(
+                store, source_paths, current_manifest, embedder
             )
 
     elif store.exists():
         try:
-            (
-                existing_chunks,
-                existing_embeddings,
-            ) = store.load()
+            (existing_chunks, existing_embeddings) = store.load()
 
-            previous_manifest = (
-                store.load_manifest()
+            previous_manifest = store.load_manifest()
+
+            chunks, embeddings = update_persistent_index_incrementally(
+                store=store,
+                source_paths=source_paths,
+                current_manifest=current_manifest,
+                previous_manifest=previous_manifest,
+                existing_chunks=existing_chunks,
+                existing_embeddings=existing_embeddings,
+                embedder=embedder,
             )
 
-            chunks, embeddings = (
-                update_persistent_index_incrementally(
-                    store=store,
-                    source_paths=source_paths,
-                    current_manifest=current_manifest,
-                    previous_manifest=previous_manifest,
-                    existing_chunks=existing_chunks,
-                    existing_embeddings=existing_embeddings,
-                    embedder=embedder,
-                )
-            )
-
-        except (
-            OSError,
-            ValueError,
-            json.JSONDecodeError,
-            KeyError,
-        ):
+        except (OSError, ValueError, json.JSONDecodeError, KeyError):
             logger.warning(
                 "Persistent index could not be incrementally "
                 "updated. Rebuilding full index."
             )
 
-            chunks, embeddings = (
-                build_full_persistent_index(
-                    store,
-                    source_paths,
-                    current_manifest,
-                    embedder,
-                )
+            chunks, embeddings = build_full_persistent_index(
+                store, source_paths, current_manifest, embedder
             )
 
     else:
-        chunks, embeddings = (
-            build_full_persistent_index(
-                store,
-                source_paths,
-                current_manifest,
-                embedder,
-            )
+        chunks, embeddings = build_full_persistent_index(
+            store, source_paths, current_manifest, embedder
         )
 
-    return build_runtime_retriever(
-        chunks,
-        embeddings,
-        embedder,
-    )
+    return build_runtime_retriever(chunks, embeddings, embedder)
