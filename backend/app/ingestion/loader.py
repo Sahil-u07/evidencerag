@@ -12,8 +12,9 @@ class UnreadableDocumentError(Exception):
 def load_text_file(path: str | Path) -> list[DocumentChunk]:
     file_path = Path(path)
 
+    # Not utf-8-sig: rfc9110.txt starts with a BOM, and dropping it shifts every chunk.
     try:
-        text = file_path.read_text(encoding="utf-8-sig")
+        text = file_path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         text = file_path.read_text(encoding="cp1252", errors="replace")
 

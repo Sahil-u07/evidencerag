@@ -148,7 +148,7 @@ def test_build_chunks_rejects_unknown_method():
     ("raw", "expected"),
     [
         ("plain caf\u00e9".encode("utf-8"), "plain caf\u00e9"),
-        (b"\xef\xbb\xbfwith a mark", "with a mark"),
+        (b"\xef\xbb\xbfwith a mark", "\ufeffwith a mark"),
         ("Le caf\u00e9".encode("latin-1"), "Le caf\u00e9"),
         (b"it\x92s", "it\u2019s"),
         (b"caf\xe9 \x81", "caf\u00e9 \ufffd"),
@@ -168,3 +168,12 @@ def test_corrupt_pdf_raises_a_clear_error(tmp_path):
 
     with pytest.raises(UnreadableDocumentError):
         load_document(path)
+
+
+def test_benchmark_corpus_text_is_what_a_plain_utf8_read_gives():
+    corpus = Path(__file__).resolve().parents[2] / "data" / "evaluation" / "v2" / "corpus"
+    paths = sorted(corpus.glob("*.txt"))
+
+    assert paths
+    for path in paths:
+        assert load_document(path)[0].text == path.read_text(encoding="utf-8")
