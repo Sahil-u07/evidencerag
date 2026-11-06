@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     ollama_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.2:1b"
+    ollama_model: str = "qwen2.5:3b"
     max_upload_size_mb: int = 10
     index_storage_dir: str = "data/index"
     upload_dir: str = "data/uploads"

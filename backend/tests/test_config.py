@@ -23,7 +23,7 @@ def test_defaults(monkeypatch):
     settings = Settings(_env_file=None)
 
     assert settings.ollama_url == "http://localhost:11434"
-    assert settings.ollama_model == "llama3.2:1b"
+    assert settings.ollama_model == "qwen2.5:3b"
     assert settings.max_upload_size_mb == 10
     assert settings.index_storage_dir == "data/index"
     assert settings.upload_dir == "data/uploads"
