@@ -62,7 +62,7 @@ function EvidenceBody({ turn, target, hoveredId, listRef }: BodyProps) {
   if (!turn) {
     return (
       <p className="evidence__note">
-        Ask a question and the passages behind its answer appear here, best match first, with the ones the answer cites
+        Ask a question and the passages behind its answer appear here, in rank order, with the ones the answer cites
         marked.
       </p>
     )
@@ -82,7 +82,7 @@ function EvidenceBody({ turn, target, hoveredId, listRef }: BodyProps) {
   return (
     <>
       <p className="evidence__note">
-        {turn.sources.length} {turn.sources.length === 1 ? 'passage' : 'passages'}, best match first.
+        {turn.sources.length} {turn.sources.length === 1 ? 'passage' : 'passages'}, in rank order.
       </p>
       <ol ref={listRef} className="passages">
         {turn.sources.map((source) => (

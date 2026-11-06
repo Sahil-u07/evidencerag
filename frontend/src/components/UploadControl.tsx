@@ -5,12 +5,13 @@ type Props = {
   demo: boolean
   uploading: string | null
   deleting: boolean
+  streaming: boolean
   error: string
   maxUploadMb: number
   onFiles: (files: File[]) => void
 }
 
-export function UploadControl({ demo, uploading, deleting, error, maxUploadMb, onFiles }: Props) {
+export function UploadControl({ demo, uploading, deleting, streaming, error, maxUploadMb, onFiles }: Props) {
   const input = useRef<HTMLInputElement>(null)
 
   return (
@@ -29,7 +30,7 @@ export function UploadControl({ demo, uploading, deleting, error, maxUploadMb, o
       <button
         type="button"
         className="btn btn--block"
-        disabled={demo || deleting || uploading !== null}
+        disabled={demo || deleting || streaming || uploading !== null}
         aria-busy={uploading !== null}
         onClick={() => input.current?.click()}
       >
@@ -45,9 +46,13 @@ export function UploadControl({ demo, uploading, deleting, error, maxUploadMb, o
           </p>
         )}
       </div>
-      {!uploading && !error && (
+      {!uploading && (!error || streaming) && (
         <p className="upload__note">
-          {demo ? 'Uploads are off in demo mode.' : `PDF, TXT or MD, up to ${maxUploadMb} MB. You can also drop a file anywhere.`}
+          {demo
+            ? 'Uploads are off in demo mode.'
+            : streaming
+              ? 'Upload and delete are off while an answer is being written.'
+              : `PDF, TXT or MD, up to ${maxUploadMb} MB. You can also drop a file anywhere.`}
         </p>
       )}
     </div>

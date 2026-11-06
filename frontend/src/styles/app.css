@@ -26,8 +26,7 @@ h2,
 h3,
 p,
 ul,
-ol,
-fieldset {
+ol {
   margin: 0;
   padding: 0;
 }
@@ -38,6 +37,8 @@ ol {
 }
 
 fieldset {
+  margin: 0;
+  padding: 0;
   border: 0;
   min-width: 0;
 }
@@ -219,7 +220,8 @@ summary {
   border-color: var(--text);
 }
 
-.btn--primary:disabled {
+.btn--primary:disabled,
+.btn--danger:disabled {
   border-color: var(--border);
 }
 
@@ -259,6 +261,10 @@ summary {
   color: var(--text);
 }
 
+.icon-btn:disabled {
+  color: var(--border-control);
+}
+
 .link-btn {
   display: inline-flex;
   align-items: center;
@@ -274,7 +280,7 @@ summary {
 
 @media (max-width: 1023px), (pointer: coarse) {
   .link-btn {
-    min-height: 44px;
+    min-height: var(--control);
   }
 }
 
@@ -322,7 +328,7 @@ summary {
 
 @media (max-width: 1023px), (pointer: coarse) {
   .disclosure summary {
-    min-height: 44px;
+    min-height: var(--control);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -520,7 +526,7 @@ summary {
 
 @media (max-width: 1023px), (pointer: coarse) {
   .demo-toggle {
-    min-height: 44px;
+    min-height: var(--control);
   }
 }
 
@@ -575,13 +581,9 @@ summary {
   color: var(--error);
 }
 
-/* Positioned, so absolutely placed screen-reader text scrolls inside and cannot grow the page. */
-.thread,
-.evidence__scroll {
-  position: relative;
-}
-
 .thread {
+  /* Positioned, so absolutely placed screen-reader text scrolls inside and cannot grow the page. */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -966,7 +968,7 @@ summary {
   }
 
   .composer__button {
-    height: 44px;
+    height: var(--control);
   }
 }
 
@@ -997,6 +999,8 @@ summary {
 }
 
 .evidence__scroll {
+  /* Positioned for the same reason as .thread. */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -1023,24 +1027,26 @@ summary {
   padding: var(--space-3);
   background: var(--bg);
   border: 1px solid var(--border);
+  border-left-width: 3px;
   border-radius: var(--radius);
   scroll-margin: var(--space-3);
-  transition: border-color var(--speed), box-shadow var(--speed);
+  transition: border-color var(--speed);
 }
 
 .passage--cited {
   background: var(--surface);
-  border-left: 3px solid var(--primary);
+  border-left-color: var(--primary);
 }
 
-.passage--hovered,
-.passage--active {
+.passage--hovered {
   border-color: var(--link);
-  box-shadow: 0 0 0 1px var(--link);
 }
 
+/* The thicker border is the state's non-colour signal, and the padding keeps the text still. */
 .passage--active {
-  border-left: 3px solid var(--link);
+  padding: calc(var(--space-3) - 1px) calc(var(--space-3) - 1px) calc(var(--space-3) - 1px) var(--space-3);
+  border-color: var(--link);
+  border-width: 2px 2px 2px 3px;
 }
 
 .passage__head {
@@ -1178,6 +1184,30 @@ summary {
 .overlay .evidence__header {
   padding-right: 56px;
   min-height: 53px;
+}
+
+.crash {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+.crash__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.crash__title svg {
+  flex: none;
+  color: var(--error);
 }
 
 .drop-hint {

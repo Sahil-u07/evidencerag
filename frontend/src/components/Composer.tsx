@@ -20,7 +20,7 @@ function blockReason(health: HealthState, demo: boolean, indexing: boolean): str
   if (demo) return ''
   if (health.kind === 'offline') return `Sending is off because the backend at ${API_BASE} is offline.`
   if (health.kind === 'connecting') return 'Sending starts once the backend answers.'
-  return indexing ? 'Sending is off while a document is indexing.' : ''
+  return indexing ? 'Sending is off while the index rebuilds.' : ''
 }
 
 export function Composer(props: Props) {

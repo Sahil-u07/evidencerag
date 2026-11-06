@@ -1,8 +1,5 @@
-import { useLayoutEffect, useRef, type KeyboardEvent, type ReactNode, type SyntheticEvent } from 'react'
+import { useLayoutEffect, useRef, type ReactNode, type SyntheticEvent } from 'react'
 import { Icon } from './Icon.tsx'
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), textarea:not([disabled]), summary, input:not([disabled]):not([type="radio"]), input[type="radio"]:checked, [tabindex="0"]'
 
 type Props = { label: string; side: 'left' | 'right'; onClose: () => void; children: ReactNode }
 
@@ -30,22 +27,6 @@ export function Overlay({ label, side, onClose, children }: Props) {
     if (!ref.current?.open) onClose()
   }
 
-  const trapTab = (event: KeyboardEvent<HTMLDialogElement>) => {
-    if (event.key !== 'Tab') return
-    const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE))
-    const visible = items.filter((item) => item.getClientRects().length > 0)
-    const first = visible[0]
-    const last = visible[visible.length - 1]
-    const active = document.activeElement
-    if (event.shiftKey && (active === first || active === event.currentTarget)) {
-      event.preventDefault()
-      last?.focus()
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault()
-      first?.focus()
-    }
-  }
-
   return (
     <dialog
       ref={ref}
@@ -53,7 +34,6 @@ export function Overlay({ label, side, onClose, children }: Props) {
       aria-label={label}
       onCancel={onCancel}
       onClose={onNativeClose}
-      onKeyDown={trapTab}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}

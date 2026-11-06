@@ -26,7 +26,8 @@ export default function App() {
   const input = useRef<HTMLTextAreaElement>(null)
 
   const documents = useDocuments(demo)
-  const { health, refresh } = useHealth(demo || documents.uploading !== null)
+  const indexing = documents.uploading !== null || documents.deleting !== null
+  const { health, refresh } = useHealth(demo || indexing)
   const chat = useChat(demo, refresh)
   const viewport = useViewport()
   const evidence = useEvidence(viewport)
@@ -35,7 +36,8 @@ export default function App() {
   const online = health.kind === 'ready' || health.kind === 'model-missing'
   const maxUploadMb = online ? health.maxUploadMb : DEFAULT_MAX_UPLOAD_MB
   const { reload, upload: uploadFile } = documents
-  const uploadFiles = useCallback((files: File[]) => void uploadFile(files, maxUploadMb), [uploadFile, maxUploadMb])
+  const { running } = chat
+  const uploadFiles = useCallback((files: File[]) => void uploadFile(files, maxUploadMb, running), [uploadFile, maxUploadMb, running])
   const dragging = useFileDrop(uploadFiles)
 
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function App() {
       demo={demo}
       uploading={documents.uploading}
       deleting={documents.deleting !== null}
+      streaming={running}
       error={documents.uploadError}
       maxUploadMb={maxUploadMb}
       onFiles={uploadFiles}
@@ -79,7 +82,9 @@ export default function App() {
 
   const sidebar = (
     <Sidebar
+      brandTag={viewport === 'phone' ? 'h2' : 'h1'}
       demo={demo}
+      streaming={running}
       documents={documents}
       stale={!demo && health.kind === 'offline'}
       upload={upload}
@@ -134,7 +139,7 @@ export default function App() {
                 evidenceOpen={evidence.open}
                 viewport={viewport}
                 activeId={evidence.target?.id ?? null}
-                busy={chat.running}
+                busy={running || indexing}
                 inlineEvidence={evidencePanel(true)}
                 onCite={(id) => evidence.cite(turn.id, id)}
                 onHover={(id) => evidence.hover(turn.id, id)}
@@ -153,10 +158,10 @@ export default function App() {
             onChange={setQuestion}
             onSend={send}
             onStop={chat.stop}
-            running={chat.running}
+            running={running}
             health={health}
             demo={demo}
-            indexing={documents.uploading !== null}
+            indexing={indexing}
             noDocuments={noDocuments}
             inputRef={input}
           />

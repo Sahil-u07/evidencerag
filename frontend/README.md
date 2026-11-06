@@ -4,12 +4,14 @@ React, TypeScript and Vite, with plain CSS and no runtime dependencies beyond Re
 
 ## Setup
 
+Needs Node 22.12 or newer. The unit tests rely on Node's built-in TypeScript support and the build tools need that version.
+
 ```
 npm ci
 npm run dev
 ```
 
-The app opens at http://localhost:5173. It needs the API running. From `backend/`, run `uvicorn app.main:app`. The API only accepts requests from port 5173, so keep that port.
+`npm run dev` serves the app at http://localhost:5173. Open that address in a browser. It needs the API running: from `backend/`, run `uvicorn app.main:app`. The API only accepts requests from port 5173, so keep that port.
 
 ## Environment
 

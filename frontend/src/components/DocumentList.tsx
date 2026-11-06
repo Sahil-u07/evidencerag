@@ -4,9 +4,9 @@ import { formatSize, originalName } from '../lib/format.ts'
 import type { DocumentItem } from '../types.ts'
 import { Icon } from './Icon.tsx'
 
-type Props = { state: DocumentsState; demo: boolean; stale: boolean }
+type Props = { state: DocumentsState; demo: boolean; streaming: boolean; stale: boolean }
 
-export function DocumentList({ state, demo, stale }: Props) {
+export function DocumentList({ state, demo, streaming, stale }: Props) {
   const { documents, loaded, deleting, uploading } = state
   const error = state.deleteError || state.loadError
   const [confirming, setConfirming] = useState<string | null>(null)
@@ -42,8 +42,8 @@ export function DocumentList({ state, demo, stale }: Props) {
             doc={doc}
             demo={demo}
             busy={deleting === doc.filename}
-            // Each delete and upload rebuilds the index, and the backend does not queue rebuilds.
-            locked={deleting !== null || uploading !== null}
+            // A rebuild stalls a running answer, and the backend does not queue rebuilds.
+            locked={streaming || deleting !== null || uploading !== null}
             confirming={confirming === doc.filename}
             onAsk={() => setConfirming(doc.filename)}
             onCancel={() => setConfirming(null)}
@@ -83,7 +83,7 @@ function DocumentRow({ doc, demo, busy, locked, confirming, onAsk, onCancel, onC
       <li className="doc doc--confirm">
         <p className="doc__question">Delete {name}?</p>
         <div className="doc__actions">
-          <button type="button" className="btn btn--danger" onClick={onConfirm}>
+          <button type="button" className="btn btn--danger" disabled={locked} onClick={onConfirm}>
             Delete
           </button>
           <button type="button" className="btn" ref={cancel} onClick={onCancel}>

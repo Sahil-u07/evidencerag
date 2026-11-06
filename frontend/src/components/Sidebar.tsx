@@ -6,7 +6,10 @@ import { Icon } from './Icon.tsx'
 import { ThemeSwitch } from './ThemeSwitch.tsx'
 
 type Props = {
+  // In the phone drawer the top bar already holds the page's h1.
+  brandTag: 'h1' | 'h2'
   demo: boolean
+  streaming: boolean
   documents: DocumentsState
   stale: boolean
   upload: ReactNode
@@ -16,18 +19,18 @@ type Props = {
   onDemoChange: (demo: boolean) => void
 }
 
-export function Sidebar({ demo, documents, stale, upload, theme, onTheme, onNewChat, onDemoChange }: Props) {
+export function Sidebar({ brandTag: Brand, demo, streaming, documents, stale, upload, theme, onTheme, onNewChat, onDemoChange }: Props) {
   return (
     <div className="sidebar">
       <div className="sidebar__top">
-        <h1 className="brand">EvidenceRAG</h1>
+        <Brand className="brand">EvidenceRAG</Brand>
         <button type="button" className="btn btn--block" onClick={onNewChat}>
           <Icon name="plus" />
           New chat
         </button>
       </div>
       <div className="sidebar__middle">
-        <DocumentList state={documents} demo={demo} stale={stale} />
+        <DocumentList state={documents} demo={demo} streaming={streaming} stale={stale} />
       </div>
       <div className="sidebar__bottom">
         {upload}

@@ -4,6 +4,8 @@ import { demoDocuments } from '../demo.ts'
 import { checkUpload } from '../lib/format.ts'
 import type { DocumentItem } from '../types.ts'
 
+const WAIT_NOTICE_MS = 4000
+
 export type DocumentsState = ReturnType<typeof useDocuments>
 
 export function useDocuments(demo: boolean) {
@@ -26,19 +28,22 @@ export function useDocuments(demo: boolean) {
   }, [])
 
   const upload = useCallback(
-    async (files: File[], maxUploadMb: number) => {
+    async (files: File[], maxUploadMb: number, streaming: boolean) => {
       if (files.length === 0) return
       const [file] = files
+      const wait = uploading
+        ? `Wait until ${uploading} has finished indexing.`
+        : deleting
+          ? 'Wait until the delete has finished.'
+          : streaming
+            ? 'Wait until the answer has finished.'
+            : ''
       const problem = demo
         ? 'Turn off demo data to upload a file.'
-        : uploading
-          ? `Wait until ${uploading} has finished indexing.`
-          : deleting
-            ? 'Wait until the delete has finished.'
-            : files.length > 1
-              ? 'Upload one file at a time.'
-              : checkUpload(file.name, file.size, maxUploadMb)
+        : wait || (files.length > 1 ? 'Upload one file at a time.' : checkUpload(file.name, file.size, maxUploadMb))
       setUploadError(problem)
+      // A wait notice stops being true on its own, so it must not outlive the wait.
+      if (wait) setTimeout(() => setUploadError((current) => (current === wait ? '' : current)), WAIT_NOTICE_MS)
       if (problem) return
 
       setUploading(file.name)

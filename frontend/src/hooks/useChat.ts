@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react'
-import { errorText, streamQuery, UNREACHABLE } from '../api.ts'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { errorText, STREAM_ENDED, streamQuery } from '../api.ts'
 import { demoStream } from '../demo.ts'
 import { applyEvent, endOfStream, newTurn, verdictMessage } from '../lib/turn.ts'
 import type { Turn } from '../types.ts'
@@ -9,6 +9,8 @@ export function useChat(demo: boolean, onFailed: () => void) {
   const [announcement, setAnnouncement] = useState('')
   const active = useRef<AbortController | null>(null)
   const lastId = useRef(0)
+
+  useEffect(() => () => active.current?.abort(), [])
 
   const run = useCallback(
     async (start: Turn) => {
@@ -24,8 +26,15 @@ export function useChat(demo: boolean, onFailed: () => void) {
 
       const stream = demo ? demoStream : streamQuery
       try {
-        for await (const event of stream(start.question, controller.signal)) publish(applyEvent(turn, event))
-        publish(endOfStream(turn, UNREACHABLE))
+        for await (const event of stream(start.question, controller.signal)) {
+          publish(applyEvent(turn, event))
+          // Stop reading so a late event from this run cannot touch a retry of the same turn.
+          if (turn.status === 'failed') {
+            controller.abort()
+            break
+          }
+        }
+        publish(endOfStream(turn, STREAM_ENDED))
       } catch (error) {
         if (!controller.signal.aborted) publish({ ...turn, status: 'failed', answer: '', error: errorText(error) })
         else if (turn.status === 'running') publish({ ...turn, status: 'stopped' })

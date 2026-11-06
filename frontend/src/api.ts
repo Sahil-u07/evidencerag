@@ -1,9 +1,11 @@
-import { createSseParser } from './lib/sse.ts'
-import type { DocumentItem, Health, StreamEvent } from './types.ts'
+import { createSseParser, type SseEvent } from './lib/sse.ts'
+import type { DocumentItem, Health } from './types.ts'
 
 export const API_BASE = (import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000').replace(/\/+$/, '')
 
-export const UNREACHABLE = `Could not reach the backend at ${API_BASE}. Start the API, then try again.`
+const UNREACHABLE = `Could not reach the backend at ${API_BASE}. Start the API, then try again.`
+
+export const STREAM_ENDED = 'The answer stream ended before the answer was finished.'
 
 export function errorText(error: unknown): string {
   // fetch reports a refused or dropped connection as a TypeError.
@@ -45,7 +47,7 @@ export async function deleteDocument(filename: string): Promise<void> {
   await request(`/documents/${encodeURIComponent(filename)}`, { method: 'DELETE' })
 }
 
-export async function* streamQuery(query: string, signal: AbortSignal): AsyncGenerator<StreamEvent> {
+export async function* streamQuery(query: string, signal: AbortSignal): AsyncGenerator<SseEvent> {
   const response = await request('/query/stream', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -58,8 +60,11 @@ export async function* streamQuery(query: string, signal: AbortSignal): AsyncGen
   const decoder = new TextDecoder()
   const reader = response.body.getReader()
   for (;;) {
-    const { done, value } = await reader.read()
+    const { done, value } = await reader.read().catch((error: unknown) => {
+      // The connection worked, so a dropped read is a cut-off stream, not an unreachable backend.
+      throw error instanceof TypeError ? new Error(STREAM_ENDED) : error
+    })
     if (done) return
-    for (const event of feed(decoder.decode(value, { stream: true }))) yield event as StreamEvent
+    yield* feed(decoder.decode(value, { stream: true }))
   }
 }
