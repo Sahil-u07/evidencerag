@@ -32,4 +32,6 @@ qdrant_storage/
 # Logs
 *.log
 data/index/
+data/uploads/*
+!data/uploads/.gitkeep
 data/evaluation/v2/.cache/
