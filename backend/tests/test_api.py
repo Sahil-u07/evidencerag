@@ -7,6 +7,7 @@ import pytest
 import requests
 from fastapi.testclient import TestClient
 
+from app import indexing
 import app.main as main
 from app.core.config import settings
 
@@ -85,13 +86,13 @@ def fake_retriever():
 @pytest.fixture
 def client(monkeypatch, tmp_path, fake_retriever):
     monkeypatch.setattr(
-        main,
+        indexing,
         "build_retriever",
         lambda: fake_retriever,
     )
 
     monkeypatch.setattr(
-        main,
+        indexing,
         "UPLOAD_DIR",
         tmp_path,
     )
@@ -535,14 +536,14 @@ def test_ask_errors_are_plain_and_do_not_leak(client, error, message):
 
 def test_missing_upload_folder_is_created(client, monkeypatch, tmp_path):
     missing = tmp_path / "data" / "uploads"
-    monkeypatch.setattr(main, "UPLOAD_DIR", missing)
+    monkeypatch.setattr(indexing, "UPLOAD_DIR", missing)
 
     assert client.get("/documents").json() == {"documents": []}
     assert missing.is_dir()
 
 
 def test_upload_dir_comes_from_the_setting():
-    assert main.UPLOAD_DIR == main.PROJECT_ROOT / settings.upload_dir
+    assert indexing.UPLOAD_DIR == indexing.PROJECT_ROOT / settings.upload_dir
 
 
 def test_error_message_has_no_double_slash(client, monkeypatch):
@@ -597,7 +598,7 @@ def test_overlapping_rebuilds_run_one_at_a_time(monkeypatch):
             active.pop()
         return FakeRetriever()
 
-    monkeypatch.setattr(main, "build_retriever", slow_build)
+    monkeypatch.setattr(indexing, "build_retriever", slow_build)
     monkeypatch.setattr(main.state, "pipeline", None)
 
     with ThreadPoolExecutor(max_workers=4) as pool:
@@ -617,7 +618,7 @@ def test_search_uses_the_old_retriever_until_a_rebuild_finishes(client, monkeypa
         release.wait(timeout=5)
         return new_retriever
 
-    monkeypatch.setattr(main, "build_retriever", slow_build)
+    monkeypatch.setattr(indexing, "build_retriever", slow_build)
     search = {"query": "What is RRF?"}
 
     with ThreadPoolExecutor(max_workers=1) as pool:
