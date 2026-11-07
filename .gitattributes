@@ -1,1 +1,2 @@
 data/evaluation/v2/corpus/* -text
+deploy/hf-space/* text eol=lf
