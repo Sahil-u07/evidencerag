@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { API_BASE } from '../api.ts'
+import { API_LABEL } from '../api.ts'
 import type { HealthState } from '../types.ts'
 import { Icon, type IconName } from './Icon.tsx'
 
@@ -10,7 +10,7 @@ function describe(health: HealthState, demo: boolean): Look {
 
   switch (health.kind) {
     case 'connecting':
-      return { tone: 'neutral', icon: 'spinner', title: 'Connecting', fix: `Checking the backend at ${API_BASE}.` }
+      return { tone: 'neutral', icon: 'spinner', title: 'Connecting', fix: `Checking the backend at ${API_LABEL}.` }
     case 'offline':
       return {
         tone: 'error',
@@ -18,7 +18,7 @@ function describe(health: HealthState, demo: boolean): Look {
         title: 'Backend offline',
         fix: (
           <>
-            Start the API so it answers at {API_BASE}: run <code>uvicorn app.main:app</code> in <code>backend</code>.
+            Start the API so it answers at {API_LABEL}: run <code>uvicorn app.main:app</code> in <code>backend</code>.
           </>
         ),
       }

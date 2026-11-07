@@ -4,7 +4,8 @@ function hasFiles(event: DragEvent): boolean {
   return Boolean(event.dataTransfer?.types.includes('Files'))
 }
 
-export function useFileDrop(onFiles: (files: File[]) => void): boolean {
+// When disabled, a dropped file is still swallowed so the browser does not open it.
+export function useFileDrop(onFiles: (files: File[]) => void, enabled: boolean): boolean {
   const [dragging, setDragging] = useState(false)
 
   useEffect(() => {
@@ -12,12 +13,12 @@ export function useFileDrop(onFiles: (files: File[]) => void): boolean {
     let depth = 0
 
     const enter = (event: DragEvent) => {
-      if (!hasFiles(event)) return
+      if (!enabled || !hasFiles(event)) return
       depth += 1
       setDragging(true)
     }
     const leave = (event: DragEvent) => {
-      if (!hasFiles(event)) return
+      if (!enabled || !hasFiles(event)) return
       depth -= 1
       if (depth <= 0) setDragging(false)
     }
@@ -27,6 +28,7 @@ export function useFileDrop(onFiles: (files: File[]) => void): boolean {
     const drop = (event: DragEvent) => {
       if (!hasFiles(event)) return
       event.preventDefault()
+      if (!enabled) return
       depth = 0
       setDragging(false)
       onFiles(Array.from(event.dataTransfer?.files ?? []))
@@ -42,7 +44,7 @@ export function useFileDrop(onFiles: (files: File[]) => void): boolean {
       window.removeEventListener('dragover', over)
       window.removeEventListener('drop', drop)
     }
-  }, [onFiles])
+  }, [onFiles, enabled])
 
   return dragging
 }

@@ -1,9 +1,12 @@
 import { createSseParser, type SseEvent } from './lib/sse.ts'
 import type { DocumentItem, Health } from './types.ts'
 
-export const API_BASE = (import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000').replace(/\/+$/, '')
+// An empty value means the page and the API share an origin, as in the Docker image.
+export const API_BASE = (import.meta.env.VITE_API_BASE ?? 'http://127.0.0.1:8000').replace(/\/+$/, '')
 
-const UNREACHABLE = `Could not reach the backend at ${API_BASE}. Start the API, then try again.`
+export const API_LABEL = API_BASE || window.location.origin
+
+const UNREACHABLE = `Could not reach the backend at ${API_LABEL}. Start the API, then try again.`
 
 export const STREAM_ENDED = 'The answer stream ended before the answer was finished.'
 

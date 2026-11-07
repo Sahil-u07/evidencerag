@@ -1,7 +1,10 @@
 import { useEffect, type KeyboardEvent, type RefObject } from 'react'
-import { API_BASE } from '../api.ts'
+import { API_LABEL } from '../api.ts'
 import type { HealthState } from '../types.ts'
 import { Icon } from './Icon.tsx'
+
+// Matches the backend limit on a question.
+const MAX_QUERY_CHARS = 500
 
 type Props = {
   value: string
@@ -18,7 +21,7 @@ type Props = {
 
 function blockReason(health: HealthState, demo: boolean, indexing: boolean): string {
   if (demo) return ''
-  if (health.kind === 'offline') return `Sending is off because the backend at ${API_BASE} is offline.`
+  if (health.kind === 'offline') return `Sending is off because the backend at ${API_LABEL} is offline.`
   if (health.kind === 'connecting') return 'Sending starts once the backend answers.'
   return indexing ? 'Sending is off while the index rebuilds.' : ''
 }
@@ -65,6 +68,7 @@ export function Composer(props: Props) {
             value={value}
             placeholder="Ask about your documents"
             aria-describedby="composer-hint"
+            maxLength={MAX_QUERY_CHARS}
             onChange={(event) => onChange(event.target.value)}
             onKeyDown={onKeyDown}
           />

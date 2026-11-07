@@ -3,13 +3,16 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+MAX_QUERY_CHARS = 500
+
+
 class SearchRequest(BaseModel):
-    query: str = Field(min_length=1)
+    query: str = Field(min_length=1, max_length=MAX_QUERY_CHARS)
     top_k: int = Field(default=5, ge=1, le=20)
 
 
 class AskRequest(BaseModel):
-    query: str = Field(min_length=1)
+    query: str = Field(min_length=1, max_length=MAX_QUERY_CHARS)
     top_k: int = Field(default=5, ge=1, le=20)
 
 

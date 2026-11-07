@@ -5,6 +5,7 @@ export type Health = {
   model: string
   generator_available: boolean
   max_upload_mb: number
+  read_only: boolean
 }
 
 export type DocumentItem = {
@@ -57,7 +58,7 @@ export type Turn = {
 export type HealthState =
   | { kind: 'connecting' }
   | { kind: 'offline' }
-  | { kind: 'model-missing'; model: string; maxUploadMb: number }
-  | { kind: 'ready'; model: string; maxUploadMb: number }
+  | { kind: 'model-missing'; model: string; maxUploadMb: number; readOnly: boolean }
+  | { kind: 'ready'; model: string; maxUploadMb: number; readOnly: boolean }
 
 export type Theme = 'system' | 'light' | 'dark'
