@@ -94,6 +94,7 @@ The retrieval gain is inside the noise, and the verifier gain is real but from o
 
 ## More
 
+- [Blog post on Medium](https://medium.com/@sahillenka44/my-rag-app-scored-0-973-then-i-gave-it-a-real-test-f787853e6354): the story of the project, from a 0.973 score that meant little to the honest results
 - [How it works](docs/how-it-works.md): diagrams, formulas, the API and the full results
 - [Benchmark design](docs/benchmark-design.md)
 - Tests: `cd backend && python -m pytest -q`, and `cd frontend && npm test`
