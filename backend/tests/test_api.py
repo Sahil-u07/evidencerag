@@ -1,5 +1,9 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+import os
+from pathlib import Path
+import subprocess
+import sys
 import threading
 import time
 from types import SimpleNamespace
@@ -382,6 +386,7 @@ def test_health_reports_the_settings(client, monkeypatch):
         "model": settings.ollama_model,
         "generator_available": True,
         "max_upload_mb": settings.max_upload_size_mb,
+        "read_only": False,
     }
 
 
@@ -656,3 +661,229 @@ def test_a_cancelled_upload_leaves_no_part_file(monkeypatch, tmp_path):
         asyncio.run(main.upload_document(upload))
 
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.fixture
+def read_only(monkeypatch):
+    monkeypatch.setattr(main.settings, "read_only", True)
+    monkeypatch.setattr(main, "generation_gate", main.GenerationGate(max_waiting=2))
+
+
+def test_read_only_defaults_to_off():
+    assert settings.read_only is False
+
+
+def test_read_only_blocks_upload(client, read_only, tmp_path):
+    response = client.post(
+        "/documents/upload", files={"file": ("a.md", b"hello", "text/markdown")}
+    )
+
+    assert response.status_code == 403
+    assert "read-only" in response.json()["detail"]
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_read_only_blocks_delete(client, read_only, tmp_path):
+    (tmp_path / "keep.md").write_text("keep me")
+
+    response = client.delete("/documents/keep.md")
+
+    assert response.status_code == 403
+    assert (tmp_path / "keep.md").exists()
+
+
+def test_read_only_still_lists_documents(client, read_only, tmp_path):
+    (tmp_path / "keep.md").write_text("keep me")
+
+    assert client.get("/documents").json()["documents"][0]["filename"] == "keep.md"
+
+
+def test_health_reports_read_only(client, read_only):
+    assert client.get("/health").json()["read_only"] is True
+
+
+@pytest.mark.parametrize("path", ["/search", "/ask", "/query/stream"])
+def test_a_long_query_is_refused(client, path):
+    assert client.post(path, json={"query": "x" * 501}).status_code == 422
+    assert client.post(path, json={"query": "x" * 500}).status_code != 422
+
+
+def test_read_only_errors_do_not_name_the_ollama_address(client, read_only):
+    def fail(query, top_k=5):
+        raise requests.ConnectionError("refused")
+
+    main.state.pipeline = SimpleNamespace(ask=fail)
+
+    detail = client.post("/ask", json={"query": "What is RRF?"}).json()["detail"]
+
+    assert "Ollama" not in detail
+    assert settings.ollama_url not in detail
+
+
+def test_gate_admits_one_running_and_two_waiting():
+    gate = main.GenerationGate(max_waiting=2)
+    first = gate.enter()
+    waiters = []
+    entered = []
+
+    def wait():
+        release = gate.enter()
+        entered.append(release)
+        release()
+
+    for _ in range(2):
+        thread = threading.Thread(target=wait)
+        thread.start()
+        waiters.append(thread)
+    time.sleep(0.2)
+
+    assert entered == []
+    assert gate.enter() is None
+
+    first()
+    for thread in waiters:
+        thread.join(timeout=2)
+
+    assert len(entered) == 2
+    gate.enter()()
+
+
+def test_gate_release_is_safe_to_call_twice():
+    gate = main.GenerationGate(max_waiting=0)
+    release = gate.enter()
+
+    release()
+    release()
+    second = gate.enter()
+
+    assert second is not None
+    assert gate.enter() is None
+    second()
+
+
+def test_busy_demo_answers_429_and_does_not_leak_slots(client, read_only, monkeypatch):
+    gate = main.GenerationGate(max_waiting=0)
+    monkeypatch.setattr(main, "generation_gate", gate)
+    release = gate.enter()
+
+    for path in ("/query/stream", "/ask"):
+        response = client.post(path, json={"query": "What is RRF?"})
+
+        assert response.status_code == 429
+        assert response.json()["detail"] == "The demo is busy, please try again in a minute."
+
+    release()
+    free = gate.enter()
+
+    assert free is not None
+    free()
+
+
+def test_a_finished_stream_frees_its_slot(client, read_only, monkeypatch):
+    gate = main.GenerationGate(max_waiting=0)
+    monkeypatch.setattr(main, "generation_gate", gate)
+    monkeypatch.setattr(main, "stream_query_events", lambda query, top_k: iter(["a"]))
+
+    assert client.post("/query/stream", json={"query": "q"}).status_code == 200
+
+    free = gate.enter()
+    assert free is not None
+    free()
+
+
+def test_a_stream_that_fails_frees_its_slot(client, read_only, monkeypatch):
+    gate = main.GenerationGate(max_waiting=0)
+    monkeypatch.setattr(main, "generation_gate", gate)
+
+    def broken(query, top_k):
+        yield "a"
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(main, "stream_query_events", broken)
+
+    with pytest.raises(RuntimeError):
+        client.post("/query/stream", json={"query": "q"})
+
+    free = gate.enter()
+    assert free is not None
+    free()
+
+
+def test_a_disconnected_stream_frees_its_slot(read_only, monkeypatch):
+    gate = main.GenerationGate(max_waiting=0)
+    monkeypatch.setattr(main, "generation_gate", gate)
+    monkeypatch.setattr(
+        main, "stream_query_events", lambda query, top_k: iter(["a", "b"])
+    )
+
+    started = main.stream_query(main.AskRequest(query="q"))
+    iterator = started.body_iterator
+    asyncio.run(iterator.__anext__())
+    asyncio.run(iterator.aclose())
+
+    free = gate.enter()
+    assert free is not None
+    free()
+
+
+def test_a_stream_that_never_started_frees_its_slot(read_only, monkeypatch):
+    gate = main.GenerationGate(max_waiting=0)
+    monkeypatch.setattr(main, "generation_gate", gate)
+
+    response = main.stream_query(main.AskRequest(query="q"))
+    asyncio.run(response.background())
+
+    free = gate.enter()
+    assert free is not None
+    free()
+
+
+def test_nothing_is_gated_when_not_read_only(client, monkeypatch):
+    gate = main.GenerationGate(max_waiting=0)
+    monkeypatch.setattr(main, "generation_gate", gate)
+    hold = gate.enter()
+
+    assert client.post("/ask", json={"query": "What is RRF?"}).status_code == 200
+    hold()
+
+
+def run_with_frontend(tmp_path, dist):
+    env = {k: v for k, v in os.environ.items() if not k.startswith("FRONTEND_")}
+    env["FRONTEND_DIST"] = str(dist)
+    env["PYTHONPATH"] = str(Path(main.__file__).resolve().parents[1])
+    script = (
+        "from fastapi.testclient import TestClient\n"
+        "import app.main as m\n"
+        "c = TestClient(m.app)\n"
+        "for p in ('/', '/assets/a.js', '/health'):\n"
+        "    r = c.get(p)\n"
+        "    print(p, r.status_code, r.headers['content-type'].split(';')[0])\n"
+        "print(c.post('/ask', json={'query': 'x' * 501}).status_code)\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    return result.stdout.splitlines()
+
+
+def test_frontend_dist_is_served_at_the_root(tmp_path):
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<html>ui</html>")
+    (dist / "assets" / "a.js").write_text("1")
+
+    lines = run_with_frontend(tmp_path, dist)
+
+    assert lines[0] == "/ 200 text/html"
+    assert lines[1] == "/assets/a.js 200 text/javascript"
+    assert lines[2].startswith("/health 200 application/json")
+    assert lines[3] == "422"
+
+
+def test_the_json_root_stays_without_a_frontend_dist(client):
+    assert client.get("/").json()["name"] == "EvidenceRAG"

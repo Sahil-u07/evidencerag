@@ -4,13 +4,15 @@ import logging
 from pathlib import Path
 import threading
 import time
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.background import BackgroundTask
 
 from app import indexing
 from app.core.config import settings
@@ -81,6 +83,62 @@ def require_supported_extension(filename: str) -> None:
             status_code=400,
             detail="Unsupported file type. Supported types: PDF, TXT, MD.",
         )
+
+
+class GenerationGate:
+    """One generation at a time, with a short queue."""
+
+    def __init__(self, max_waiting: int = 2) -> None:
+        self._admitted = threading.BoundedSemaphore(1 + max_waiting)
+        self._running = threading.Semaphore(1)
+
+    def enter(self) -> Callable[[], None] | None:
+        """Wait for a turn and return its release, or None when the queue is full."""
+        if not self._admitted.acquire(blocking=False):
+            return None
+        self._running.acquire()
+        lock = threading.Lock()
+        released = False
+
+        def release() -> None:
+            nonlocal released
+            with lock:
+                if released:
+                    return
+                released = True
+            self._running.release()
+            self._admitted.release()
+
+        return release
+
+
+generation_gate = GenerationGate()
+
+
+def reject_if_read_only() -> None:
+    if settings.read_only:
+        raise HTTPException(
+            status_code=403,
+            detail="This demo is read-only. Run EvidenceRAG locally to use your own files.",
+        )
+
+
+def take_generation_turn() -> Callable[[], None]:
+    if not settings.read_only:
+        return lambda: None
+    release = generation_gate.enter()
+    if release is None:
+        raise HTTPException(
+            status_code=429, detail="The demo is busy, please try again in a minute."
+        )
+    return release
+
+
+def release_when_done(events: Iterator[str], release: Callable[[], None]) -> Iterator[str]:
+    try:
+        yield from events
+    finally:
+        release()
 
 
 def sse_event(event_type: str, payload: dict[str, Any]) -> str:
@@ -231,9 +289,17 @@ async def request_logging_middleware(request: Request, call_next):
     return response
 
 
-@app.get("/")
-def root() -> dict[str, str]:
-    return {"name": "EvidenceRAG", "status": "running", "docs": "/docs"}
+def frontend_ready() -> bool:
+    return bool(settings.frontend_dist) and (
+        Path(settings.frontend_dist) / "index.html"
+    ).is_file()
+
+
+if not frontend_ready():
+
+    @app.get("/")
+    def root() -> dict[str, str]:
+        return {"name": "EvidenceRAG", "status": "running", "docs": "/docs"}
 
 
 @app.get("/health")
@@ -245,6 +311,7 @@ def health() -> dict[str, str | bool | int]:
         "model": settings.ollama_model,
         "generator_available": generator_available(),
         "max_upload_mb": settings.max_upload_size_mb,
+        "read_only": settings.read_only,
     }
 
 
@@ -261,8 +328,11 @@ def search_documents(request: SearchRequest) -> SearchResponse:
 
 @app.post("/query/stream")
 def stream_query(request: AskRequest) -> StreamingResponse:
+    release = take_generation_turn()
     return StreamingResponse(
-        stream_query_events(request.query, request.top_k),
+        release_when_done(stream_query_events(request.query, request.top_k), release),
+        # Covers a client that leaves before the first chunk, when the generator never runs.
+        background=BackgroundTask(release),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -279,11 +349,14 @@ def ask_question(request: AskRequest) -> AskResponse:
     if pipeline is None:
         raise HTTPException(status_code=503, detail="RAG pipeline is not ready.")
 
+    release = take_generation_turn()
     try:
         result = pipeline.ask(request.query, top_k=request.top_k)
     except Exception as exc:
         logger.exception("RAG generation failed.")
         raise HTTPException(status_code=503, detail=describe_error(exc)) from exc
+    finally:
+        release()
     evidence = serialize_evidence(result.evidence)
     verification = VerificationResponse(
         supported=result.verification.supported,
@@ -316,6 +389,7 @@ def list_documents() -> DocumentListResponse:
 
 @app.delete("/documents/{filename}")
 def delete_document(filename: str) -> dict[str, str]:
+    reject_if_read_only()
     safe_filename = Path(filename).name
 
     if safe_filename != filename:
@@ -356,6 +430,7 @@ def delete_document(filename: str) -> dict[str, str]:
 
 @app.post("/documents/upload")
 async def upload_document(file: UploadFile = File(...)) -> dict[str, Any]:
+    reject_if_read_only()
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required.")
     original_name = Path(file.filename).name
@@ -406,3 +481,8 @@ async def upload_document(file: UploadFile = File(...)) -> dict[str, Any]:
         "filename": original_name,
         "stored_as": unique_name,
     }
+
+
+# Mounted last so every API route above wins.
+if frontend_ready():
+    app.mount("/", StaticFiles(directory=settings.frontend_dist, html=True))

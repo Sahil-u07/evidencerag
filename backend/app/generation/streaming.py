@@ -138,6 +138,10 @@ def stream_generate(query: str, evidence: list) -> Iterator[StreamToken]:
 
 
 def describe_error(exc: Exception) -> str:
+    if settings.read_only and not isinstance(exc, requests.Timeout):
+        # Visitors get no addresses or shell commands.
+        return "The demo could not answer right now. Please try again in a minute."
+
     # ConnectTimeout is both of these, and it means Ollama could not be reached.
     if isinstance(exc, requests.ConnectionError):
         return (
