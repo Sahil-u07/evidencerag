@@ -4,9 +4,9 @@ import { formatSize, originalName } from '../lib/format.ts'
 import type { DocumentItem } from '../types.ts'
 import { Icon } from './Icon.tsx'
 
-type Props = { state: DocumentsState; demo: boolean; streaming: boolean; stale: boolean }
+type Props = { state: DocumentsState; demo: boolean; readOnly: boolean; streaming: boolean; stale: boolean }
 
-export function DocumentList({ state, demo, streaming, stale }: Props) {
+export function DocumentList({ state, demo, readOnly, streaming, stale }: Props) {
   const { documents, loaded, deleting, uploading } = state
   const error = state.deleteError || state.loadError
   const [confirming, setConfirming] = useState<string | null>(null)
@@ -33,14 +33,16 @@ export function DocumentList({ state, demo, streaming, stale }: Props) {
       )}
       {!loaded && !stale && !error && <p className="documents__empty">Loading documents…</p>}
       {loaded && documents.length === 0 && (
-        <p className="documents__empty">No documents yet. Upload a PDF, TXT or MD file to ask questions about it.</p>
+        <p className="documents__empty">
+          {readOnly ? 'No sample documents are loaded.' : 'No documents yet. Upload a PDF, TXT or MD file to ask questions about it.'}
+        </p>
       )}
       <ul className="documents__list">
         {documents.map((doc) => (
           <DocumentRow
             key={doc.filename}
             doc={doc}
-            demo={demo}
+            canDelete={!demo && !readOnly}
             busy={deleting === doc.filename}
             // A rebuild stalls a running answer, and the backend does not queue rebuilds.
             locked={streaming || deleting !== null || uploading !== null}
@@ -57,7 +59,7 @@ export function DocumentList({ state, demo, streaming, stale }: Props) {
 
 type RowProps = {
   doc: DocumentItem
-  demo: boolean
+  canDelete: boolean
   busy: boolean
   locked: boolean
   confirming: boolean
@@ -66,7 +68,7 @@ type RowProps = {
   onConfirm: () => void
 }
 
-function DocumentRow({ doc, demo, busy, locked, confirming, onAsk, onCancel, onConfirm }: RowProps) {
+function DocumentRow({ doc, canDelete, busy, locked, confirming, onAsk, onCancel, onConfirm }: RowProps) {
   const name = originalName(doc.filename)
   const trash = useRef<HTMLButtonElement>(null)
   const cancel = useRef<HTMLButtonElement>(null)
@@ -104,7 +106,7 @@ function DocumentRow({ doc, demo, busy, locked, confirming, onAsk, onCancel, onC
           {busy ? 'Deleting…' : `${doc.extension.replace('.', '').toUpperCase()}, ${formatSize(doc.size_bytes)}`}
         </span>
       </div>
-      {!demo && (
+      {canDelete && (
         <button ref={trash} type="button" className="icon-btn" aria-label={`Delete ${name}`} disabled={locked} onClick={onAsk}>
           <Icon name="trash" />
         </button>

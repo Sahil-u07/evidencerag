@@ -11,6 +11,7 @@ type Props = {
   demo: boolean
   streaming: boolean
   documents: DocumentsState
+  readOnly: boolean
   stale: boolean
   upload: ReactNode
   theme: Theme
@@ -19,7 +20,7 @@ type Props = {
   onDemoChange: (demo: boolean) => void
 }
 
-export function Sidebar({ brandTag: Brand, demo, streaming, documents, stale, upload, theme, onTheme, onNewChat, onDemoChange }: Props) {
+export function Sidebar({ brandTag: Brand, demo, streaming, documents, readOnly, stale, upload, theme, onTheme, onNewChat, onDemoChange }: Props) {
   return (
     <div className="sidebar">
       <div className="sidebar__top">
@@ -30,7 +31,7 @@ export function Sidebar({ brandTag: Brand, demo, streaming, documents, stale, up
         </button>
       </div>
       <div className="sidebar__middle">
-        <DocumentList state={documents} demo={demo} streaming={streaming} stale={stale} />
+        <DocumentList state={documents} demo={demo} readOnly={readOnly} streaming={streaming} stale={stale} />
       </div>
       <div className="sidebar__bottom">
         {upload}

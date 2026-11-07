@@ -18,6 +18,7 @@ import { useTheme } from './hooks/useTheme.ts'
 import { useViewport } from './hooks/useViewport.ts'
 
 const DEFAULT_MAX_UPLOAD_MB = 10
+const READ_ONLY_NOTE = 'Public demo: sample documents only. Run it locally to use your own.'
 
 export default function App() {
   const [demo, setDemo] = useState(false)
@@ -35,10 +36,11 @@ export default function App() {
 
   const online = health.kind === 'ready' || health.kind === 'model-missing'
   const maxUploadMb = online ? health.maxUploadMb : DEFAULT_MAX_UPLOAD_MB
+  const readOnly = online && health.readOnly
   const { reload, upload: uploadFile } = documents
   const { running } = chat
   const uploadFiles = useCallback((files: File[]) => void uploadFile(files, maxUploadMb, running), [uploadFile, maxUploadMb, running])
-  const dragging = useFileDrop(uploadFiles)
+  const dragging = useFileDrop(uploadFiles, !readOnly)
 
   useEffect(() => {
     if (online) void reload()
@@ -68,7 +70,9 @@ export default function App() {
     input.current?.focus()
   }
 
-  const upload = (
+  const upload = readOnly ? (
+    <p className="upload__note">{READ_ONLY_NOTE}</p>
+  ) : (
     <UploadControl
       demo={demo}
       uploading={documents.uploading}
@@ -86,6 +90,7 @@ export default function App() {
       demo={demo}
       streaming={running}
       documents={documents}
+      readOnly={readOnly}
       stale={!demo && health.kind === 'offline'}
       upload={upload}
       theme={theme}
@@ -126,8 +131,9 @@ export default function App() {
             {chat.turns.length === 0 && (
               <EmptyState
                 noDocuments={noDocuments}
+                readOnly={readOnly}
                 hasDocuments={documents.documents.length > 0}
-                upload={viewport === 'phone' ? upload : null}
+                upload={viewport === 'phone' && !readOnly ? upload : null}
                 onSample={fillSample}
               />
             )}

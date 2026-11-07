@@ -18,9 +18,9 @@ export function useHealth(paused: boolean) {
     const check = async () => {
       try {
         const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(TIMEOUT_MS)])
-        const { ready, generator_available, model, max_upload_mb } = await getHealth(signal)
+        const { ready, generator_available, model, max_upload_mb, read_only } = await getHealth(signal)
         if (!ready) setHealth({ kind: 'connecting' })
-        else setHealth({ kind: generator_available ? 'ready' : 'model-missing', model, maxUploadMb: max_upload_mb })
+        else setHealth({ kind: generator_available ? 'ready' : 'model-missing', model, maxUploadMb: max_upload_mb, readOnly: read_only })
       } catch {
         if (!controller.signal.aborted) setHealth({ kind: 'offline' })
       }
