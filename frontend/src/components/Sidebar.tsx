@@ -17,7 +17,7 @@ type Props = {
   theme: Theme
   onTheme: (theme: Theme) => void
   onNewChat: () => void
-  onDemoChange: (demo: boolean) => void
+  onDemoChange?: (demo: boolean) => void
 }
 
 export function Sidebar({ brandTag: Brand, demo, streaming, documents, readOnly, stale, upload, theme, onTheme, onNewChat, onDemoChange }: Props) {
@@ -37,10 +37,12 @@ export function Sidebar({ brandTag: Brand, demo, streaming, documents, readOnly,
         {upload}
         <div className="sidebar__settings">
           <ThemeSwitch theme={theme} onChange={onTheme} />
-          <label className="demo-toggle">
-            <input type="checkbox" checked={demo} onChange={(event) => onDemoChange(event.target.checked)} />
-            Demo data
-          </label>
+          {onDemoChange && (
+            <label className="demo-toggle">
+              <input type="checkbox" checked={demo} onChange={(event) => onDemoChange(event.target.checked)} />
+              Demo data
+            </label>
+          )}
         </div>
       </div>
     </div>

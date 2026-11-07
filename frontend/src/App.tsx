@@ -19,9 +19,12 @@ import { useViewport } from './hooks/useViewport.ts'
 
 const DEFAULT_MAX_UPLOAD_MB = 10
 const READ_ONLY_NOTE = 'Public demo: sample documents only. Run it locally to use your own.'
+// The static site has no backend to talk to, so it can only ever show demo data.
+const DEMO_ONLY = import.meta.env.VITE_DEMO_ONLY === 'true'
+const REPO_URL = 'https://github.com/Sahil-u07/evidencerag'
 
 export default function App() {
-  const [demo, setDemo] = useState(false)
+  const [demo, setDemo] = useState(DEMO_ONLY)
   const [question, setQuestion] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const input = useRef<HTMLTextAreaElement>(null)
@@ -96,10 +99,14 @@ export default function App() {
       theme={theme}
       onTheme={setTheme}
       onNewChat={newChat}
-      onDemoChange={(next) => {
-        clearAll()
-        setDemo(next)
-      }}
+      onDemoChange={
+        DEMO_ONLY
+          ? undefined
+          : (next) => {
+              clearAll()
+              setDemo(next)
+            }
+      }
     />
   )
 
@@ -118,6 +125,12 @@ export default function App() {
         <p className="demo-banner">
           <Icon name="info" />
           Demo data. Everything here is made up and nothing was checked.
+          {DEMO_ONLY && (
+            <>
+              {' '}
+              The real app runs locally: <a href={REPO_URL}>see the code and setup</a>.
+            </>
+          )}
         </p>
       )}
 
