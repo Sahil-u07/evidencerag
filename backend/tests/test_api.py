@@ -841,6 +841,7 @@ def test_a_stream_that_never_started_frees_its_slot(read_only, monkeypatch):
 def test_nothing_is_gated_when_not_read_only(client, monkeypatch):
     gate = main.GenerationGate(max_waiting=0)
     monkeypatch.setattr(main, "generation_gate", gate)
+    main.state.pipeline = FakePipeline()
     hold = gate.enter()
 
     assert client.post("/ask", json={"query": "What is RRF?"}).status_code == 200
